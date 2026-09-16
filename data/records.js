@@ -137,5 +137,14 @@ window.MODEL_RECORDS = [
     src: "results/trilogy-token-saving/codem/index.html",
     note: "孙悟空驾驶舱握操纵杆 + 金箍棒；鹈鹕机翼骑行（IK 蹬踏）+ 展翅托北极熊；秦始皇冕旒骑熊打螺丝，螺丝旋转带火花；腿部判定 ✓（IK 两段腿蹬踏、脚随踏板），其余 checklist 项未逐项判定，整体待判",
     createdAt: "2026-09-16T03:00:00.000Z"
+  },
+  {
+    id: "seed-tri-muse-spark-1-3", testId: "trilogy-token-saving",
+    testTitle: "三合一省 token 版（鹈鹕×孙悟空×秦始皇）", testType: "graphic",
+    model: "Muse Spark 1.3", channel: "opencode 2",
+    date: "2026-09-16", result: "pending",
+    src: "results/trilogy-token-saving/muse-spark/index.html",
+    note: "三合一题作品（鹈鹕+悟空+秦始皇，18 处元素命中），原文件放在 muse-spark 目录已归位",
+    createdAt: "2026-09-16T07:43:00.000Z"
   }
 ];
