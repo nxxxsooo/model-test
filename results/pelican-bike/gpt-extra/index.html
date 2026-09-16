@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>云端奇航：鹈鹕骑行维修队</title>
+  <style>
+    :root{color-scheme:dark;--night:#071525;--cream:#fff7df;--gold:#ffc956;--red:#d94a3d;--ink:#142331}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100svh;display:grid;place-items:center;padding:clamp(12px,3vw,32px);overflow-x:hidden;background:radial-gradient(circle at 50% 0,#203c5b 0,#0b1e32 48%,#050d18 100%);font-family:"Avenir Next","PingFang SC",sans-serif;color:#f8f3e6}
+    main{width:min(1280px,100%)}
+    header,footer{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:0 4px}
+    header{margin-bottom:14px}h1{margin:0;font-size:clamp(20px,3vw,36px);letter-spacing:.06em;font-weight:750}header p,footer p{margin:0;color:#b7c9d8;font-size:13px}
+    .frame{position:relative;overflow:hidden;border:1px solid #ffffff1d;border-radius:clamp(14px,2vw,28px);background:#8bd9ef;box-shadow:0 40px 100px #0008,0 2px 0 #ffffff2e inset;isolation:isolate}
+    svg{display:block;width:100%;height:auto}
+    footer{padding-top:14px}.controls{display:flex;gap:8px}
+    button{border:1px solid #ffffff2d;border-radius:999px;background:#ffffff10;color:#f7f1df;padding:9px 16px;font:inherit;font-size:13px;cursor:pointer;backdrop-filter:blur(12px);transition:.2s}
+    button:hover{background:#ffffff21;transform:translateY(-1px)}button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+    .paused *{animation-play-state:paused!important}
+    .cloud-far{animation:drift 34s linear infinite}.cloud-near{animation:drift 18s linear infinite}.speed{animation:dash 1.1s linear infinite}
+    .plane{animation:planeFloat 3.2s ease-in-out infinite;transform-origin:720px 515px}.bike-team{animation:rideBob .7s ease-in-out infinite;transform-origin:605px 447px}
+    .wheel{animation:spin .82s linear infinite;transform-box:fill-box;transform-origin:center}.pedal{animation:spin .82s linear infinite;transform-box:fill-box;transform-origin:center}
+    .pelican-wing-left{animation:wingLeft 1.4s ease-in-out infinite;transform-origin:530px 334px}.pelican-wing-right{animation:wingRight 1.4s ease-in-out infinite;transform-origin:650px 332px}
+    .bear-load{animation:loadSway 1.4s ease-in-out infinite;transform-origin:592px 275px}.cape{animation:cape 1s ease-in-out infinite;transform-origin:565px 196px}
+    .arm-tool{animation:turnTool .54s ease-in-out infinite;transform-origin:650px 280px}.spark{animation:spark .54s steps(2,end) infinite}.monkey-head{animation:monkeyLook 3.4s ease-in-out infinite;transform-origin:1017px 304px}
+    .propeller{animation:propeller .16s linear infinite;transform-box:fill-box;transform-origin:center}.scarf{animation:scarf .42s ease-in-out infinite;transform-origin:482px 335px}
+    .feather{animation:feather 1.8s ease-in-out infinite;transform-origin:618px 166px}.blink{animation:blink 4.6s infinite;transform-box:fill-box;transform-origin:center}
+    @keyframes drift{to{transform:translateX(-1240px)}}@keyframes dash{to{stroke-dashoffset:-120}}
+    @keyframes planeFloat{50%{transform:translateY(5px) rotate(.18deg)}}@keyframes rideBob{50%{transform:translateY(-4px) rotate(-.25deg)}}
+    @keyframes spin{to{transform:rotate(360deg)}}@keyframes wingLeft{50%{transform:rotate(-3.5deg) translateY(-3px)}}@keyframes wingRight{50%{transform:rotate(3.5deg) translateY(-3px)}}
+    @keyframes loadSway{50%{transform:translateY(-4px) rotate(.7deg)}}@keyframes cape{50%{transform:skewX(-8deg) translateX(-7px)}}
+    @keyframes turnTool{0%,100%{transform:rotate(-17deg)}50%{transform:rotate(17deg)}}@keyframes spark{50%{opacity:.15;transform:scale(.65)}}
+    @keyframes monkeyLook{0%,70%,100%{transform:rotate(0)}80%,90%{transform:rotate(-5deg)}}@keyframes propeller{to{transform:rotate(360deg)}}
+    @keyframes scarf{50%{transform:skewY(8deg) scaleX(1.08)}}@keyframes feather{50%{transform:rotate(6deg)}}@keyframes blink{0%,46%,50%,100%{transform:scaleY(1)}48%{transform:scaleY(.08)}}
+    @media(max-width:700px){header p{display:none}footer{align-items:flex-start;flex-direction:column}.controls{width:100%}.controls button{flex:1}}
+    @media(prefers-reduced-motion:reduce){svg *{animation:none!important}}
+  </style>
+</head>
+<body>
+<main>
+  <header><h1>云端奇航 · 翼上维修队</h1><p>西行航空 007 号正在巡航</p></header>
+  <div class="frame" id="frame">
+  <svg viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+    <title id="title">鹈鹕骑自行车在孙悟空驾驶的大型飞机机翼上前进</title>
+    <desc id="desc">鹈鹕张开翅膀托着北极熊，秦始皇骑在熊背上用螺丝刀维修机翼。飞机由孙悟空驾驶，云朵、螺旋桨、车轮与火花持续运动。</desc>
+    <defs>
+      <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#6ec6e7"/><stop offset=".48" stop-color="#bcebf2"/><stop offset="1" stop-color="#f8d8ae"/></linearGradient>
+      <radialGradient id="sun"><stop stop-color="#fffbd1"/><stop offset=".48" stop-color="#ffe28d"/><stop offset="1" stop-color="#ffd066" stop-opacity="0"/></radialGradient>
+      <linearGradient id="metal" x2="0" y2="1"><stop stop-color="#f8fcff"/><stop offset=".42" stop-color="#b9cbd7"/><stop offset=".58" stop-color="#f1f7f9"/><stop offset="1" stop-color="#7f9aaa"/></linearGradient>
+      <linearGradient id="wingMetal" x2=".9" y2="1"><stop stop-color="#f9fdff"/><stop offset=".38" stop-color="#c7d8df"/><stop offset=".7" stop-color="#8ca5b2"/><stop offset="1" stop-color="#607b8b"/></linearGradient>
+      <linearGradient id="redPaint" x2="0" y2="1"><stop stop-color="#ef6653"/><stop offset="1" stop-color="#a62e31"/></linearGradient>
+      <linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff09b"/><stop offset=".55" stop-color="#f2b739"/><stop offset="1" stop-color="#ad671d"/></linearGradient>
+      <linearGradient id="bearFur" x2="0" y2="1"><stop stop-color="#fffef4"/><stop offset="1" stop-color="#c9e2e8"/></linearGradient>
+      <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#183b52" flood-opacity=".28"/></filter>
+      <filter id="smallShadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#102c3d" flood-opacity=".35"/></filter>
+      <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <pattern id="rivets" width="50" height="22" patternUnits="userSpaceOnUse"><circle cx="8" cy="11" r="2.1" fill="#526e7e" opacity=".65"/><circle cx="42" cy="11" r="2.1" fill="#fff" opacity=".55"/></pattern>
+      <g id="cloud"><path d="M0 38C8 21 24 17 39 23C46 3 76-2 91 17C112 9 135 20 138 38Z" fill="#fff"/><path d="M9 39H130" stroke="#cee5eb" stroke-width="3" opacity=".7"/></g>
+      <g id="wheelArt">
+        <circle r="55" fill="#def4f4" fill-opacity=".22" stroke="#162d3a" stroke-width="9"/><circle r="44" fill="none" stroke="#f5feff" stroke-width="2"/>
+        <g stroke="#5a7988" stroke-width="1.8"><path d="M-44 0H44M0-44V44M-31-31L31 31M-31 31L31-31M-41-17L41 17M-17-41L17 41M-41 17L41-17M-17 41L17-41"/></g><circle r="7" fill="#163141"/>
+      </g>
+      <g id="sparkShape" fill="#ffe568" stroke="#fff6bc" stroke-width="2" stroke-linecap="round"><path d="M0-5V-21M5-3L18-13M7 2L24 5M-5-3L-16-15"/></g>
+    </defs>
+
+    <!-- layered atmosphere -->
+    <rect width="1200" height="720" fill="url(#sky)"/>
+    <circle cx="190" cy="126" r="112" fill="url(#sun)"/><circle cx="190" cy="126" r="42" fill="#fff4b7" opacity=".8"/>
+    <g opacity=".48" fill="none" stroke="#fff" stroke-width="2"><path d="M0 470Q230 400 460 452T920 430T1400 446"/><path d="M-70 520Q260 450 570 505T1250 480"/></g>
+    <g class="cloud-far" opacity=".62"><use href="#cloud" transform="translate(80 110) scale(.6)"/><use href="#cloud" transform="translate(490 75) scale(.42)"/><use href="#cloud" transform="translate(850 150) scale(.75)"/><use href="#cloud" transform="translate(1290 110) scale(.6)"/><use href="#cloud" transform="translate(1700 75) scale(.42)"/></g>
+    <g class="cloud-near" opacity=".86"><use href="#cloud" transform="translate(-130 545) scale(1.5)"/><use href="#cloud" transform="translate(900 590) scale(1.12)"/><use href="#cloud" transform="translate(1170 545) scale(1.5)"/><use href="#cloud" transform="translate(2200 590) scale(1.12)"/></g>
+    <g class="speed" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-dasharray="65 85" opacity=".58"><path d="M40 278H370"/><path d="M0 337H250"/><path d="M925 236h275"/></g>
+
+    <!-- airplane -->
+    <g class="plane" filter="url(#shadow)">
+      <!-- far wing and tail -->
+      <path d="M881 419L1165 355Q1193 350 1197 367L968 501Z" fill="#768f9d" stroke="#314c5d" stroke-width="5"/>
+      <path d="M1025 411L1125 239Q1133 225 1144 240L1148 425Z" fill="url(#redPaint)" stroke="#263f50" stroke-width="6"/>
+      <path d="M1089 303L1145 323" stroke="#ffd568" stroke-width="9"/>
+      <!-- fuselage -->
+      <path d="M200 487C350 445 708 412 1048 415C1129 416 1175 449 1171 484C1166 533 1056 556 884 562L271 550C179 548 111 526 105 505C100 487 137 478 200 487Z" fill="url(#metal)" stroke="#294757" stroke-width="6"/>
+      <path d="M120 505Q342 478 646 472T1164 470" fill="none" stroke="#fff" stroke-width="9" opacity=".55"/>
+      <path d="M254 525Q650 502 1109 510" fill="none" stroke="#a52d33" stroke-width="17" opacity=".9"/>
+      <path d="M157 520Q460 494 1127 495" fill="none" stroke="#f5c756" stroke-width="4"/>
+      <ellipse cx="1100" cy="476" rx="24" ry="13" fill="#46697b"/><path d="M1117 461q21 15 0 31" fill="none" stroke="#203948" stroke-width="6"/>
+      <!-- near engine -->
+      <g transform="translate(275 539)"><path d="M-78-9Q-66-61 5-66Q69-65 81-15L61 54Q2 73-59 51Z" fill="url(#metal)" stroke="#294757" stroke-width="6"/><ellipse cx="0" cy="-14" rx="67" ry="45" fill="#203a4b" stroke="#e8f2f6" stroke-width="8"/><circle r="15" cy="-14" fill="#e6b33d"/><g class="propeller" transform="translate(0 -14)" fill="#b5cad2"><ellipse rx="9" ry="53"/><ellipse rx="53" ry="9"/></g><circle cy="-14" r="9" fill="#d24a3d"/></g>
+      <!-- cockpit canopy -->
+      <path d="M921 414Q946 331 1038 324Q1103 329 1127 415Z" fill="#77bfd5" stroke="#294757" stroke-width="6"/>
+      <path d="M952 396Q972 346 1025 340L1018 406Z" fill="#c8f5f7" opacity=".75"/><path d="M1035 339Q1081 350 1099 407H1030Z" fill="#5d9eb7" opacity=".65"/>
+      <path d="M1027 337L1022 412" stroke="#294757" stroke-width="6"/>
+      <!-- Sun Wukong pilot -->
+      <g class="monkey-head" filter="url(#smallShadow)">
+        <path d="M983 366Q981 325 1008 305Q1031 288 1056 309Q1074 326 1063 367Z" fill="#8c5635" stroke="#342a25" stroke-width="4"/>
+        <path d="M996 334Q1004 310 1025 308Q1050 310 1056 335L1049 361Q1028 377 1005 360Z" fill="#e6ad73"/>
+        <path d="M992 319Q1008 293 1032 300Q1054 301 1066 321" fill="none" stroke="#cc3f38" stroke-width="8"/>
+        <path d="M1005 307L1016 286L1028 304L1044 282L1052 309" fill="url(#gold)" stroke="#6b421d" stroke-width="3"/>
+        <g class="blink" fill="#202927"><ellipse cx="1014" cy="336" rx="3.5" ry="5"/><ellipse cx="1041" cy="336" rx="3.5" ry="5"/></g>
+        <path d="M1022 350q8 6 16 0" fill="none" stroke="#633b2d" stroke-width="3" stroke-linecap="round"/>
+        <path d="M994 379q37-19 75 2v31h-77Z" fill="#d44537" stroke="#552f28" stroke-width="4"/><path d="M1028 379v31" stroke="#f1bc3e" stroke-width="8"/>
+        <path d="M1070 385Q1087 382 1094 363" fill="none" stroke="#9a5d3a" stroke-width="8" stroke-linecap="round"/>
+        <circle cx="1096" cy="358" r="6" fill="#d59a62"/>
+      </g>
+      <!-- giant near wing / riding deck -->
+      <path d="M745 431L146 335Q108 331 76 350L42 377L616 505Q728 526 902 506L1010 489L986 451Z" fill="url(#wingMetal)" stroke="#294757" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M79 374L667 490Q804 511 981 471" fill="none" stroke="#f8fdff" stroke-width="8" opacity=".75"/>
+      <path d="M142 375L613 467Q721 489 861 471" fill="none" stroke="#6f8897" stroke-width="3"/>
+      <path d="M224 391L653 473Q735 488 830 476" fill="none" stroke="url(#rivets)" stroke-width="12" stroke-dasharray="2 23"/>
+      <path d="M694 449l115 10l-28 45l-111-15Z" fill="#8ba3ae" stroke="#4a6675" stroke-width="4"/>
+      <path d="M705 459l86 8" stroke="#dce8ec" stroke-width="3"/>
+      <circle cx="757" cy="478" r="8" fill="#344f5e" stroke="#d6e6ea" stroke-width="3"/>
+      <text x="872" y="541" font-size="18" font-weight="700" fill="#5c7380" letter-spacing="4">XIYOU AIR 007</text>
+    </g>
+
+    <!-- bicycle and impossible cargo -->
+    <g class="bike-team" filter="url(#smallShadow)">
+      <!-- wheel shadows -->
+      <ellipse cx="440" cy="467" rx="61" ry="9" fill="#153644" opacity=".2"/><ellipse cx="692" cy="493" rx="61" ry="9" fill="#153644" opacity=".2"/>
+      <g transform="translate(440 447)"><g class="wheel"><use href="#wheelArt"/></g></g><g transform="translate(692 472)"><g class="wheel"><use href="#wheelArt"/></g></g>
+      <!-- bicycle frame -->
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M440 447L505 354L568 460ZM505 354L630 371L568 460M630 371L692 472" stroke="#bd3c39" stroke-width="11"/>
+        <path d="M440 447L505 354M568 460L630 371" stroke="#ffcc59" stroke-width="3"/>
+        <path d="M621 373L617 332Q615 316 632 314L662 318" stroke="#183642" stroke-width="9"/>
+        <path d="M653 316l23 3" stroke="#f0c74f" stroke-width="11"/><path d="M499 355l-4-24" stroke="#183642" stroke-width="8"/><path d="M475 329q25-5 49 3" stroke="#183642" stroke-width="14"/>
+      </g>
+      <circle cx="568" cy="460" r="18" fill="#e9c652" stroke="#183642" stroke-width="4"/>
+      <g class="pedal" transform="translate(568 460)" stroke="#183642" stroke-width="6" stroke-linecap="round"><path d="M-22 0H22"/><path d="M-33 0h17M16 0h17" stroke-width="8"/></g>
+
+      <!-- pelican legs behind body -->
+      <path d="M543 377L562 412L546 449M572 374L589 416L589 460" fill="none" stroke="#eaa23b" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M531 448h30M576 460h30" stroke="#eaa23b" stroke-width="10" stroke-linecap="round"/>
+      <!-- tail and body -->
+      <path d="M503 353L452 330Q464 369 510 379Z" fill="#eaf2ed" stroke="#173543" stroke-width="4"/>
+      <path d="M499 310C516 281 557 271 588 289C612 272 605 238 602 222C596 190 613 172 637 177C672 183 675 215 655 235C642 247 644 267 657 292C680 335 630 391 565 388C509 386 475 346 499 310Z" fill="#fffbed" stroke="#173543" stroke-width="5"/>
+      <!-- beak -->
+      <path d="M655 218L784 240Q760 285 690 266Q663 258 650 239Z" fill="#ffc65e" stroke="#173543" stroke-width="4"/>
+      <path d="M655 217L793 236Q807 240 791 246L655 235Z" fill="#f39c36" stroke="#173543" stroke-width="4"/>
+      <path d="M687 255q44 19 83-5" fill="none" stroke="#d8842f" stroke-width="3"/>
+      <g class="blink"><ellipse cx="641" cy="213" rx="5" ry="7" fill="#172c35"/><circle cx="642" cy="211" r="1.7" fill="#fff"/></g>
+      <path d="M629 194q10-6 20 1" fill="none" stroke="#173543" stroke-width="3" stroke-linecap="round"/>
+      <!-- scarf -->
+      <g class="scarf"><path d="M607 269Q567 261 520 237L535 261L510 265Q555 286 610 282Z" fill="#d94a3d" stroke="#742d2c" stroke-width="3"/><path d="M533 260l48 15" stroke="#ff9e68" stroke-width="3"/></g>
+      <path d="M608 264q22 13 43 0l2 15q-24 12-49 0Z" fill="#d94a3d" stroke="#742d2c" stroke-width="3"/>
+
+      <!-- outstretched pelican wings forming a living platform -->
+      <g class="pelican-wing-left">
+        <path d="M551 316Q491 276 398 291Q440 307 467 331Q423 321 383 337Q459 372 550 350Z" fill="#f3f7ef" stroke="#173543" stroke-width="5" stroke-linejoin="round"/>
+        <path d="M520 320q-55-18-99-11M515 336q-51-5-91 9" fill="none" stroke="#b7ced0" stroke-width="4" stroke-linecap="round"/>
+      </g>
+      <g class="pelican-wing-right">
+        <path d="M592 316Q657 276 741 303Q703 315 671 338Q718 328 753 348Q675 376 590 351Z" fill="#f3f7ef" stroke="#173543" stroke-width="5" stroke-linejoin="round"/>
+        <path d="M617 322q53-19 96-7M620 339q48-6 89 12" fill="none" stroke="#b7ced0" stroke-width="4" stroke-linecap="round"/>
+      </g>
+
+      <!-- polar bear supported by wings -->
+      <g class="bear-load">
+        <path d="M518 318Q524 271 555 254Q582 235 629 248Q666 259 679 298L665 333Q620 347 559 336Z" fill="url(#bearFur)" stroke="#173543" stroke-width="5"/>
+        <circle cx="549" cy="257" r="15" fill="#edf6f3" stroke="#173543" stroke-width="4"/><circle cx="649" cy="255" r="15" fill="#edf6f3" stroke="#173543" stroke-width="4"/>
+        <path d="M548 267Q553 226 600 222Q651 223 657 270Q649 299 604 304Q560 300 548 267Z" fill="#fffdf3" stroke="#173543" stroke-width="5"/>
+        <ellipse cx="603" cy="267" rx="19" ry="14" fill="#d7e6e4"/><ellipse cx="603" cy="261" rx="10" ry="7" fill="#162c35"/>
+        <circle cx="578" cy="252" r="4" fill="#162c35"/><circle cx="630" cy="252" r="4" fill="#162c35"/><path d="M603 269v10q-10 7-18 0m18 0q10 7 18 0" fill="none" stroke="#29444e" stroke-width="3" stroke-linecap="round"/>
+        <path d="M543 298q-25 10-30 30M655 300q24 9 30 28" fill="none" stroke="#e4f0ee" stroke-width="20" stroke-linecap="round"/>
+        <path d="M551 328q-20 18-9 29M651 328q20 17 9 29" fill="none" stroke="#e5f1ef" stroke-width="16" stroke-linecap="round"/>
+
+        <!-- Qin Shi Huang on the bear -->
+        <g>
+          <path class="cape" d="M560 205Q535 228 545 278L589 286L593 213Z" fill="#301e32" stroke="#171626" stroke-width="4"/>
+          <path d="M578 204Q600 192 624 207L641 274Q606 291 568 272Z" fill="#171d2c" stroke="#0d1420" stroke-width="4"/>
+          <path d="M589 217v54M615 211v62" stroke="#d8a63b" stroke-width="4"/><path d="M577 229h55M575 251h61" stroke="#9c742f" stroke-width="2"/>
+          <path d="M581 200Q580 169 602 163Q628 165 628 200Q619 218 602 218Q588 216 581 200Z" fill="#d99b6c" stroke="#422b2a" stroke-width="4"/>
+          <path d="M580 187q9-26 29-24q20 2 22 26l-9-8l-9 7l-10-8l-10 8Z" fill="#171b25"/>
+          <path d="M585 170L582 149L595 155L603 137L612 156L624 147L622 172Z" fill="url(#gold)" stroke="#70451f" stroke-width="3"/>
+          <g class="feather"><path d="M603 140Q592 112 607 91Q623 117 609 142" fill="#d84a3f" stroke="#682d31" stroke-width="3"/><path d="M608 99q8 12 0 34" fill="none" stroke="#f7a458" stroke-width="2"/></g>
+          <path d="M588 192q8-5 14 0m8 0q7-5 13 0" fill="none" stroke="#3a2827" stroke-width="2"/><path d="M603 197q0 8-4 10q7 4 13 0" fill="none" stroke="#6e4032" stroke-width="2"/>
+          <path d="M590 210q13 10 26 0" fill="none" stroke="#262025" stroke-width="5"/>
+          <path d="M585 267l-13 34M624 269l15 31" stroke="#171d2c" stroke-width="11" stroke-linecap="round"/><path d="M566 301h22M630 300h22" stroke="#171d2c" stroke-width="10" stroke-linecap="round"/>
+          <path d="M581 226Q559 242 557 261" fill="none" stroke="#d99b6c" stroke-width="9" stroke-linecap="round"/>
+          <g class="arm-tool"><path d="M626 226Q647 239 650 270" fill="none" stroke="#d99b6c" stroke-width="9" stroke-linecap="round"/><path d="M650 256v40" stroke="#374b53" stroke-width="7" stroke-linecap="round"/><path d="M641 256h18" stroke="#f2b940" stroke-width="9" stroke-linecap="round"/><path d="M646 294h8" stroke="#172c35" stroke-width="4"/></g>
+          <g class="spark" transform="translate(650 301)" filter="url(#glow)"><use href="#sparkShape"/></g>
+        </g>
+      </g>
+    </g>
+
+    <!-- foreground vapor -->
+    <path d="M0 662Q158 604 323 666T664 653T1010 663T1200 627V720H0Z" fill="#f5fbf8" opacity=".82"/>
+    <path d="M0 682Q190 636 384 687T759 674T1200 665" fill="none" stroke="#fff" stroke-width="18" opacity=".7"/>
+    <g transform="translate(34 33)" font-family="sans-serif"><rect width="174" height="39" rx="19.5" fill="#0c2738" opacity=".76"/><circle cx="22" cy="19.5" r="5" fill="#62e6b6"/><text x="38" y="25" font-size="14" fill="#eaf8f2" letter-spacing="1.2">巡航高度 8,888 m</text></g>
+  </svg>
+  </div>
+  <footer><p>一场由空气动力学拒绝承认、但动画坚持呈现的云端维修任务。</p><div class="controls"><button id="toggle" type="button" aria-pressed="false">暂停动画</button><button id="restart" type="button">重新起飞</button></div></footer>
+</main>
+<script>
+  const frame=document.getElementById('frame');
+  const toggle=document.getElementById('toggle');
+  const restart=document.getElementById('restart');
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+  let paused=reduced.matches;
+  function sync(){frame.classList.toggle('paused',paused);toggle.textContent=paused?'播放动画':'暂停动画';toggle.setAttribute('aria-pressed',String(paused))}
+  toggle.addEventListener('click',()=>{paused=!paused;sync()});
+  restart.addEventListener('click',()=>{const svg=frame.querySelector('svg');const clone=svg.cloneNode(true);frame.replaceChild(clone,svg);paused=false;sync()});
+  reduced.addEventListener('change',event=>{paused=event.matches;sync()});
+  sync();
+</script>
+</body>
+</html>

@@ -4,6 +4,7 @@
 
 | 目录 | 模型 / 来源 | 文件 |
 |---|---|---|
+| `gemini-3.8-flash/` | Gemini 3.8 Flash (High)（Antigravity 会话） | `index.html` |
 | `muse-spark/` | Muse Spark（本会话） | `pelican-bike.html` |
 | `mimo-2.5/` | mimo 2.5（原 `Tuning/pelican-bike.html`） | `pelican-bike.html` |
 | `qwen-3.7/` | qwen 3.7（原 `Tuning/pelican-on-bike.html`） | `pelican-on-bike.html` |
@@ -12,7 +13,7 @@
 | `opus-5/` | opus 5（原 `Tuning/pelican-bicycle.html`） | `pelican-bicycle.html` |
 | `seed-2.1-pro/` | seed 2.1 pro（Doubao 对话导出复制） | `index.html` |
 | `codem/` | codem 生成，底层模型未知（原 `Tuning/pelican-bicycle.html`） | `pelican-bicycle.html` |
-| `gpt-extra/` | 待补充：GPT extra 版本 | — |
+| `gpt-extra/` | GPT-5.6 Sol（本会话，云端奇航 2D SVG 动画） | `index.html` |
 | `other/` | 待补充 | — |
 
 ## 飞书可贴版

@@ -85,7 +85,7 @@
 
   // ---------- 种子记录合入 ----------
   (function seedRecords() {
-    var KEY = "mt_seeded_records_v2";
+    var KEY = "mt_seeded_records_v3";
     var first = !localStorage.getItem(KEY);
     var seeds = window.MODEL_RECORDS || [];
     if (seeds.length) {

@@ -127,6 +127,15 @@ window.MODEL_RECORDS = [
     note: "← Downloads/鹈鹕骑自行车SVG动画.Qwen-3.8-max.html；判定 fail：腿为单根无关节曲线且完全静止（A❌），脚蹼画在曲柄组内随转",
     createdAt: "2026-09-16T03:35:00.000Z"
   },
+  {
+    id: "seed-pb-gemini-3-8-flash", testId: "pelican-bike",
+    testTitle: "鹈鹕骑自行车", testType: "graphic",
+    model: "Gemini 3.8 Flash (High)", channel: "Antigravity 会话",
+    date: "2026-09-16", result: "pass",
+    src: "results/pelican-bike/gemini-3.8-flash/index.html",
+    note: "Antigravity 会话生成；判定 pass：真腿 2-Bone 逆运动学（IK）解算，双腿分节（大腿+小腿、膝盖解析折点），双脚 180° 相位对置紧扣脚踏随曲柄真实旋转，脚踝贴合自然无反关节；躯干与头部蹬踏共振微动；大嘴长喙倒钩与半透明弹性喉囊（内含游动小鱼）；多层视差滚动背景与转动风车；内置 Web Audio 原生合成双音车铃与卡通鸣叫，支持昼夜三套主题与踏频调速",
+    createdAt: "2026-09-16T08:15:00.000Z"
+  },
 
   // ---------- 题目：三合一省 token 版（trilogy-token-saving） ----------
   {
@@ -137,6 +146,15 @@ window.MODEL_RECORDS = [
     src: "results/trilogy-token-saving/codem/index.html",
     note: "孙悟空驾驶舱握操纵杆 + 金箍棒；鹈鹕机翼骑行（IK 蹬踏）+ 展翅托北极熊；秦始皇冕旒骑熊打螺丝，螺丝旋转带火花；腿部判定 ✓（IK 两段腿蹬踏、脚随踏板），其余 checklist 项未逐项判定，整体待判",
     createdAt: "2026-09-16T03:00:00.000Z"
+  },
+  {
+    id: "seed-tri-codem-flight", testId: "trilogy-token-saving",
+    testTitle: "三合一省 token 版（鹈鹕×孙悟空×秦始皇）", testType: "graphic",
+    model: "CodeM (纯 SMIL+CSS 动画版)", channel: "CodeM 会话",
+    date: "2026-09-16", result: "suspect",
+    src: "results/trilogy-token-saving/codem-flight/index.html",
+    note: "CodeM 会话产出「大圣航空·拧螺丝航班 QS-2217」，纯 SVG + SMIL + CSS 动画；元素全部齐全（机头悟空驾驶+机翼鹈鹕车队展翼托熊+熊背始皇手持螺丝刀拧动）；判定 suspect：腿部采用髋关节固定角度摆动（rotate 16°~-16°），与下方独立 360° 自转的曲柄踏板脱节（B❌/D❌）",
+    createdAt: "2026-09-16T08:20:00.000Z"
   },
   {
     id: "seed-tri-muse-spark-1-3", testId: "trilogy-token-saving",
@@ -155,5 +173,14 @@ window.MODEL_RECORDS = [
     src: "results/trilogy-token-saving/gemini-3.8-flash/index.html",
     note: "高精细度 2D SVG 矢量动画：孙悟空驾驶舱手握操纵杆+火眼金睛闪烁+金箍棒备用；机翼涂装警示条纹与巨型涡扇喷气引擎；鹈鹕蹬踏公路车+平展双翼托举北极熊；秦始皇头戴冕旒与劳保护目镜，手持锂电钻高速旋拧机翼塔螺栓带真实火花；支持三套环境主题、原生 Web Audio 音效模拟与 SVG 导出",
     createdAt: "2026-09-16T08:00:00.000Z"
+  },
+  {
+    id: "seed-tri-sol-medium", testId: "trilogy-token-saving",
+    testTitle: "三合一省 token 版（鹈鹕×孙悟空×秦始皇）", testType: "graphic",
+    model: "Sol Medium", channel: "OpenCode 2",
+    date: "2026-09-16", result: "pending",
+    src: "results/trilogy-token-saving/sol-medium/index.html",
+    note: "云端奇航 2D SVG 动画：大型飞机与机翼骑行场景；孙悟空在驾驶舱操控飞机；鹈鹕展翼托举北极熊；秦始皇骑熊旋转螺丝刀并产生火花；含车轮、踏板、机翼、螺旋桨、云层动画及暂停/重新起飞控制",
+    createdAt: "2026-09-16T08:35:00.000Z"
   }
 ];
