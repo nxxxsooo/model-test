@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鹈鹕机翼骑行 · 悟空驾驶 · 始皇熊上打螺丝</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#0b1628;color:#eef;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:18px}
+  h1{font-size:19px;letter-spacing:.5px;margin:6px 0 2px}
+  p.sub{font-size:12.5px;color:#9fb0cc;margin-bottom:12px}
+  .stage{width:min(1180px,96vw);background:linear-gradient(180deg,#7ec8f7 0%,#aee0ff 34%,#e8f6ff 55%,#cfe9ff 62%,#8fb8dd 100%);border-radius:18px;overflow:hidden;box-shadow:0 24px 60px -20px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.25)}
+  svg{display:block;width:100%;height:auto}
+  .panel{width:min(1180px,96vw);display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap;font-size:13px;color:#b9c6de}
+  .panel button{background:#1d2f4d;border:1px solid #35507c;color:#fff;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer}
+  .panel button:hover{background:#2b456e}
+  .legend{background:#111f36;border:1px solid #243a5e;border-radius:12px;padding:10px 14px;font-size:12.5px;line-height:1.8;color:#b9c6de;width:min(1180px,96vw);margin-top:10px}
+  .legend b{color:#fff}
+  /* ---- CSS 动画 ---- */
+  @keyframes drift{from{transform:translateX(1300px)}to{transform:translateX(-320px)}}
+  .cloud{animation:drift linear infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  #planeBob{animation:bob 3.2s ease-in-out infinite}
+  @keyframes propSpin{to{transform:rotate(360deg)}}
+  #prop{transform-origin:1046px 430px;animation:propSpin .45s linear infinite}
+  @keyframes flapL{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(7deg)}}
+  @keyframes flapR{0%,100%{transform:rotate(4deg)}50%{transform:rotate(-7deg)}}
+  #wingL{transform-origin:560px 380px;animation:flapL 1.6s ease-in-out infinite}
+  #wingR{transform-origin:660px 380px;animation:flapR 1.6s ease-in-out infinite}
+  @keyframes pouch{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.08)}}
+  #pouch{transform-origin:640px 340px;animation:pouch 1.6s ease-in-out infinite}
+  @keyframes tailWag{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(14deg)}}
+  #wukongTail{transform-origin:300px 400px;animation:tailWag 1.1s ease-in-out infinite}
+  @keyframes scarf{0%,100%{transform:skewY(0deg)}50%{transform:skewY(7deg) translateY(-3px)}}
+  #scarf{animation:scarf .9s ease-in-out infinite}
+  @keyframes screwSpin{to{transform:rotate(360deg)}}
+  .screwCross{transform-origin:center;transform-box:fill-box;animation:screwSpin 1s linear infinite}
+  @keyframes drillShake{0%,100%{transform:translateY(0)}50%{transform:translateY(1.6px)}}
+  #drillArm{animation:drillShake .18s linear infinite}
+  @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:.15}}
+  .navLight{animation:blink 1.2s steps(1) infinite}
+  @keyframes spark{0%{opacity:0;transform:scale(.4)}30%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:scale(.5) translateY(-8px)}}
+  .spark{animation:spark .8s ease-out infinite}
+  @keyframes flagWave{0%,100%{transform:skewY(0)}50%{transform:skewY(5deg)}}
+  #qinFlag{animation:flagWave 1.4s ease-in-out infinite}
+  @keyframes beadSwing{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+  .beads{transform-origin:top center;transform-box:fill-box;animation:beadSwing 2s ease-in-out infinite}
+  .paused *{animation-play-state:paused !important}
+</style>
+</head>
+<body>
+<h1>🚲 鹈鹕机翼骑行 × 🐵 孙悟空开大飞机 × 🐻‍❄️ 秦始皇骑北极熊打螺丝</h1>
+<p class="sub">精细 SVG · 全 2D 动画：机轮转动 / 曲柄180°双腿蹬踏 / 机翼翅膀扇动 / 螺丝刀打螺丝火花 / 螺旋桨云层飞行</p>
+<div class="stage" id="stage">
+<svg viewBox="0 -145 1200 845" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="鹈鹕骑车在飞机机翼上">
+<defs>
+  <linearGradient id="fus" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#f8fafc"/><stop offset=".45" stop-color="#dbe5f0"/><stop offset="1" stop-color="#9fb0c3"/>
+  </linearGradient>
+  <linearGradient id="wingGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#e6ecf3"/><stop offset="1" stop-color="#a7b6c8"/>
+  </linearGradient>
+  <linearGradient id="pelicanBody" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d9dee6"/>
+  </linearGradient>
+  <radialGradient id="sunG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#fff6c9"/><stop offset=".6" stop-color="#ffdf6b"/><stop offset="1" stop-color="#ffb300" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="bearG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d7e3ee"/>
+  </linearGradient>
+</defs>
+
+<!-- 天空 -->
+<rect x="0" y="0" width="1200" height="470" fill="url(#sunG)" opacity=".35"/>
+<circle cx="150" cy="105" r="46" fill="#ffdf5e"/><circle cx="150" cy="105" r="70" fill="#ffdf5e" opacity=".22"/>
+<g font-family="sans-serif" font-size="26" opacity=".5">
+  <text x="880" y="110">☁ 悟空航空 · WUKONG AIR</text>
+</g>
+<!-- 云 -->
+<g opacity=".95">
+  <g class="cloud" style="animation-duration:46s"><ellipse cx="0" cy="120" rx="70" ry="22" fill="#fff"/><ellipse cx="45" cy="110" rx="50" ry="20" fill="#fff"/><ellipse cx="-45" cy="112" rx="42" ry="17" fill="#fff"/></g>
+  <g class="cloud" style="animation-duration:64s;animation-delay:-20s"><ellipse cx="0" cy="210" rx="90" ry="24" fill="#ffffff" opacity=".9"/><ellipse cx="60" cy="200" rx="55" ry="20" fill="#fff"/></g>
+  <g class="cloud" style="animation-duration:38s;animation-delay:-10s"><ellipse cx="0" cy="70" rx="55" ry="16" fill="#fff" opacity=".85"/></g>
+  <g class="cloud" style="animation-duration:80s;animation-delay:-45s"><ellipse cx="0" cy="300" rx="110" ry="26" fill="#fff" opacity=".7"/></g>
+</g>
+<!-- 远处鸟 -->
+<g stroke="#5b7290" stroke-width="2.5" fill="none" opacity=".7">
+  <path d="M980 180 q8 -8 16 0 q8 -8 16 0"><animate attributeName="d" dur="1.2s" repeatCount="indefinite" values="M980 180 q8 -8 16 0 q8 -8 16 0;M980 184 q8 -12 16 -2 q8 -10 16 -2;M980 180 q8 -8 16 0 q8 -8 16 0"/></path>
+  <path d="M1040 210 q7 -7 14 0 q7 -7 14 0"><animate attributeName="d" dur="1.5s" repeatCount="indefinite" values="M1040 210 q7 -7 14 0 q7 -7 14 0;M1040 214 q7 -11 14 -2 q7 -9 14 -2;M1040 210 q7 -7 14 0 q7 -7 14 0"/></path>
+</g>
+
+<!-- ===== 大飞机（孙悟空驾驶） ===== -->
+<g id="planeBob">
+  <!-- 尾翼 -->
+  <path d="M120 350 L70 250 L130 250 L190 350 Z" fill="#c0392b" stroke="#7d231a" stroke-width="3"/>
+  <text x="86" y="310" font-size="22" fill="#fff" font-weight="900" transform="rotate(-68 86 310)">悟</text>
+  <path d="M120 380 L40 410 L120 420 Z" fill="#8fa1b5" stroke="#5d6f83" stroke-width="3"/>
+  <!-- 机身 -->
+  <rect x="150" y="360" width="880" height="150" rx="72" fill="url(#fus)" stroke="#6b7f95" stroke-width="4"/>
+  <rect x="150" y="440" width="880" height="26" fill="#c0392b"/>
+  <text x="430" y="492" font-size="30" font-weight="900" fill="#fff" letter-spacing="6">孙悟空号 · 齐天大圣航空</text>
+  <!-- 舷窗 -->
+  <g fill="#bfe6ff" stroke="#4a6076" stroke-width="3">
+    <circle cx="420" cy="405" r="17"/><circle cx="470" cy="405" r="17"/><circle cx="520" cy="405" r="17"/><circle cx="570" cy="405" r="17"/><circle cx="660" cy="405" r="17"/><circle cx="710" cy="405" r="17"/><circle cx="760" cy="405" r="17"/>
+  </g>
+  <!-- 驾驶舱 + 孙悟空 -->
+  <path d="M880 365 Q990 365 1030 430 L880 430 Z" fill="#9fd8ff" stroke="#4a6076" stroke-width="4"/>
+  <g id="wukong">
+    <!-- 身体/飞行夹克 -->
+    <path d="M880 430 Q890 390 930 385 L970 385 Q990 395 990 430 Z" fill="#3f6d3a" stroke="#23401f" stroke-width="3"/>
+    <path d="M930 385 L930 430 M950 385 L950 430" stroke="#2a4a28" stroke-width="2"/>
+    <!-- 尾巴 -->
+    <path id="wukongTail" d="M885 415 Q850 420 845 395 Q843 380 855 378" fill="none" stroke="#b07a3f" stroke-width="9" stroke-linecap="round"/>
+    <!-- 猴脸 -->
+    <ellipse cx="940" cy="368" rx="30" ry="28" fill="#d9a05b" stroke="#7a4d1d" stroke-width="3"/>
+    <ellipse cx="940" cy="378" rx="20" ry="16" fill="#f4d3a0"/>
+    <circle cx="930" cy="362" r="6" fill="#fff"/><circle cx="950" cy="362" r="6" fill="#fff"/>
+    <circle cx="930" cy="363" r="2.8" fill="#111"/><circle cx="950" cy="363" r="2.8" fill="#111"/>
+    <ellipse cx="940" cy="382" rx="5" ry="3.5" fill="#7a3b1d"/>
+    <path d="M925 350 Q940 342 955 350" fill="none" stroke="#7a4d1d" stroke-width="2"/>
+    <!-- 紧箍咒 -->
+    <rect x="912" y="344" width="56" height="12" rx="6" fill="#ffd34d" stroke="#a67c00" stroke-width="2.5"/>
+    <circle cx="940" cy="350" r="5" fill="#e33"/>
+    <!-- 雉鸡翎 -->
+    <path d="M920 344 Q905 310 885 300" stroke="#c0392b" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M960 344 Q975 310 995 300" stroke="#c0392b" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <!-- 手握操纵杆 -->
+    <rect x="975" y="400" width="10" height="30" rx="4" fill="#333"/>
+    <circle cx="972" cy="402" r="10" fill="#d9a05b" stroke="#7a4d1d" stroke-width="2.5"/>
+    <circle cx="992" cy="402" r="10" fill="#d9a05b" stroke="#7a4d1d" stroke-width="2.5"/>
+    <!-- 围巾 -->
+    <path id="scarf" d="M910 388 Q870 395 845 385 L850 370 Q880 378 912 375 Z" fill="#e33" stroke="#900" stroke-width="2"/>
+    <!-- 金箍棒背在身后 -->
+    <rect x="895" y="330" width="110" height="10" rx="5" fill="#ffcf3f" stroke="#a67c00" stroke-width="2" transform="rotate(-12 895 330)"/>
+  </g>
+  <!-- 大机翼（自行车骑行面） -->
+  <path d="M380 360 L820 360 L860 330 L340 330 Z" fill="url(#wingGrad)" stroke="#5d6f83" stroke-width="4"/>
+  <path d="M380 360 L820 360 L830 350 L370 350 Z" fill="#c0392b" opacity=".85"/>
+  <g fill="#5d6f83"><circle cx="420" cy="345" r="3"/><circle cx="470" cy="345" r="3"/><circle cx="520" cy="345" r="3"/><circle cx="570" cy="345" r="3"/><circle cx="620" cy="345" r="3"/><circle cx="670" cy="345" r="3"/><circle cx="720" cy="345" r="3"/><circle cx="770" cy="345" r="3"/></g>
+  <circle class="navLight" cx="340" cy="340" r="7" fill="#0f0"/>
+  <circle class="navLight" cx="860" cy="340" r="7" fill="#f00" style="animation-delay:.6s"/>
+  <!-- 发动机 -->
+  <g>
+    <rect x="760" y="500" width="130" height="54" rx="26" fill="#dde6ef" stroke="#5d6f83" stroke-width="4"/>
+    <ellipse cx="765" cy="527" rx="12" ry="22" fill="#33414f"/>
+    <text x="795" y="546" font-size="18" font-weight="800" fill="#4a6076">涡扇·俺老孙</text>
+  </g>
+  <!-- 机头螺旋桨（卡通大飞机混搭，动画明显） -->
+  <g>
+    <ellipse cx="1046" cy="430" rx="16" ry="60" fill="#2c3a49"/>
+    <g id="prop" fill="#f4c542" stroke="#7a4d1d" stroke-width="3">
+      <ellipse cx="1046" cy="375" rx="14" ry="52"/>
+      <ellipse cx="1046" cy="485" rx="14" ry="52"/>
+    </g>
+    <circle cx="1046" cy="430" r="14" fill="#c0392b" stroke="#fff" stroke-width="3"/>
+  </g>
+  <!-- 起落架收起 + 气流线 -->
+  <g stroke="#fff" stroke-width="4" opacity=".7" stroke-linecap="round">
+    <path d="M120 470 H20"><animate attributeName="x1" values="160;60" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values=".7;0" dur="1s" repeatCount="indefinite"/></path>
+    <path d="M120 495 H40"><animate attributeName="x1" values="160;60" dur="1.3s" repeatCount="indefinite"/><animate attributeName="opacity" values=".6;0" dur="1.3s" repeatCount="indefinite"/></path>
+  </g>
+</g>
+
+<!-- 机翼骑行基准线 -->
+<rect x="340" y="326" width="520" height="8" rx="4" fill="#33414f" opacity=".9"/>
+<text x="352" y="318" font-size="14" fill="#33414f" font-weight="700">◀ 机翼骑行道 · WING TRACK ▶</text>
+
+<!-- ===== 自行车 ===== -->
+<g id="bike">
+  <!-- 影子 -->
+  <ellipse cx="600" cy="332" rx="130" ry="8" fill="#000" opacity=".15"/>
+  <!-- 车架 -->
+  <path d="M545 285 L610 285 L585 235 L540 235 Z" fill="none" stroke="#1e88e5" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M585 235 L630 235 L610 285" fill="none" stroke="#1565c0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M630 235 L645 195" stroke="#333" stroke-width="7" stroke-linecap="round"/>
+  <rect x="628" y="182" width="34" height="10" rx="5" fill="#222"/>
+  <path d="M545 285 L520 230" stroke="#1e88e5" stroke-width="7" stroke-linecap="round"/>
+  <rect x="505" y="218" width="32" height="12" rx="6" fill="#4a2c14"/>
+  <!-- 轮子 -->
+  <g id="wheelRear">
+    <circle cx="520" cy="285" r="45" fill="none" stroke="#222" stroke-width="8"/>
+    <circle cx="520" cy="285" r="34" fill="none" stroke="#90a4b8" stroke-width="2"/>
+    <g id="spokesRear" stroke="#90a4b8" stroke-width="2.5">
+      <line x1="520" y1="240" x2="520" y2="330"/><line x1="475" y1="285" x2="565" y2="285"/><line x1="488" y1="253" x2="552" y2="317"/><line x1="552" y1="253" x2="488" y2="317"/>
+    </g>
+    <circle cx="520" cy="285" r="6" fill="#555"/>
+  </g>
+  <g id="wheelFront">
+    <circle cx="655" cy="285" r="45" fill="none" stroke="#222" stroke-width="8"/>
+    <circle cx="655" cy="285" r="34" fill="none" stroke="#90a4b8" stroke-width="2"/>
+    <g id="spokesFront" stroke="#90a4b8" stroke-width="2.5">
+      <line x1="655" y1="240" x2="655" y2="330"/><line x1="610" y1="285" x2="700" y2="285"/><line x1="623" y1="253" x2="687" y2="317"/><line x1="687" y1="253" x2="623" y2="317"/>
+    </g>
+    <circle cx="655" cy="285" r="6" fill="#555"/>
+  </g>
+  <!-- 中轴与曲柄（JS驱动） -->
+  <circle cx="585" cy="285" r="9" fill="#333" stroke="#fff" stroke-width="2"/>
+  <g id="crankNear" stroke="#222" stroke-width="6" stroke-linecap="round"><line id="crankLineNear" x1="585" y1="285" x2="603" y2="285"/></g>
+  <g id="crankFar" stroke="#777" stroke-width="5" stroke-linecap="round"><line id="crankLineFar" x1="585" y1="285" x2="567" y2="285"/></g>
+  <g id="pedalNear"><rect id="pedalRectNear" x="-14" y="-5" width="28" height="10" rx="3" fill="#111"/></g>
+  <g id="pedalFar"><rect id="pedalRectFar" x="-12" y="-4" width="24" height="8" rx="3" fill="#666"/></g>
+</g>
+
+<!-- ===== 鹈鹕（骑车 + 展翅托熊） ===== -->
+<g id="pelican">
+  <!-- 远侧腿（深色，先画） -->
+  <polyline id="legFar" points="" fill="none" stroke="#8a6a45" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 身体 -->
+  <ellipse cx="600" cy="190" rx="72" ry="52" fill="url(#pelicanBody)" stroke="#8b96a5" stroke-width="3.5"/>
+  <path d="M540 200 Q560 240 600 242 Q645 240 660 200 Q640 228 600 230 Q560 228 540 200" fill="#c8cfd8"/>
+  <!-- 尾巴 -->
+  <path d="M532 185 L495 170 L500 190 L492 200 L530 205 Z" fill="#e8ecf1" stroke="#8b96a5" stroke-width="2.5"/>
+  <!-- 脖子+头 -->
+  <path d="M650 170 Q680 150 690 120 Q695 105 685 95" fill="none" stroke="#f2f4f7" stroke-width="26" stroke-linecap="round"/>
+  <path d="M650 170 Q680 150 690 120 Q695 105 685 95" fill="none" stroke="#8b96a5" stroke-width="26" stroke-linecap="round" opacity=".25"/>
+  <ellipse cx="682" cy="92" rx="26" ry="22" fill="#fff" stroke="#8b96a5" stroke-width="3"/>
+  <circle cx="689" cy="88" r="6" fill="#fff" stroke="#333" stroke-width="2"/><circle cx="690" cy="89" r="2.6" fill="#111"/>
+  <path d="M668 78 Q682 68 696 76" fill="#ff9d9d" stroke="#c66" stroke-width="2"/>
+  <!-- 长喙 + 喉囊 -->
+  <path d="M700 86 L800 105 L700 118 Z" fill="#ff9d2e" stroke="#a85e00" stroke-width="3" stroke-linejoin="round"/>
+  <path id="pouch" d="M702 112 Q750 150 795 108 Q760 128 702 112" fill="#ffb45e" stroke="#a85e00" stroke-width="2.5"/>
+  <circle cx="796" cy="105" r="5" fill="#a85e00"/>
+  <!-- 近侧腿 -->
+  <polyline id="legNear" points="" fill="none" stroke="#c99a5b" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <g id="footNear"><ellipse rx="13" ry="7" fill="#e09a2b" stroke="#7a4d1d" stroke-width="2"/></g>
+  <g id="footFar"><ellipse rx="11" ry="6" fill="#8a6a45"/></g>
+  <!-- 展开的翅膀（托举北极熊） -->
+  <g id="wingL">
+    <path d="M560 170 Q480 140 420 80 Q410 70 418 62 Q470 90 500 100 Q460 80 440 55 Q436 46 446 44 Q490 65 520 80 Q505 55 500 35 Q500 26 510 28 Q545 55 570 90 Q580 120 575 160 Z" fill="#f7f9fb" stroke="#8b96a5" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M555 160 Q500 130 460 95" stroke="#8b96a5" stroke-width="2" fill="none"/>
+  </g>
+  <g id="wingR">
+    <path d="M645 170 Q725 140 785 80 Q795 70 787 62 Q735 90 705 100 Q745 80 765 55 Q769 46 759 44 Q715 65 685 80 Q700 55 705 35 Q705 26 695 28 Q660 55 635 90 Q625 120 630 160 Z" fill="#f7f9fb" stroke="#8b96a5" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M650 160 Q705 130 745 95" stroke="#8b96a5" stroke-width="2" fill="none"/>
+  </g>
+  <!-- 翅膀托盘 -->
+  <ellipse cx="602" cy="52" rx="150" ry="14" fill="#8b5a2b" stroke="#4a2c14" stroke-width="3"/>
+  <ellipse cx="602" cy="47" rx="150" ry="12" fill="#c98d4b"/>
+</g>
+
+<!-- ===== 北极熊 + 秦始皇打螺丝 ===== -->
+<g id="bearUnit">
+  <!-- 北极熊 -->
+  <ellipse cx="602" cy="38" rx="78" ry="30" fill="url(#bearG)" stroke="#7d93ab" stroke-width="3"/>
+  <ellipse cx="550" cy="30" rx="22" ry="24" fill="url(#bearG)" stroke="#7d93ab" stroke-width="3"/>
+  <circle cx="544" cy="26" r="3" fill="#111"/><circle cx="536" cy="36" r="5" fill="#333"/>
+  <ellipse cx="560" cy="55" rx="14" ry="16" fill="#eef4f9" stroke="#7d93ab" stroke-width="2.5"/>
+  <ellipse cx="645" cy="55" rx="14" ry="16" fill="#eef4f9" stroke="#7d93ab" stroke-width="2.5"/>
+  <ellipse cx="600" cy="60" rx="16" ry="10" fill="#eef4f9" stroke="#7d93ab" stroke-width="2.5"/>
+  <ellipse cx="670" cy="40" rx="18" ry="14" fill="url(#bearG)" stroke="#7d93ab" stroke-width="2.5"/>
+  <!-- 秦始皇 -->
+  <g id="qin">
+    <!-- 盔甲袍 -->
+    <path d="M585 30 L620 30 L630 0 L640 -30 L570 -30 L575 0 Z" fill="#1c1c1e" stroke="#d4af37" stroke-width="3"/>
+    <path d="M592 0 L618 0 L622 -22 L588 -22 Z" fill="#d4af37"/>
+    <text x="594" y="-6" font-size="13" font-weight="900" fill="#111">秦</text>
+    <!-- 头 -->
+    <circle cx="605" cy="-44" r="16" fill="#f2c89b" stroke="#7a4d1d" stroke-width="2.5"/>
+    <path d="M592 -48 Q605 -55 618 -48" stroke="#333" stroke-width="2" fill="none"/>
+    <circle cx="599" cy="-44" r="2" fill="#111"/><circle cx="611" cy="-44" r="2" fill="#111"/>
+    <!-- 冕旒 -->
+    <rect x="585" y="-68" width="40" height="12" rx="3" fill="#111" stroke="#d4af37" stroke-width="2.5"/>
+    <g class="beads" stroke="#d4af37" stroke-width="1.5">
+      <line x1="588" y1="-56" x2="588" y2="-44"/><line x1="594" y1="-56" x2="594" y2="-44"/><line x1="600" y1="-56" x2="600" y2="-44"/><line x1="606" y1="-56" x2="606" y2="-44"/><line x1="612" y1="-56" x2="612" y2="-44"/><line x1="618" y1="-56" x2="618" y2="-44"/><line x1="622" y1="-56" x2="622" y2="-44"/>
+      <circle cx="588" cy="-42" r="2" fill="#0a84ff"/><circle cx="594" cy="-42" r="2" fill="#0a84ff"/><circle cx="600" cy="-42" r="2" fill="#0a84ff"/><circle cx="606" cy="-42" r="2" fill="#0a84ff"/><circle cx="612" cy="-42" r="2" fill="#0a84ff"/><circle cx="618" cy="-42" r="2" fill="#0a84ff"/><circle cx="622" cy="-42" r="2" fill="#0a84ff"/>
+    </g>
+    <!-- 打螺丝手臂 + 电动螺丝刀 -->
+    <g id="drillArm">
+      <path d="M620 -18 L660 -5" stroke="#1c1c1e" stroke-width="12" stroke-linecap="round"/>
+      <circle cx="660" cy="-5" r="8" fill="#f2c89b" stroke="#7a4d1d" stroke-width="2"/>
+      <rect x="658" y="-14" width="42" height="18" rx="5" fill="#ff5a1f" stroke="#7d231a" stroke-width="2.5" transform="rotate(18 658 -5)"/>
+      <rect x="696" y="-8" width="26" height="6" fill="#bbb" stroke="#555" stroke-width="2" transform="rotate(18 696 -8)"/>
+    </g>
+    <!-- 螺丝 + 金属板 -->
+    <rect x="718" y="2" width="56" height="14" rx="3" fill="#9fb0c3" stroke="#4a6076" stroke-width="2.5"/>
+    <g transform="translate(745,2)">
+      <rect x="-4" y="-22" width="8" height="24" fill="#c0cddc" stroke="#4a6076" stroke-width="2"/>
+      <g class="screwCross" font-size="16" font-weight="900" fill="#33414f" text-anchor="middle"><text x="0" y="-22">✚</text></g>
+    </g>
+    <!-- 火花 -->
+    <g fill="#ffcf00" stroke="#ff7b00" stroke-width="1.5">
+      <path class="spark" d="M745 -18 l5 -9 3 9 9 3 -9 3 -3 9 -5 -9 -9 -3 Z" style="animation-delay:0s"/>
+      <path class="spark" d="M762 -12 l4 -7 2 7 7 2 -7 2 -2 7 -4 -7 -7 -2 Z" style="animation-delay:.25s"/>
+      <path class="spark" d="M730 -12 l4 -7 2 7 7 2 -7 2 -2 7 -4 -7 -7 -2 Z" style="animation-delay:.5s"/>
+    </g>
+    <!-- 秦旗 -->
+    <path d="M572 -30 L572 -78" stroke="#5b3a00" stroke-width="4"/>
+    <path id="qinFlag" d="M572 -78 L530 -72 L530 -44 L572 -50 Z" fill="#111" stroke="#d4af37" stroke-width="2"/>
+    <text x="538" y="-56" font-size="15" font-weight="900" fill="#d4af37">秦</text>
+  </g>
+</g>
+
+<!-- 地面远景 -->
+<rect x="0" y="560" width="1200" height="140" fill="#6fa8d6"/>
+<rect x="0" y="560" width="1200" height="10" fill="#4a7ba6"/>
+<g opacity=".8">
+  <rect x="80" y="600" width="90" height="50" fill="#3f6d8e"/><rect x="220" y="615" width="70" height="35" fill="#4a7ba6"/>
+  <rect x="900" y="605" width="110" height="45" fill="#3f6d8e"/><rect x="1030" y="620" width="80" height="30" fill="#4a7ba6"/>
+  <path d="M0 560 Q300 545 600 560 T1200 560 L1200 570 L0 570 Z" fill="#7fc36a"/>
+</g>
+<text x="24" y="690" font-size="15" fill="#0b2440" font-weight="700">高度 10,000 米 · 鹈鹕稳稳骑行 · 螺丝稳稳拧紧 · 朕的江山稳稳飞行</text>
+<text x="880" y="690" font-size="15" fill="#0b2440" font-weight="700">MUSE SPARK · 2D SVG ANIMATION</text>
+</svg>
+</div>
+
+<div class="panel">
+  <button id="btnPause">⏸ 暂停 / 播放</button>
+  <button id="btnSlow">🐢 慢动作</button>
+  <button id="btnFast">🚀 加速蹬</button>
+  <span id="stat">曲柄 0° · 双脚相位差 180° · 螺丝转速正常</span>
+</div>
+
+<div class="legend">
+<b>画面解说：</b>孙悟空在机头驾驶舱开大型客机（螺旋桨+涡扇双动力）→ 银色大机翼上有一条骑行道 →
+<b>鹈鹕</b>坐车座、长喙喉囊迎风、双翅展开托着金色托盘 →
+托盘上<b>北极熊</b>稳稳站立、<b>秦始皇（黑袍金甲+冕旒+秦旗）</b>骑在熊背上，手持橙色电动螺丝刀给钢板<b>打螺丝</b>（✚螺丝旋转+火花四溅）。
+<b>动画核验点：</b>轮辐旋转、曲柄双脚180°反相、膝盖折点双段腿、翅膀扇动、喉囊起伏、尾巴/围巾飘动、螺丝旋转、云层后退。
+</div>
+
+<script>
+const T = {angle:0, speed:2.4, running:true, slow:false};
+const C = {x:585, y:285}, RC = 19, L1 = 62, L2 = 64;
+const HIP_NEAR = {x:592, y:212}, HIP_FAR = {x:578, y:214};
+const $ = id => document.getElementById(id);
+
+function ik(H, P){
+  let dx = P.x-H.x, dy = P.y-H.y;
+  let d = Math.hypot(dx,dy);
+  d = Math.min(d, L1+L2-1); d = Math.max(d, 12);
+  const a1 = Math.acos(Math.min(1,Math.max(-1,(L1*L1+d*d-L2*L2)/(2*L1*d))));
+  const base = Math.atan2(dy,dx);
+  // 膝盖朝前（+x方向偏置）
+  const ang = base - a1;
+  const K = {x:H.x+L1*Math.cos(ang), y:H.y+L1*Math.sin(ang)};
+  // 若膝盖朝后则翻转
+  if(K.x < H.x-10){ const ang2 = base + a1; return {x:H.x+L1*Math.cos(ang2), y:H.y+L1*Math.sin(ang2)}; }
+  return K;
+}
+function setLine(el, ax,ay,bx,by){ el.setAttribute('points', `${ax},${ay} ${bx},${by} ${arguments[4]||''}`); }
+let last = performance.now();
+function frame(now){
+  const dt = Math.min(.05,(now-last)/1000); last = now;
+  if(T.running){
+    T.angle += dt * T.speed;
+    const aN = T.angle, aF = T.angle + Math.PI;
+    const pN = {x:C.x+RC*Math.cos(aN), y:C.y+RC*Math.sin(aN)};
+    const pF = {x:C.x+RC*Math.cos(aF), y:C.y+RC*Math.sin(aF)};
+    // 曲柄+脚踏
+    $('crankLineNear').setAttribute('x2',pN.x); $('crankLineNear').setAttribute('y2',pN.y);
+    $('crankLineFar').setAttribute('x2',pF.x); $('crankLineFar').setAttribute('y2',pF.y);
+    $('pedalNear').setAttribute('transform',`translate(${pN.x} ${pN.y})`);
+    $('pedalFar').setAttribute('transform',`translate(${pF.x} ${pF.y})`);
+    // 腿部 IK
+    const kN = ik(HIP_NEAR,pN), kF = ik(HIP_FAR,pF);
+    $('legNear').setAttribute('points',`${HIP_NEAR.x},${HIP_NEAR.y} ${kN.x},${kN.y} ${pN.x},${pN.y}`);
+    $('legFar').setAttribute('points',`${HIP_FAR.x},${HIP_FAR.y} ${kF.x},${kF.y} ${pF.x},${pF.y}`);
+    $('footNear').setAttribute('transform',`translate(${pN.x} ${pN.y-4}) rotate(${-8+6*Math.sin(aN)})`);
+    $('footFar').setAttribute('transform',`translate(${pF.x} ${pF.y-4})`);
+    // 轮子
+    const w = -T.angle*3.1*57.29;
+    $('spokesRear').setAttribute('transform',`rotate(${w} 520 285)`);
+    $('spokesFront').setAttribute('transform',`rotate(${w} 655 285)`);
+    // 车身+鹈鹕+熊 轻微起伏（与蹬踏同频）
+    const bob = Math.sin(T.angle*2)*2.2;
+    $('pelican').setAttribute('transform',`translate(0 ${bob*.6})`);
+    $('bearUnit').setAttribute('transform',`translate(0 ${bob*.6-4+Math.sin(T.angle*2+1)*1.5})`);
+    $('bike').setAttribute('transform',`translate(0 ${Math.sin(T.angle*2)*1.2})`);
+    const deg = Math.round((T.angle*57.29)%360);
+    $('stat').textContent = `曲柄 ${deg}° · 双脚相位差 180° · 螺丝转速正常 · ${T.slow?'慢动作':'正常速度'} · 速度×${T.speed.toFixed(1)}`;
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+$('btnPause').onclick = ()=>{ T.running=!T.running; document.getElementById('stage').classList.toggle('paused',!T.running); $('btnPause').textContent = T.running?'⏸ 暂停 / 播放':'▶ 继续播放'; last=performance.now(); };
+$('btnSlow').onclick = ()=>{ T.slow=!T.slow; T.speed = T.slow?0.7:2.4; };
+$('btnFast').onclick = ()=>{ T.speed = T.speed>4?2.4:T.speed+1.2; };
+</script>
+</body>
+</html>
