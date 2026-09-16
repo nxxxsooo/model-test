@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>万米高空：鹈鹕骑行·始皇打螺丝·大圣巡航</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --panel-bg: rgba(15, 23, 42, 0.75);
+      --accent: #f59e0b;
+      --accent-glow: rgba(245, 158, 11, 0.4);
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #090d16;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #stage-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #020617;
+    }
+
+    svg#main-svg {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.6));
+    }
+
+    /* Glassmorphism Control Panel */
+    .control-panel {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 16px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      z-index: 50;
+      max-width: 360px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fbbf24;
+      text-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+    }
+
+    .badge {
+      font-size: 10px;
+      background: rgba(245, 158, 11, 0.2);
+      color: #f59e0b;
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      font-weight: 600;
+    }
+
+    .control-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e2e8f0;
+      padding: 7px 12px;
+      font-size: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .btn.active {
+      background: #f59e0b;
+      color: #0f172a;
+      border-color: #fbbf24;
+      font-weight: 700;
+      box-shadow: 0 0 14px var(--accent-glow);
+    }
+
+    .speed-slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .speed-slider {
+      flex: 1;
+      height: 4px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .speed-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #f59e0b;
+      cursor: pointer;
+      box-shadow: 0 0 8px #f59e0b;
+      transition: transform 0.15s;
+    }
+
+    .speed-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Dialogue Banner Bottom */
+    .dialogue-box {
+      position: absolute;
+      bottom: 24px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      padding: 12px 24px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 50;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      max-width: 80%;
+    }
+
+    .dialogue-box:hover {
+      transform: translateY(-2px);
+      border-color: rgba(245, 158, 11, 0.6);
+      box-shadow: 0 12px 40px rgba(245, 158, 11, 0.2);
+    }
+
+    .avatar-tag {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f172a;
+      background: #f59e0b;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+    }
+
+    .dialogue-text {
+      font-size: 14px;
+      color: #f1f5f9;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      transition: opacity 0.25s;
+    }
+
+    .dialogue-hint {
+      font-size: 11px;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+
+    /* Keyframe Animations inside CSS for SVG elements */
+    @keyframes cloudDriftFast {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-1600px); }
+    }
+
+    @keyframes cloudDriftSlow {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-1600px); }
+    }
+
+    @keyframes speedLineLoop {
+      0% { transform: translateX(1800px) skewX(-20deg); opacity: 0; }
+      20% { opacity: 0.9; }
+      80% { opacity: 0.9; }
+      100% { transform: translateX(-400px) skewX(-20deg); opacity: 0; }
+    }
+
+    @keyframes planeHover {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(-3px, -5px) rotate(-0.3deg); }
+      50% { transform: translate(2px, 3px) rotate(0.2deg); }
+      75% { transform: translate(-2px, -3px) rotate(-0.15deg); }
+    }
+
+    @keyframes pedalRotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes wheelSpin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(-360deg); }
+    }
+
+    @keyframes wingFlapWave {
+      0%, 100% { transform: rotate(0deg) scaleY(1); }
+      50% { transform: rotate(1.5deg) scaleY(0.96); }
+    }
+
+    @keyframes drillVibrate {
+      0%, 100% { transform: translate(0, 0); }
+      25% { transform: translate(1px, -1px); }
+      50% { transform: translate(-1.5px, 0.5px); }
+      75% { transform: translate(1.5px, -0.5px); }
+    }
+
+    @keyframes crownTassels {
+      0%, 100% { transform: rotate(0deg) skewX(0deg); }
+      50% { transform: rotate(-8deg) skewX(5deg); }
+    }
+
+    @keyframes capeFlap {
+      0%, 100% { transform: rotate(0deg) scaleX(1); }
+      50% { transform: rotate(-3deg) scaleX(1.03); }
+    }
+
+    @keyframes wukongGaze {
+      0%, 90%, 100% { opacity: 0.85; filter: drop-shadow(0 0 4px #fbbf24); }
+      95% { opacity: 1; filter: drop-shadow(0 0 12px #f59e0b); }
+    }
+
+    @keyframes turbineGlow {
+      0%, 100% { opacity: 0.75; }
+      50% { opacity: 0.95; }
+    }
+
+    @keyframes sparkFlicker {
+      0%, 100% { opacity: 0.9; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.6); }
+    }
+
+    @keyframes strobeBlink {
+      0%, 88%, 94%, 100% { opacity: 0.1; }
+      90%, 92% { opacity: 1; filter: drop-shadow(0 0 8px #ffffff); }
+    }
+
+    .anim-plane {
+      animation: planeHover 3.2s ease-in-out infinite;
+      transform-origin: 800px 500px;
+    }
+
+    .anim-wheel {
+      animation: wheelSpin 0.35s linear infinite;
+      transform-origin: center;
+    }
+
+    .anim-pedal {
+      animation: pedalRotate 0.45s linear infinite;
+      transform-origin: center;
+    }
+
+    .anim-drill {
+      animation: drillVibrate 0.08s linear infinite;
+      transform-origin: 1045px 540px;
+    }
+
+    .anim-crown-beads {
+      animation: crownTassels 0.5s ease-in-out infinite alternate;
+      transform-origin: 1045px 335px;
+    }
+
+    .anim-cape {
+      animation: capeFlap 0.4s ease-in-out infinite alternate;
+      transform-origin: 1030px 420px;
+    }
+
+    .anim-wukong-eyes {
+      animation: wukongGaze 2.5s ease-in-out infinite;
+    }
+
+    .anim-turbine {
+      animation: turbineGlow 1.2s ease-in-out infinite;
+    }
+
+    .anim-strobe {
+      animation: strobeBlink 1.6s infinite;
+    }
+
+    .anim-spark {
+      animation: sparkFlicker 0.1s ease-in-out infinite alternate;
+    }
+
+    /* Wing flutter */
+    .pelican-left-wing {
+      animation: wingFlapWave 0.7s ease-in-out infinite;
+      transform-origin: 750px 550px;
+    }
+    .pelican-right-wing {
+      animation: wingFlapWave 0.7s ease-in-out infinite 0.1s;
+      transform-origin: 920px 550px;
+    }
+
+    /* Sound notification toast */
+    .toast {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="stage-container">
+    <!-- Main High-Definition Animated SVG -->
+    <svg id="main-svg" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Gradients for Sky Themes -->
+        <linearGradient id="sky-sunset" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#0b1026" />
+          <stop offset="25%" stop-color="#2a1b4e" />
+          <stop offset="50%" stop-color="#78295a" />
+          <stop offset="70%" stop-color="#bf4343" />
+          <stop offset="85%" stop-color="#ea7333" />
+          <stop offset="100%" stop-color="#fdbb43" />
+        </linearGradient>
+
+        <linearGradient id="sky-day" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#0284c7" />
+          <stop offset="40%" stop-color="#38bdf8" />
+          <stop offset="75%" stop-color="#bae6fd" />
+          <stop offset="100%" stop-color="#f0f9ff" />
+        </linearGradient>
+
+        <linearGradient id="sky-night" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#020617" />
+          <stop offset="40%" stop-color="#090d21" />
+          <stop offset="75%" stop-color="#141838" />
+          <stop offset="100%" stop-color="#1e1b4b" />
+        </linearGradient>
+
+        <!-- Sun Glow -->
+        <radialGradient id="sun-glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#fffbeb" stop-opacity="1" />
+          <stop offset="30%" stop-color="#fde047" stop-opacity="0.8" />
+          <stop offset="60%" stop-color="#f97316" stop-opacity="0.3" />
+          <stop offset="100%" stop-color="#f97316" stop-opacity="0" />
+        </radialGradient>
+
+        <!-- Aircraft Metal Gradients -->
+        <linearGradient id="plane-hull-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f8fafc" />
+          <stop offset="35%" stop-color="#cbd5e1" />
+          <stop offset="70%" stop-color="#94a3b8" />
+          <stop offset="100%" stop-color="#475569" />
+        </linearGradient>
+
+        <linearGradient id="wing-top-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#f1f5f9" />
+          <stop offset="25%" stop-color="#e2e8f0" />
+          <stop offset="60%" stop-color="#94a3b8" />
+          <stop offset="100%" stop-color="#475569" />
+        </linearGradient>
+
+        <linearGradient id="engine-intake-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#1e293b" />
+          <stop offset="30%" stop-color="#334155" />
+          <stop offset="70%" stop-color="#0f172a" />
+          <stop offset="100%" stop-color="#020617" />
+        </linearGradient>
+
+        <radialGradient id="jet-flame" cx="20%" cy="50%" r="80%">
+          <stop offset="0%" stop-color="#ffffff" />
+          <stop offset="20%" stop-color="#67e8f9" />
+          <stop offset="50%" stop-color="#0284c7" />
+          <stop offset="80%" stop-color="#3b82f6" stop-opacity="0.4" />
+          <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0" />
+        </radialGradient>
+
+        <!-- Cockpit Glass Gradient -->
+        <linearGradient id="cockpit-glass" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.85" />
+          <stop offset="40%" stop-color="#0369a1" stop-opacity="0.75" />
+          <stop offset="100%" stop-color="#082f49" stop-opacity="0.95" />
+        </linearGradient>
+
+        <!-- Gold / Emperor Gradients -->
+        <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#fef08a" />
+          <stop offset="40%" stop-color="#f59e0b" />
+          <stop offset="80%" stop-color="#b45309" />
+          <stop offset="100%" stop-color="#78350f" />
+        </linearGradient>
+
+        <linearGradient id="qin-robe-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#18181b" />
+          <stop offset="50%" stop-color="#09090b" />
+          <stop offset="100%" stop-color="#27272a" />
+        </linearGradient>
+
+        <!-- Polar Bear Fur Gradient -->
+        <linearGradient id="bear-fur" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" />
+          <stop offset="60%" stop-color="#f1f5f9" />
+          <stop offset="100%" stop-color="#cbd5e1" />
+        </linearGradient>
+
+        <!-- Pelican Feathers Gradient -->
+        <linearGradient id="pelican-body" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" />
+          <stop offset="70%" stop-color="#f8fafc" />
+          <stop offset="100%" stop-color="#e2e8f0" />
+        </linearGradient>
+
+        <linearGradient id="pelican-beak" x1="0%" y1="0%" x2="100%" y2="50%">
+          <stop offset="0%" stop-color="#fbbf24" />
+          <stop offset="40%" stop-color="#f97316" />
+          <stop offset="100%" stop-color="#ea580c" />
+        </linearGradient>
+
+        <linearGradient id="pelican-pouch" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#fed7aa" />
+          <stop offset="60%" stop-color="#fba575" />
+          <stop offset="100%" stop-color="#f97316" />
+        </linearGradient>
+
+        <!-- Spark Gradient -->
+        <radialGradient id="spark-glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffffff" />
+          <stop offset="40%" stop-color="#fde047" />
+          <stop offset="75%" stop-color="#ea580c" />
+          <stop offset="100%" stop-color="#ea580c" stop-opacity="0" />
+        </radialGradient>
+
+        <!-- Filters -->
+        <filter id="glow-heavy" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+
+        <filter id="glow-subtle" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+
+        <filter id="spark-blur">
+          <feGaussianBlur stdDeviation="1.5" />
+        </filter>
+
+        <!-- Pattern: Caution Stripes for Aircraft Wing -->
+        <pattern id="caution-stripes" width="20" height="20" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+          <line x1="0" y1="0" x2="0" y2="20" stroke="#fbbf24" stroke-width="10" />
+          <line x1="10" y1="0" x2="10" y2="20" stroke="#1e293b" stroke-width="10" />
+        </pattern>
+      </defs>
+
+      <!-- ================= 1. SKY & BACKGROUND LAYER ================= -->
+      <g id="sky-bg">
+        <rect id="sky-rect" x="0" y="0" width="1600" height="900" fill="url(#sky-sunset)" />
+        
+        <!-- Giant Sun Setting on Horizon -->
+        <circle id="setting-sun" cx="1350" cy="480" r="140" fill="url(#sun-glow)" opacity="0.85" />
+
+        <!-- Distant Mountain Ranges (Earth Horizon Below) -->
+        <path d="M 0,820 Q 300,760 650,810 T 1200,780 Q 1450,750 1600,820 L 1600,900 L 0,900 Z" fill="#2d1537" opacity="0.7" />
+        <path d="M 0,850 Q 400,810 850,845 T 1600,830 L 1600,900 L 0,900 Z" fill="#1b0c26" opacity="0.9" />
+
+        <!-- Animated Parallax Cloud Layers (SVG native + CSS drift) -->
+        <g id="cloud-layer-back" opacity="0.35">
+          <!-- Back repeating clouds -->
+          <g class="drift-slow">
+            <path d="M -200,320 Q -150,280 -80,300 Q 0,260 70,290 Q 150,270 200,320 L 220,380 L -220,380 Z" fill="#fbcfe8" />
+            <path d="M 300,240 Q 370,190 460,220 Q 540,180 620,220 Q 700,200 760,250 L 780,310 L 280,310 Z" fill="#fde047" opacity="0.6" />
+            <path d="M 850,380 Q 920,330 1020,360 Q 1120,320 1200,360 Q 1280,330 1340,390 L 1360,450 L 830,450 Z" fill="#fda4af" />
+            <path d="M 1400,280 Q 1460,240 1540,260 Q 1610,230 1680,265 T 1800,290 L 1800,360 L 1380,360 Z" fill="#fed7aa" />
+          </g>
+        </g>
+
+        <!-- Midground High Speed Wind Streaks -->
+        <g id="speed-lines" opacity="0.45">
+          <line x1="1600" y1="120" x2="1100" y2="120" stroke="#ffffff" stroke-width="2" stroke-dasharray="140 40 80 120" stroke-linecap="round" style="animation: speedLineLoop 1.2s linear infinite;" />
+          <line x1="1500" y1="260" x2="800" y2="260" stroke="#ffffff" stroke-width="3" stroke-dasharray="200 80 60 140" stroke-linecap="round" style="animation: speedLineLoop 0.85s linear infinite 0.2s;" />
+          <line x1="1700" y1="410" x2="900" y2="410" stroke="#fde047" stroke-width="2.5" stroke-dasharray="160 50 120 70" stroke-linecap="round" style="animation: speedLineLoop 0.95s linear infinite 0.4s;" />
+          <line x1="1650" y1="680" x2="700" y2="680" stroke="#ffffff" stroke-width="2" stroke-dasharray="180 90" stroke-linecap="round" style="animation: speedLineLoop 1.1s linear infinite 0.1s;" />
+        </g>
+      </g>
+
+      <!-- ================= 2. GIANT AIRPLANE & WUKONG ================= -->
+      <g id="airplane-world" class="anim-plane">
+        
+        <!-- Giant Turbofan Jet Engine Under Wing (Left bottom) -->
+        <g id="jet-engine" transform="translate(180, 520)">
+          <!-- Engine Pylon -->
+          <path d="M 180,0 L 220,-80 L 260,-80 L 240,0 Z" fill="#475569" stroke="#334155" stroke-width="2" />
+          
+          <!-- Jet Exhaust Flame Core -->
+          <ellipse cx="60" cy="70" rx="140" ry="32" fill="url(#jet-flame)" filter="url(#glow-heavy)" opacity="0.85" style="animation: turbineGlow 0.4s infinite alternate;" />
+          <polygon points="60,45 -80,70 60,95" fill="#e0f2fe" opacity="0.6" filter="url(#glow-subtle)" />
+          
+          <!-- Nacelle Body -->
+          <ellipse cx="220" cy="70" rx="150" ry="60" fill="url(#engine-intake-grad)" stroke="#64748b" stroke-width="3" />
+          <!-- Engine Intake Cowl Ring -->
+          <ellipse cx="330" cy="70" rx="35" ry="58" fill="#0f172a" stroke="#cbd5e1" stroke-width="5" />
+          
+          <!-- Spinning Fan Spinner & Blades -->
+          <ellipse cx="330" cy="70" rx="15" ry="24" fill="#38bdf8" class="anim-turbine" />
+          <path d="M 330,46 Q 315,70 330,94 M 320,52 Q 330,70 340,88 M 340,52 Q 330,70 320,88" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" />
+          
+          <!-- Engine Details: Warning Stencil & Panel Lines -->
+          <line x1="160" y1="30" x2="160" y2="110" stroke="#475569" stroke-width="2" />
+          <line x1="240" y1="20" x2="240" y2="120" stroke="#475569" stroke-width="2" />
+          <rect x="200" y="60" width="30" height="14" fill="#dc2626" rx="2" />
+          <text x="215" y="70" fill="#ffffff" font-size="7" font-weight="bold" text-anchor="middle" letter-spacing="1">DANGER</text>
+        </g>
+
+        <!-- Huge Main Wing Extending Horizontally -->
+        <g id="main-wing">
+          <!-- Lower wing underbelly shadow -->
+          <path d="M 0,550 L 520,490 L 1520,620 L 1520,670 L 1200,720 L 0,690 Z" fill="#334155" opacity="0.8" />
+
+          <!-- Main Wing Top Aerodynamic Surface -->
+          <path d="M 0,520 L 540,470 L 1540,610 L 1500,660 L 680,680 L 0,660 Z" fill="url(#wing-top-grad)" stroke="#64748b" stroke-width="2" />
+
+          <!-- Wing Seam Panels and Rivet Lines -->
+          <line x1="450" y1="480" x2="520" y2="675" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 3" />
+          <line x1="720" y1="505" x2="790" y2="675" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 3" />
+          <line x1="990" y1="535" x2="1060" y2="670" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 3" />
+          <line x1="1260" y1="575" x2="1310" y2="665" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 3" />
+          
+          <!-- Wing Caution Walkway & "NO STEP" Zone -->
+          <polygon points="560,530 1420,640 1400,665 540,555" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="14 8" />
+          <rect x="700" y="550" width="140" height="12" fill="url(#caution-stripes)" opacity="0.85" rx="2" />
+          <text x="770" y="559" fill="#000" font-size="8" font-weight="900" font-family="monospace" text-anchor="middle">NO STEP / 严禁践踏</text>
+
+          <rect x="1120" y="605" width="130" height="12" fill="url(#caution-stripes)" opacity="0.85" rx="2" />
+          <text x="1185" y="614" fill="#000" font-size="8" font-weight="900" font-family="monospace" text-anchor="middle">WING HAZARD / 机翼作业区</text>
+
+          <!-- Wingtip Winglet (Far Right) with Strobe Light -->
+          <path d="M 1520,610 L 1570,520 L 1585,525 L 1540,650 Z" fill="url(#plane-hull-grad)" stroke="#475569" stroke-width="2" />
+          <!-- Green Strobe / Nav Light on starboard wingtip -->
+          <circle cx="1575" cy="522" r="8" fill="#22c55e" class="anim-strobe" />
+          <circle cx="1575" cy="522" r="3" fill="#ffffff" />
+        </g>
+
+        <!-- Airplane Fuselage & Nose (Upper Left) -->
+        <g id="fuselage" transform="translate(-80, 100)">
+          <!-- Main Body Contour -->
+          <path d="M 0,220 C 150,180 320,180 480,240 C 580,280 660,340 720,440 L 480,480 C 350,420 180,400 0,420 Z" fill="url(#plane-hull-grad)" stroke="#475569" stroke-width="3" />
+          
+          <!-- Decorative Livery Speed Stripes (Chinese Red & Imperial Gold) -->
+          <path d="M 0,280 C 180,260 360,270 520,330 C 580,355 640,390 670,440 L 640,440 C 610,400 550,370 490,345 C 340,290 180,280 0,300 Z" fill="#dc2626" />
+          <path d="M 0,305 C 180,285 360,295 500,350 L 480,362 C 340,315 180,305 0,320 Z" fill="#fbbf24" />
+
+          <!-- Aircraft Cabin Windows -->
+          <g fill="#0f172a" stroke="#94a3b8" stroke-width="1.5">
+            <rect x="360" y="325" width="16" height="24" rx="8" />
+            <rect x="400" y="338" width="16" height="24" rx="8" />
+            <rect x="440" y="352" width="16" height="24" rx="8" />
+            <rect x="480" y="368" width="16" height="24" rx="8" />
+          </g>
+
+          <!-- Large Cockpit Windshield Frame -->
+          <path d="M 230,225 C 290,220 360,240 420,280 L 395,330 C 340,300 280,285 220,285 Z" fill="#0f172a" stroke="#334155" stroke-width="4" />
+          
+          <!-- Cockpit Glass Window (Translucent Interior) -->
+          <path d="M 235,230 C 290,225 355,245 410,282 L 390,325 C 340,295 285,280 228,280 Z" fill="url(#cockpit-glass)" />
+
+          <!-- ================= PILOT: SUN WUKONG (齐天大圣·孙悟空) ================= -->
+          <g id="sun-wukong" transform="translate(265, 225)">
+            <!-- Cockpit Dashboard & Flight Controls -->
+            <rect x="-10" y="65" width="120" height="35" fill="#1e293b" rx="5" />
+            <circle cx="20" cy="78" r="7" fill="#0284c7" />
+            <circle cx="45" cy="78" r="5" fill="#ef4444" />
+            <circle cx="70" cy="78" r="6" fill="#22c55e" />
+            <!-- Dual Yoke / Steering Wheel Handled by Monkey King -->
+            <path d="M 28,70 L 35,55 L 55,55 L 62,70" stroke="#64748b" stroke-width="4" fill="none" stroke-linecap="round" />
+            
+            <!-- Monkey King Torso in Pilot Leather Bomber Jacket -->
+            <ellipse cx="46" cy="58" rx="26" ry="18" fill="#78350f" />
+            <!-- Sheepskin White Fur Collar -->
+            <path d="M 26,46 Q 46,55 66,46 Q 58,60 46,60 Q 34,60 26,46 Z" fill="#fef08a" />
+            <rect x="36" y="52" width="20" height="6" fill="#dc2626" rx="2" /><!-- Red scarf tie -->
+
+            <!-- Hands on Steering Yoke (Monkey Fur) -->
+            <ellipse cx="32" cy="55" rx="5" ry="5" fill="#d97706" />
+            <ellipse cx="58" cy="55" rx="5" ry="5" fill="#d97706" />
+
+            <!-- Monkey Face & Head -->
+            <circle cx="46" cy="32" r="21" fill="#d97706" /><!-- Fur base -->
+            <!-- Monkey Face Mask / Peach Shape (Heart-shaped skin tone) -->
+            <path d="M 33,30 C 33,18 46,20 46,28 C 46,20 59,18 59,30 C 59,42 46,47 46,47 C 46,47 33,42 33,30 Z" fill="#fed7aa" />
+            <!-- Cheerful Monkey Mouth & Whiskers -->
+            <path d="M 40,40 Q 46,45 52,40" stroke="#7c2d12" stroke-width="2" fill="none" stroke-linecap="round" />
+            <!-- Red Cheeks -->
+            <circle cx="37" cy="36" r="3" fill="#f87171" opacity="0.6" />
+            <circle cx="55" cy="36" r="3" fill="#f87171" opacity="0.6" />
+
+            <!-- Fiery Eyes with Golden Pupils (火眼金睛) -->
+            <g class="anim-wukong-eyes">
+              <ellipse cx="40" cy="28" rx="4" ry="4" fill="#78350f" />
+              <circle cx="40" cy="28" r="2.5" fill="#fde047" />
+              <circle cx="41" cy="27" r="1" fill="#ffffff" />
+
+              <ellipse cx="52" cy="28" rx="4" ry="4" fill="#78350f" />
+              <circle cx="52" cy="28" r="2.5" fill="#fde047" />
+              <circle cx="53" cy="27" r="1" fill="#ffffff" />
+            </g>
+
+            <!-- Aviator Sunglasses Pushed up on Forehead -->
+            <g transform="translate(32, 14)">
+              <rect x="0" y="0" width="12" height="7" rx="3" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5" />
+              <rect x="16" y="0" width="12" height="7" rx="3" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5" />
+              <line x1="12" y1="3" x2="16" y2="3" stroke="#f59e0b" stroke-width="2" />
+            </g>
+
+            <!-- Iconic Golden Circlet (紧箍咒) -->
+            <path d="M 28,18 Q 46,11 64,18" stroke="#fbbf24" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-subtle)" />
+            <!-- Circlet Front Golden Loop -->
+            <path d="M 43,15 C 43,10 49,10 49,15 C 49,18 43,18 43,15 Z" fill="#f59e0b" stroke="#fef08a" stroke-width="1" />
+
+            <!-- Pilot Headset with Mic -->
+            <path d="M 25,24 C 23,10 69,10 67,24" stroke="#475569" stroke-width="3" fill="none" />
+            <rect x="23" y="24" width="6" height="12" rx="3" fill="#0284c7" />
+            <rect x="63" y="24" width="6" height="12" rx="3" fill="#0284c7" />
+            <path d="M 66,32 L 68,44 L 56,44" stroke="#475569" stroke-width="2" fill="none" stroke-linecap="round" />
+            <circle cx="54" cy="44" r="2.5" fill="#0284c7" />
+
+            <!-- Ruyi Jingu Bang (如意金箍棒) propped up next to captain seat -->
+            <g transform="translate(85, -10) rotate(15)">
+              <rect x="0" y="0" width="7" height="90" fill="#dc2626" rx="3" />
+              <rect x="0" y="0" width="7" height="15" fill="url(#gold-grad)" />
+              <rect x="0" y="75" width="7" height="15" fill="url(#gold-grad)" />
+              <!-- Golden Dragon Inscriptions on Cudgel -->
+              <line x1="3.5" y1="20" x2="3.5" y2="70" stroke="#fef08a" stroke-width="1.2" stroke-dasharray="4 2" />
+            </g>
+          </g>
+
+          <!-- Windshield Glare Reflection Lines -->
+          <path d="M 255,235 L 290,230 L 260,305 L 245,305 Z" fill="#ffffff" opacity="0.3" />
+          <path d="M 330,245 L 360,240 L 320,320 L 305,320 Z" fill="#ffffff" opacity="0.2" />
+        </g>
+      </g>
+
+      <!-- ================= 3. THE GRAND WING STAGE: PELICAN, BICYCLE, POLAR BEAR, QIN SHI HUANG ================= -->
+      <g id="epic-troupe" class="anim-plane" transform="translate(0, 0)">
+
+        <!-- Shadow on the airplane wing cast by the bicycle & riders -->
+        <ellipse cx="880" cy="655" rx="240" ry="24" fill="#0f172a" opacity="0.45" filter="url(#glow-heavy)" />
+
+        <!-- ---------------- A. THE BICYCLE (自行车) ---------------- -->
+        <g id="bicycle" transform="translate(740, 520)">
+          <!-- Bicycle Chain Stay & Frame (Cyan Racing Bike) -->
+          <!-- Rear Wheel Hub (cx=40, cy=95) -->
+          <!-- Front Wheel Hub (cx=240, cy=95) -->
+          <!-- Crankset Bottom Bracket (cx=135, cy=95) -->
+          <!-- Seat Tube Top (cx=105, cy=20) -->
+          <!-- Head Tube (cx=215, cy=10) -->
+
+          <!-- Rear Wheel (Spokes + Tire + Rim) -->
+          <g transform="translate(40, 95)">
+            <!-- Outer Tire -->
+            <circle cx="0" cy="0" r="42" fill="none" stroke="#0f172a" stroke-width="7" />
+            <!-- Rim -->
+            <circle cx="0" cy="0" r="38" fill="none" stroke="#06b6d4" stroke-width="3" />
+            <!-- Spinning Spokes -->
+            <g class="anim-wheel">
+              <line x1="-38" y1="0" x2="38" y2="0" stroke="#cbd5e1" stroke-width="1.2" />
+              <line x1="0" y1="-38" x2="0" y2="38" stroke="#cbd5e1" stroke-width="1.2" />
+              <line x1="-27" y1="-27" x2="27" y2="27" stroke="#cbd5e1" stroke-width="1.2" />
+              <line x1="-27" y1="27" x2="27" y2="-27" stroke="#cbd5e1" stroke-width="1.2" />
+              <circle cx="0" cy="0" r="6" fill="#475569" />
+            </g>
+          </g>
+
+          <!-- Front Wheel (Spokes + Tire + Rim) -->
+          <g transform="translate(240, 95)">
+            <circle cx="0" cy="0" r="42" fill="none" stroke="#0f172a" stroke-width="7" />
+            <circle cx="0" cy="0" r="38" fill="none" stroke="#06b6d4" stroke-width="3" />
+            <g class="anim-wheel">
+              <line x1="-38" y1="0" x2="38" y2="0" stroke="#cbd5e1" stroke-width="1.2" />
+              <line x1="0" y1="-38" x2="0" y2="38" stroke="#cbd5e1" stroke-width="1.2" />
+              <line x1="-27" y1="-27" x2="27" y2="27" stroke="#cbd5e1" stroke-width="1.2" />
+              <line x1="-27" y1="27" x2="27" y2="-27" stroke="#cbd5e1" stroke-width="1.2" />
+              <circle cx="0" cy="0" r="6" fill="#475569" />
+            </g>
+          </g>
+
+          <!-- Bike Frame Tubing -->
+          <!-- Rear Dropouts to Seat & Bottom Bracket -->
+          <line x1="40" y1="95" x2="105" y2="25" stroke="#0891b2" stroke-width="6" stroke-linecap="round" />
+          <line x1="40" y1="95" x2="135" y2="95" stroke="#0891b2" stroke-width="6" stroke-linecap="round" />
+          
+          <!-- Main Triangle -->
+          <line x1="135" y1="95" x2="105" y2="25" stroke="#06b6d4" stroke-width="7" stroke-linecap="round" />
+          <line x1="105" y1="25" x2="210" y2="20" stroke="#06b6d4" stroke-width="7" stroke-linecap="round" />
+          <line x1="135" y1="95" x2="210" y2="20" stroke="#06b6d4" stroke-width="7" stroke-linecap="round" />
+          
+          <!-- Front Fork & Steerer Tube -->
+          <line x1="210" y1="12" x2="240" y2="95" stroke="#0891b2" stroke-width="6" stroke-linecap="round" />
+          
+          <!-- Handlebars (Drop Bars Style) -->
+          <path d="M 205,12 L 218,-5 L 235,-5 C 245,-5 248,15 235,18" fill="none" stroke="#f59e0b" stroke-width="5" stroke-linecap="round" />
+          <circle cx="235" cy="5" r="4" fill="#ef4444" /><!-- Bell -->
+
+          <!-- Bicycle Saddle (Breezy Racing Seat) -->
+          <path d="M 85,20 C 85,15 125,15 130,22 C 120,26 95,26 85,20 Z" fill="#0f172a" />
+          <line x1="105" y1="25" x2="105" y2="18" stroke="#64748b" stroke-width="5" />
+
+          <!-- Chainring & Rotating Pedals -->
+          <g transform="translate(135, 95)">
+            <circle cx="0" cy="0" r="14" fill="#334155" stroke="#94a3b8" stroke-width="2" />
+            <!-- Chain loop to rear wheel -->
+            <path d="M -95,-4 L 0,-14 M -95,4 L 0,14" stroke="#64748b" stroke-width="2.5" stroke-dasharray="4 2" />
+            <!-- Rotating Crank Arm & Pedals -->
+            <g class="anim-pedal">
+              <line x1="-16" y1="-12" x2="16" y2="12" stroke="#94a3b8" stroke-width="5" stroke-linecap="round" />
+              <!-- Left Pedal & Right Pedal -->
+              <rect x="-22" y="-16" width="12" height="6" rx="2" fill="#f59e0b" />
+              <rect x="10" y="10" width="12" height="6" rx="2" fill="#f59e0b" />
+            </g>
+          </g>
+        </g>
+
+        <!-- ---------------- B. THE PELICAN (鹈鹕 - 展开大翅膀托举着巨熊) ---------------- -->
+        <g id="pelican" transform="translate(780, 360)">
+          
+          <!-- Left Extended Wing (Forms Left Sturdy Platform) -->
+          <g id="pelican-wing-left" class="pelican-left-wing">
+            <!-- Wing Base & Feathers spreading horizontally outward -->
+            <path d="M 90,190 C 20,180 -120,150 -180,130 C -150,165 -110,195 -60,210 C 0,225 60,215 90,200 Z" fill="url(#pelican-body)" stroke="#cbd5e1" stroke-width="2" />
+            <!-- Primary Flight Feathers (Layered) -->
+            <path d="M -180,130 Q -150,115 -120,140 M -140,145 Q -100,130 -80,160 M -100,165 Q -60,150 -40,185" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" />
+            <!-- Wingtip Feathers -->
+            <path d="M -180,130 Q -210,140 -195,155 Q -175,165 -160,155 Z" fill="#e2e8f0" />
+            <path d="M -195,155 Q -220,170 -195,185 Q -170,185 -150,175 Z" fill="#e2e8f0" />
+          </g>
+
+          <!-- Pelican Legs & Webbed Feet Pedaling the Bike -->
+          <g id="pelican-legs">
+            <!-- Thighs / Fluffy body belly under feathers -->
+            <path d="M 65,220 C 50,230 40,255 55,275 C 65,285 85,270 85,240 Z" fill="#f1f5f9" />
+            <path d="M 100,220 C 95,240 100,265 115,280 C 130,270 125,240 115,220 Z" fill="#f1f5f9" />
+            
+            <!-- Orange Drumstick Legs -->
+            <line x1="60" y1="270" x2="65" y2="305" stroke="#ea580c" stroke-width="5" stroke-linecap="round" />
+            <line x1="110" y1="270" x2="120" y2="295" stroke="#ea580c" stroke-width="5" stroke-linecap="round" />
+
+            <!-- Large Orange Webbed Feet Gripping Pedals -->
+            <path d="M 50,305 L 75,305 L 65,315 Z" fill="#ea580c" />
+            <path d="M 105,295 L 130,295 L 120,305 Z" fill="#ea580c" />
+          </g>
+
+          <!-- Pelican Plump Body -->
+          <ellipse cx="90" cy="185" rx="55" ry="42" fill="url(#pelican-body)" stroke="#cbd5e1" stroke-width="2" />
+          <path d="M 55,160 Q 90,200 135,165 Q 110,215 55,160 Z" fill="#e2e8f0" opacity="0.6" />
+
+          <!-- Right Extended Wing (Forms Right Sturdy Platform) -->
+          <g id="pelican-wing-right" class="pelican-right-wing">
+            <path d="M 120,185 C 190,175 320,140 390,110 C 350,150 300,185 240,205 C 180,220 130,205 120,195 Z" fill="url(#pelican-body)" stroke="#cbd5e1" stroke-width="2" />
+            <!-- Flight Feathers -->
+            <path d="M 390,110 Q 360,95 330,120 M 350,125 Q 310,110 290,140 M 310,145 Q 270,130 250,165" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" />
+            <!-- Wingtip Feathers -->
+            <path d="M 390,110 Q 420,120 405,135 Q 385,145 370,135 Z" fill="#e2e8f0" />
+            <path d="M 405,135 Q 430,150 405,165 Q 380,165 360,155 Z" fill="#e2e8f0" />
+          </g>
+
+          <!-- Pelican Neck & Head (Determined Cyclist) -->
+          <g id="pelican-head" transform="translate(110, 85)">
+            <!-- Long Curved S-Neck -->
+            <path d="M 0,90 C 20,60 10,20 30,0 C 45,15 40,65 15,95 Z" fill="url(#pelican-body)" stroke="#cbd5e1" stroke-width="2" />
+            
+            <!-- Head -->
+            <circle cx="35" cy="0" r="22" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+            
+            <!-- Cycling Headband / Sweatband (Sporty!) -->
+            <path d="M 18,-6 Q 35,-14 52,-4" stroke="#ef4444" stroke-width="6" fill="none" stroke-linecap="round" />
+            <line x1="16" y1="-4" x2="2" y2="2" stroke="#ef4444" stroke-width="4" stroke-linecap="round" /><!-- Headband flutter -->
+
+            <!-- Determined Eye with Sweat Drop -->
+            <circle cx="34" cy="-2" r="6" fill="#0f172a" />
+            <circle cx="36" cy="-4" r="2" fill="#ffffff" />
+            <!-- Sweat Drop -->
+            <path d="M 48,-14 Q 52,-8 48,-4 Q 44,-8 48,-14 Z" fill="#38bdf8" opacity="0.85" />
+
+            <!-- Giant Pelican Beak (Upper Bill) -->
+            <path d="M 45,-6 C 90,-4 145,5 170,15 C 120,20 75,18 45,12 Z" fill="url(#pelican-beak)" stroke="#c2410c" stroke-width="2" />
+            <circle cx="168" cy="14" r="2.5" fill="#c2410c" /><!-- Hook tip -->
+
+            <!-- Huge Stretched Gular Pouch (下颌喉囊 - Puffing with wind & effort) -->
+            <path d="M 45,12 C 65,48 115,55 145,20 C 105,25 70,22 45,12 Z" fill="url(#pelican-pouch)" stroke="#ea580c" stroke-width="2" opacity="0.95" />
+            <!-- Pouch Blood Vessels / Texture -->
+            <path d="M 60,18 Q 85,38 115,22 M 75,22 Q 95,42 125,25" stroke="#ea580c" stroke-width="1.2" stroke-dasharray="2 2" fill="none" opacity="0.6" />
+          </g>
+
+          <!-- Golden Wing Harness Platform (Secure footing for the Polar Bear) -->
+          <path d="M -30,170 C 40,165 140,165 210,170 C 190,185 10,185 -30,170 Z" fill="#92400e" opacity="0.75" />
+        </g>
+
+        <!-- ---------------- C. QIN SHI HUANG'S POLAR BEAR (秦始皇的北极熊) ---------------- -->
+        <g id="polar-bear" transform="translate(810, 240)">
+          
+          <!-- Fluffy Polar Bear Tail -->
+          <ellipse cx="20" cy="190" rx="14" ry="12" fill="#e2e8f0" />
+
+          <!-- Bear Rear Haunches & Sturdy Back Legs (Resting on Pelican's Left Wing) -->
+          <ellipse cx="60" cy="180" rx="42" ry="32" fill="url(#bear-fur)" stroke="#cbd5e1" stroke-width="2" />
+          <ellipse cx="45" cy="205" rx="22" ry="14" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" />
+          <!-- Black paw pads -->
+          <circle cx="40" cy="206" r="3.5" fill="#334155" />
+          <circle cx="48" cy="204" r="2.5" fill="#334155" />
+
+          <!-- Bear Massive Torso & Belly (Comfortable mount for the Emperor) -->
+          <ellipse cx="120" cy="155" rx="75" ry="55" fill="url(#bear-fur)" stroke="#cbd5e1" stroke-width="2" />
+
+          <!-- Imperial Saddle Blanket (Qin Dynasty Black & Crimson Silk with Cloud Motif) -->
+          <g id="imperial-saddle" transform="translate(85, 105)">
+            <!-- Main Saddle Cloth -->
+            <path d="M 0,25 Q 40,18 80,25 L 85,65 Q 40,75 -5,65 Z" fill="#881337" stroke="#fbbf24" stroke-width="2.5" />
+            <!-- Gold Trim Fringe -->
+            <path d="M -5,65 Q 40,75 85,65" stroke="#f59e0b" stroke-width="4" stroke-dasharray="4 2" fill="none" />
+            <!-- Traditional Qin Cloud / Dragon Scroll Embroidery -->
+            <path d="M 15,45 Q 25,32 35,45 T 55,45 T 75,45" stroke="#fef08a" stroke-width="2" fill="none" />
+            <circle cx="40" cy="45" r="4" fill="#fbbf24" />
+          </g>
+
+          <!-- Bear Front Shoulder & Sturdy Front Paws (Balancing on Pelican's Right Wing) -->
+          <ellipse cx="180" cy="170" rx="38" ry="32" fill="url(#bear-fur)" stroke="#cbd5e1" stroke-width="2" />
+          <ellipse cx="195" cy="200" rx="24" ry="14" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" />
+          <!-- Front paw pads -->
+          <circle cx="202" cy="201" r="3.5" fill="#334155" />
+          <circle cx="193" cy="200" r="2.5" fill="#334155" />
+
+          <!-- Polar Bear Head (Chill, Stoic, Staring into the Jetstream) -->
+          <g id="bear-head" transform="translate(180, 110)">
+            <!-- Fluffy Ears -->
+            <ellipse cx="15" cy="0" rx="10" ry="9" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5" />
+            <ellipse cx="15" cy="0" rx="5" ry="5" fill="#fda4af" opacity="0.6" />
+            
+            <ellipse cx="38" cy="-5" rx="10" ry="9" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5" />
+            <ellipse cx="38" cy="-5" rx="5" ry="5" fill="#fda4af" opacity="0.6" />
+
+            <!-- Head Base -->
+            <ellipse cx="35" cy="22" rx="32" ry="26" fill="url(#bear-fur)" stroke="#cbd5e1" stroke-width="2" />
+            
+            <!-- Snout -->
+            <ellipse cx="58" cy="26" rx="18" ry="14" fill="#ffffff" />
+            <!-- Big Black Wet Nose -->
+            <path d="M 64,22 C 72,22 72,30 64,30 C 60,30 60,22 64,22 Z" fill="#0f172a" />
+            
+            <!-- Content, Zen-like Calm Smile -->
+            <path d="M 54,32 Q 62,37 70,33" stroke="#475569" stroke-width="2.5" fill="none" stroke-linecap="round" />
+
+            <!-- Polar Bear Goggles (Cool Retro Goggles over Eyes) -->
+            <g transform="translate(26, 12)">
+              <ellipse cx="8" cy="4" rx="7" ry="6" fill="#0284c7" stroke="#94a3b8" stroke-width="2" />
+              <ellipse cx="22" cy="4" rx="7" ry="6" fill="#0284c7" stroke="#94a3b8" stroke-width="2" />
+              <line x1="15" y1="4" x2="16" y2="4" stroke="#475569" stroke-width="3" />
+              <!-- Goggle Strap around Bear Head -->
+              <path d="M 1,4 L -12,2 M 29,4 L 40,6" stroke="#475569" stroke-width="3.5" />
+              <line x1="5" y1="2" x2="9" y2="6" stroke="#ffffff" stroke-width="1.5" />
+            </g>
+
+            <!-- Warm Winter Scarf Fluttering in Wind -->
+            <path d="M 8,38 C 25,48 45,45 55,38 L 48,46 C 35,55 18,52 8,38 Z" fill="#dc2626" />
+            <path d="M 10,42 Q -20,40 -40,32 Q -30,50 5,48 Z" fill="#dc2626" class="anim-cape" />
+          </g>
+        </g>
+
+        <!-- ---------------- D. QIN SHI HUANG (秦始皇 - 骑熊打螺丝) ---------------- -->
+        <g id="qin-shi-huang" transform="translate(890, 80)">
+          
+          <!-- Billowing Imperial Cape & Robe Hem in Wind -->
+          <g class="anim-cape">
+            <path d="M 20,210 C -40,215 -80,240 -110,270 C -75,270 -20,250 30,240 Z" fill="#991b1b" stroke="#7f1d1d" stroke-width="2" />
+            <path d="M 10,225 C -50,235 -90,265 -125,295 C -90,290 -30,265 25,248 Z" fill="#09090b" stroke="#fbbf24" stroke-width="1.5" />
+          </g>
+
+          <!-- Seated Legs & Imperial Robes (玄衣纁裳) -->
+          <path d="M 25,180 C 15,220 5,250 35,270 C 65,275 80,250 85,200 Z" fill="url(#qin-robe-grad)" stroke="#27272a" stroke-width="2" />
+          <!-- Gold Embroidered Dragon Hem on Robe -->
+          <path d="M 30,265 Q 55,275 80,265" stroke="#f59e0b" stroke-width="4" fill="none" />
+
+          <!-- Emperor Torso / Royal Robe with Dragon Roundel -->
+          <path d="M 35,120 C 15,145 15,180 30,220 L 95,215 C 105,175 105,140 85,120 Z" fill="url(#qin-robe-grad)" stroke="#3f3f46" stroke-width="2" />
+          
+          <!-- Golden Dragon Chest Emblem (十二章纹·团龙) -->
+          <circle cx="62" cy="165" r="16" fill="#78350f" stroke="#fbbf24" stroke-width="2" />
+          <path d="M 54,165 Q 62,154 70,165 T 62,175 Z" fill="#f59e0b" />
+          <circle cx="64" cy="162" r="2" fill="#ef4444" />
+
+          <!-- Jade Belt (玉带) with Hanging Jade Ring & Tool Belt! -->
+          <rect x="32" y="195" width="65" height="10" fill="#18181b" rx="2" />
+          <circle cx="45" cy="200" r="4" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5" />
+          <circle cx="65" cy="200" r="4" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5" />
+          <circle cx="85" cy="200" r="4" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5" />
+
+          <!-- Modern Heavy-Duty Tool Pouch Hanging on Emperor's Waist! (High Contrast Humor) -->
+          <rect x="80" y="202" width="22" height="26" fill="#78350f" stroke="#92400e" stroke-width="1.5" rx="3" />
+          <rect x="84" y="198" width="5" height="12" fill="#94a3b8" /><!-- Screws visible in pouch -->
+          <rect x="91" y="196" width="5" height="14" fill="#fbbf24" />
+
+          <!-- Qin Shi Huang's Distinguished Head & Beard -->
+          <g id="emperor-head">
+            <!-- Royal Neck -->
+            <rect x="52" y="100" width="18" height="25" fill="#fed7aa" />
+
+            <!-- Head Face Contour -->
+            <ellipse cx="62" cy="85" rx="18" ry="22" fill="#fed7aa" stroke="#fbcfe8" stroke-width="1" />
+            
+            <!-- Imperial Long Majestic Beard & Mustache (Fluttering in the 500mph Wind) -->
+            <g class="anim-cape">
+              <path d="M 52,95 C 45,115 40,140 25,160 C 45,145 65,130 65,100 Z" fill="#18181b" />
+              <path d="M 68,95 C 75,110 85,135 105,155 C 85,135 72,120 70,100 Z" fill="#18181b" />
+              <!-- Royal Mustache -->
+              <path d="M 48,90 Q 60,94 72,90 C 80,94 65,102 60,96 C 55,102 40,94 48,90 Z" fill="#09090b" />
+            </g>
+
+            <!-- Resolute Emperor Eyes Under Modern Transparent Safety Goggles -->
+            <ellipse cx="55" cy="78" rx="4" ry="2" fill="#18181b" />
+            <ellipse cx="71" cy="78" rx="4" ry="2" fill="#18181b" />
+            <path d="M 50,72 L 59,75 M 75,72 L 67,75" stroke="#09090b" stroke-width="2" stroke-linecap="round" /><!-- Sharp Emperor Brows -->
+
+            <!-- Modern Safety Goggles (劳保防护眼镜 - 工地标准!) -->
+            <rect x="47" y="70" width="34" height="15" rx="4" fill="none" stroke="#38bdf8" stroke-width="2" />
+            <rect x="49" y="72" width="13" height="11" rx="2" fill="#38bdf8" opacity="0.35" />
+            <rect x="66" y="72" width="13" height="11" rx="2" fill="#38bdf8" opacity="0.35" />
+            <line x1="47" y1="77" x2="42" y2="79" stroke="#0284c7" stroke-width="2" />
+            <line x1="81" y1="77" x2="86" y2="79" stroke="#0284c7" stroke-width="2" />
+
+            <!-- The Mianguan Imperial Crown (冕冠 - 始皇帝象征) -->
+            <g id="mianguan-crown" transform="translate(62, 58)">
+              <!-- Flat Rectangular Crown Top Board (天圆地方·延板) -->
+              <polygon points="-38,-8 42,-12 36,-3 -42,1" fill="#09090b" stroke="#fbbf24" stroke-width="2" />
+              <!-- Crown Base Cup -->
+              <path d="M -15,-2 L 15,-4 L 12,12 L -12,12 Z" fill="#dc2626" stroke="#fbbf24" stroke-width="1.5" />
+              
+              <!-- Hanging Beaded Tassels (十二旒 - Billowing dramatically in the wind!) -->
+              <g class="anim-crown-beads">
+                <!-- Front Tassels -->
+                <g stroke="#f59e0b" stroke-width="2" stroke-linecap="round">
+                  <line x1="38" y1="-8" x2="52" y2="18" stroke-dasharray="2 3" />
+                  <line x1="32" y1="-7" x2="46" y2="20" stroke-dasharray="2 3" />
+                  <line x1="26" y1="-6" x2="40" y2="22" stroke-dasharray="2 3" />
+                  <!-- Colorful Jade Beads at Bottom -->
+                  <circle cx="52" cy="18" r="2.5" fill="#ef4444" />
+                  <circle cx="46" cy="20" r="2.5" fill="#10b981" />
+                  <circle cx="40" cy="22" r="2.5" fill="#fbbf24" />
+                </g>
+                <!-- Back Tassels -->
+                <g stroke="#f59e0b" stroke-width="2" stroke-linecap="round">
+                  <line x1="-38" y1="1" x2="-52" y2="25" stroke-dasharray="2 3" />
+                  <line x1="-32" y1="0" x2="-46" y2="26" stroke-dasharray="2 3" />
+                  <circle cx="-52" cy="25" r="2.5" fill="#3b82f6" />
+                  <circle cx="-46" cy="26" r="2.5" fill="#fbbf24" />
+                </g>
+              </g>
+            </g>
+          </g>
+
+          <!-- Arms & Heavy-Duty Electric Screwdriver ("打螺丝" 核心动作) -->
+          <g id="tightening-screw-action">
+            <!-- Left Arm Holding Auxiliary Handle / Stabilizing -->
+            <path d="M 38,135 Q 60,155 85,185 L 98,180 Q 75,145 55,130 Z" fill="url(#qin-robe-grad)" stroke="#27272a" stroke-width="2" />
+            <circle cx="98" cy="182" r="6" fill="#fed7aa" />
+
+            <!-- Right Arm Reaching Forward with Cordless Power Drill / Screwdriver -->
+            <path d="M 85,135 Q 115,160 145,210 L 132,218 Q 105,170 75,140 Z" fill="url(#qin-robe-grad)" stroke="#27272a" stroke-width="2" />
+            <!-- Royal Golden Cuff Trim -->
+            <line x1="130" y1="210" x2="145" y2="220" stroke="#f59e0b" stroke-width="3" />
+            <circle cx="145" cy="216" r="7" fill="#fed7aa" />
+
+            <!-- VIBRATING INDUSTRIAL ELECTRIC DRILL & SCREW (打螺丝设备) -->
+            <g class="anim-drill" transform="translate(138, 205)">
+              <!-- Cordless Drill Main Body (DeWalt Industrial Gold/Black Palette!) -->
+              <rect x="0" y="-12" width="40" height="24" rx="4" fill="#eab308" stroke="#713f12" stroke-width="2" />
+              <!-- Battery Pack at Bottom -->
+              <rect x="-10" y="8" width="22" height="22" rx="3" fill="#0f172a" stroke="#475569" stroke-width="1.5" />
+              <rect x="-8" y="24" width="18" height="5" fill="#dc2626" />
+              
+              <!-- Motor Ventilation Slots & Speed Trigger -->
+              <line x1="8" y1="-6" x2="8" y2="6" stroke="#713f12" stroke-width="2" />
+              <line x1="16" y1="-6" x2="16" y2="6" stroke="#713f12" stroke-width="2" />
+              <line x1="24" y1="-6" x2="24" y2="6" stroke="#713f12" stroke-width="2" />
+              
+              <!-- Drill Chuck & Drive Bit Shaft -->
+              <polygon points="40,-8 52,-4 52,4 40,8" fill="#334155" stroke="#94a3b8" stroke-width="1.5" />
+              <!-- Steel Screwdriver Bit Pointing Down-Right into the Wing Inspection Port -->
+              <line x1="52" y1="0" x2="78" y2="18" stroke="#cbd5e1" stroke-width="5" stroke-linecap="round" />
+              <!-- Magnetic Screw Head -->
+              <circle cx="78" cy="18" r="6" fill="#64748b" stroke="#f8fafc" stroke-width="1.5" />
+              <line x1="75" y1="16" x2="81" y2="20" stroke="#0f172a" stroke-width="2" />
+
+              <!-- Metal Inspection Hatch on Wing Surface Where Qin Shi Huang is Screwing -->
+              <ellipse cx="80" cy="24" rx="22" ry="10" fill="#475569" stroke="#94a3b8" stroke-width="2" />
+              <!-- Pre-drilled screw holes around hatch -->
+              <circle cx="68" cy="22" r="2" fill="#0f172a" />
+              <circle cx="92" cy="24" r="2" fill="#0f172a" />
+              <circle cx="78" cy="30" r="2" fill="#0f172a" />
+
+              <!-- REAL-TIME SPARKS EMISSION SYSTEM (火花四溅) -->
+              <g id="spark-burst" class="anim-spark">
+                <!-- Spark Core -->
+                <circle cx="78" cy="18" r="10" fill="url(#spark-glow)" filter="url(#spark-blur)" />
+                <circle cx="78" cy="18" r="4" fill="#ffffff" />
+                <!-- Flying Spark Particles -->
+                <path d="M 78,18 L 105,8 M 78,18 L 115,25 M 78,18 L 98,35 M 78,18 L 110,-5 M 78,18 L 90,-12 M 78,18 L 125,12" stroke="#fde047" stroke-width="2" stroke-linecap="round" />
+                <circle cx="112" cy="7" r="2" fill="#ffffff" />
+                <circle cx="120" cy="28" r="2" fill="#f97316" />
+                <circle cx="102" cy="38" r="1.5" fill="#fde047" />
+                <circle cx="128" cy="14" r="1.8" fill="#ffffff" />
+                <circle cx="95" cy="-14" r="1.5" fill="#facc15" />
+              </g>
+            </g>
+          </g>
+        </g>
+
+        <!-- ---------------- E. AVIONICS SENSOR TOWER & WING REPAIR BRACKET (机翼高空维修支架/传感器塔) ---------------- -->
+        <g id="repair-pylon" transform="translate(1080, 295)">
+          <!-- Titanium Aero Pylon Column anchored into the main wing below -->
+          <path d="M 15,25 L 35,25 L 50,320 L -5,320 Z" fill="#334155" stroke="#1e293b" stroke-width="2" />
+          <path d="M 18,25 L 32,25 L 42,320 L 26,320 Z" fill="#475569" />
+          
+          <!-- Diagonal Truss Bracing to aircraft wing -->
+          <line x1="25" y1="40" x2="-25" y2="310" stroke="#64748b" stroke-width="3" />
+          <line x1="25" y1="120" x2="-15" y2="310" stroke="#64748b" stroke-width="2.5" />
+          <line x1="25" y1="200" x2="65" y2="310" stroke="#64748b" stroke-width="2.5" />
+
+          <!-- Caution Yellow/Black Striped Safety Collar -->
+          <rect x="8" y="55" width="34" height="12" fill="url(#caution-stripes)" stroke="#0f172a" stroke-width="1.5" />
+          <rect x="18" y="150" width="26" height="10" fill="url(#caution-stripes)" stroke="#0f172a" stroke-width="1" />
+
+          <!-- Sensor Probe / Pitot Tube pointing forward -->
+          <path d="M 25,25 L 25,-10 L 30,-10 L 30,25 Z" fill="#94a3b8" />
+          <line x1="27" y1="-10" x2="27" y2="-28" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round" />
+          <!-- Red flashing beacon on pylon -->
+          <circle cx="27" cy="-28" r="4" fill="#ef4444" class="anim-strobe" />
+          <circle cx="27" cy="-28" r="1.5" fill="#ffffff" />
+        </g>
+
+      </g>
+
+      <!-- ================= 4. FOREGROUND WIND & SPEED PARTICLES ================= -->
+      <g id="foreground-speed-lines" opacity="0.6">
+        <line x1="1600" y1="580" x2="1150" y2="580" stroke="#ffffff" stroke-width="3" stroke-dasharray="120 80" stroke-linecap="round" style="animation: speedLineLoop 0.6s linear infinite 0.15s;" />
+        <line x1="1600" y1="740" x2="850" y2="740" stroke="#fde047" stroke-width="4" stroke-dasharray="240 100" stroke-linecap="round" style="animation: speedLineLoop 0.5s linear infinite;" />
+        <line x1="1600" y1="340" x2="1200" y2="340" stroke="#ffffff" stroke-width="2.5" stroke-dasharray="100 60" stroke-linecap="round" style="animation: speedLineLoop 0.75s linear infinite 0.3s;" />
+      </g>
+    </svg>
+
+    <!-- Floating Glassmorphism Control Hub -->
+    <div class="control-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>✈️ 史诗级巡航指挥台</span>
+          <span class="badge">2D SVG 矢量动画</span>
+        </div>
+      </div>
+
+      <!-- Theme Switchers -->
+      <div class="control-buttons">
+        <button class="btn active" id="btn-sunset" onclick="setTheme('sunset')">🌅 暮色晚霞</button>
+        <button class="btn" id="btn-day" onclick="setTheme('day')">☀️ 碧海长空</button>
+        <button class="btn" id="btn-night" onclick="setTheme('night')">🌌 极光星夜</button>
+      </div>
+
+      <!-- Action Toggles -->
+      <div class="control-buttons">
+        <button class="btn active" id="btn-audio" onclick="toggleAudio()">🔊 音效模拟: 开</button>
+        <button class="btn" id="btn-turbo" onclick="toggleTurbo()">⚡ 极速狂飙</button>
+        <button class="btn" id="btn-spark" onclick="triggerMegaSpark()">💥 强力螺丝火花</button>
+      </div>
+
+      <!-- Extra Tools -->
+      <div class="control-buttons">
+        <button class="btn" onclick="toggleFullscreen()">⛶ 全屏沉浸</button>
+        <button class="btn" onclick="downloadSVG()">📥 导出原版SVG</button>
+      </div>
+
+      <!-- Speed Slider -->
+      <div class="speed-slider-wrap">
+        <span>飞行巡航时速:</span>
+        <input type="range" class="speed-slider" id="speed-slider" min="0.3" max="3.0" step="0.1" value="1.0" oninput="updateSpeed(this.value)">
+        <span id="speed-label" style="font-weight: 700; color: #f59e0b; width: 45px;">1.0x</span>
+      </div>
+    </div>
+
+    <!-- Dialogue Banner (Storytelling) -->
+    <div class="dialogue-box" onclick="nextDialogue()">
+      <div class="avatar-tag" id="dialogue-speaker">秦始皇</div>
+      <div class="dialogue-text" id="dialogue-content">
+        “朕平六国、统天下，今天在万米高空的飞机机翼上，也得把这颗钛合金螺丝拧紧！书同文，车同轨，机翼螺丝更得拧死！”
+      </div>
+      <div class="dialogue-hint">点击换台词 💬</div>
+    </div>
+
+    <!-- Audio / Event Toast -->
+    <div class="toast" id="toast">已开启 Web Audio 合成音效</div>
+  </div>
+
+  <script>
+    // --- 1. Audio Synthesizer (Pure Web Audio API - Zero External Dependencies) ---
+    let audioCtx = null;
+    let engineGain = null;
+    let drillGain = null;
+    let isAudioRunning = false;
+    let isTurbo = false;
+
+    function initAudio() {
+      if (audioCtx) return;
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContext();
+
+      // Jet Engine Ambient Rumble (Lowpass pink noise)
+      const bufferSize = audioCtx.sampleRate * 2;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+        output[i] *= 0.11;
+        b6 = white * 0.115926;
+      }
+
+      const whiteNoise = audioCtx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+      whiteNoise.loop = true;
+
+      const engineFilter = audioCtx.createBiquadFilter();
+      engineFilter.type = 'lowpass';
+      engineFilter.frequency.setValueAtTime(140, audioCtx.currentTime);
+
+      engineGain = audioCtx.createGain();
+      engineGain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+
+      whiteNoise.connect(engineFilter);
+      engineFilter.connect(engineGain);
+      engineGain.connect(audioCtx.destination);
+      whiteNoise.start();
+
+      // Electric Drill Whine (Sawtooth Oscillator with subtle mod)
+      const drillOsc = audioCtx.createOscillator();
+      drillOsc.type = 'sawtooth';
+      drillOsc.frequency.setValueAtTime(260, audioCtx.currentTime);
+
+      const drillFilter = audioCtx.createBiquadFilter();
+      drillFilter.type = 'bandpass';
+      drillFilter.frequency.setValueAtTime(1200, audioCtx.currentTime);
+      drillFilter.Q.setValueAtTime(3.0, audioCtx.currentTime);
+
+      drillGain = audioCtx.createGain();
+      drillGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+
+      drillOsc.connect(drillFilter);
+      drillFilter.connect(drillGain);
+      drillGain.connect(audioCtx.destination);
+      drillOsc.start();
+    }
+
+    function toggleAudio() {
+      const btn = document.getElementById('btn-audio');
+      if (!isAudioRunning) {
+        if (!audioCtx) initAudio();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (engineGain) engineGain.gain.setTargetAtTime(0.35, audioCtx.currentTime, 0.1);
+        if (drillGain) drillGain.gain.setTargetAtTime(0.08, audioCtx.currentTime, 0.1);
+        isAudioRunning = true;
+        btn.classList.add('active');
+        btn.textContent = '🔊 音效模拟: 开';
+        showToast('已启动航空引擎与电钻音效合成');
+      } else {
+        if (engineGain) engineGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+        if (drillGain) drillGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+        isAudioRunning = false;
+        btn.classList.remove('active');
+        btn.textContent = '🔈 音效模拟: 关';
+        showToast('音效已静音');
+      }
+    }
+
+    // Bicycle Bell Ring sound effect
+    function ringBell() {
+      if (!audioCtx || !isAudioRunning) return;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(2200, now);
+      osc.frequency.exponentialRampToValueAtTime(1800, now + 0.4);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.5);
+    }
+
+    // --- 2. Interactive Dialogues (Characters) ---
+    const dialogues = [
+      {
+        speaker: "秦始皇",
+        color: "#fbbf24",
+        text: "“朕平六国、统天下，今天在万米高空的飞机机翼上，也得把这颗钛合金螺丝拧紧！书同文，车同轨，机翼螺丝更得拧死！”"
+      },
+      {
+        speaker: "孙悟空",
+        color: "#f97316",
+        text: "“哈哈哈哈！俺老孙开这大铁鸟，比十万八千里的筋斗云还稳！后面的老秦、大熊和鸟兄，坐稳了，准备突破音速！”"
+      },
+      {
+        speaker: "鹈鹕",
+        color: "#38bdf8",
+        text: "“（喘气暴汗中）...嘎嘎！我只是只普通的送鱼鹈鹕啊！为什么翅膀上不仅要托一只一千斤的北极熊，熊上还骑着始皇帝？！”"
+      },
+      {
+        speaker: "北极熊",
+        color: "#cbd5e1",
+        text: "“嗷呜~（戴着护目镜看风景）天上的云彩好软啊... 主人你打螺丝手抖轻一点，别震着我挠痒痒。”"
+      },
+      {
+        speaker: "秦始皇",
+        color: "#fbbf24",
+        text: "“悟空机长！这块蒙皮的螺栓扭矩不够，给朕稳住飞行姿态！加一把力，朕的大秦航空工业绝不能松垮！”"
+      },
+      {
+        speaker: "孙悟空",
+        color: "#f97316",
+        text: "“好嘞陛下！如意金箍棒放副驾驶待命，火眼金睛雷达已全开，前方气流平稳，继续打螺丝！”"
+      }
+    ];
+
+    let currentDialogueIdx = 0;
+    function nextDialogue() {
+      currentDialogueIdx = (currentDialogueIdx + 1) % dialogues.length;
+      const d = dialogues[currentDialogueIdx];
+      const speakerEl = document.getElementById('dialogue-speaker');
+      const contentEl = document.getElementById('dialogue-content');
+
+      contentEl.style.opacity = '0';
+      setTimeout(() => {
+        speakerEl.textContent = d.speaker;
+        speakerEl.style.background = d.color;
+        contentEl.textContent = d.text;
+        contentEl.style.opacity = '1';
+      }, 200);
+
+      // Trigger bicycle bell on pelican dialogue
+      if (d.speaker === "鹈鹕") ringBell();
+    }
+
+    // --- 3. Sky Theme Switcher ---
+    function setTheme(theme) {
+      document.querySelectorAll('#btn-sunset, #btn-day, #btn-night').forEach(b => b.classList.remove('active'));
+      const skyRect = document.getElementById('sky-rect');
+      const sun = document.getElementById('setting-sun');
+
+      if (theme === 'sunset') {
+        document.getElementById('btn-sunset').classList.add('active');
+        skyRect.setAttribute('fill', 'url(#sky-sunset)');
+        sun.style.display = 'block';
+        showToast('已切换至：暮色晚霞模式');
+      } else if (theme === 'day') {
+        document.getElementById('btn-day').classList.add('active');
+        skyRect.setAttribute('fill', 'url(#sky-day)');
+        sun.style.display = 'none';
+        showToast('已切换至：碧海长空模式');
+      } else if (theme === 'night') {
+        document.getElementById('btn-night').classList.add('active');
+        skyRect.setAttribute('fill', 'url(#sky-night)');
+        sun.style.display = 'none';
+        showToast('已切换至：极光星夜模式');
+      }
+    }
+
+    // --- 4. Speed & Turbo Control ---
+    function updateSpeed(val) {
+      document.getElementById('speed-label').textContent = parseFloat(val).toFixed(1) + 'x';
+      const root = document.querySelector(':root');
+      
+      // Update keyframe animation speeds proportionally
+      const wheels = document.querySelectorAll('.anim-wheel');
+      wheels.forEach(w => w.style.animationDuration = (0.35 / val) + 's');
+
+      const pedals = document.querySelectorAll('.anim-pedal');
+      pedals.forEach(p => p.style.animationDuration = (0.45 / val) + 's');
+
+      const speedLines = document.querySelectorAll('#speed-lines line, #foreground-speed-lines line');
+      speedLines.forEach(l => l.style.animationDuration = (0.8 / val) + 's');
+
+      if (audioCtx && isAudioRunning && drillGain) {
+        drillGain.gain.setValueAtTime(0.06 * val, audioCtx.currentTime);
+      }
+    }
+
+    function toggleTurbo() {
+      const btn = document.getElementById('btn-turbo');
+      isTurbo = !isTurbo;
+      if (isTurbo) {
+        btn.classList.add('active');
+        btn.textContent = '🔥 极速狂飙: 开启';
+        document.getElementById('speed-slider').value = 2.5;
+        updateSpeed(2.5);
+        showToast('航速突破 2.5 马赫！');
+      } else {
+        btn.classList.remove('active');
+        btn.textContent = '⚡ 极速狂飙';
+        document.getElementById('speed-slider').value = 1.0;
+        updateSpeed(1.0);
+        showToast('恢复平稳巡航时速');
+      }
+    }
+
+    // --- 5. Mega Sparks Effect ---
+    function triggerMegaSpark() {
+      const sparkGroup = document.getElementById('spark-burst');
+      if (!sparkGroup) return;
+
+      // Add extra dynamic sparks
+      for (let i = 0; i < 8; i++) {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        const angle = Math.random() * Math.PI * 1.2 - 0.4;
+        const len = 30 + Math.random() * 45;
+        const x2 = 78 + Math.cos(angle) * len;
+        const y2 = 18 + Math.sin(angle) * len;
+
+        line.setAttribute('x1', '78');
+        line.setAttribute('y1', '18');
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.setAttribute('stroke', '#ffffff');
+        line.setAttribute('stroke-width', '2.5');
+        line.setAttribute('stroke-linecap', 'round');
+        sparkGroup.appendChild(line);
+
+        setTimeout(() => line.remove(), 250);
+      }
+
+      showToast('⚡ 强力扭矩紧固！火花激射！');
+    }
+
+    // --- 6. Fullscreen & SVG Export ---
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+        showToast('已进入全屏沉浸模式');
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+        showToast('已退出全屏模式');
+      }
+    }
+
+    function downloadSVG() {
+      const svg = document.getElementById('main-svg');
+      const serializer = new XMLSerializer();
+      let source = serializer.serializeToString(svg);
+
+      // Add name spaces
+      if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
+        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+      }
+
+      const svgBlob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+      const svgUrl = URL.createObjectURL(svgBlob);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = svgUrl;
+      downloadLink.download = 'pelican_wukong_emperor.svg';
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      showToast('已导出纯矢量 SVG 图片文件！');
+    }
+
+    // --- 7. Toast Notification Helper ---
+    let toastTimeout = null;
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    // First user gesture listener to unblock Web Audio if clicked anywhere
+    window.addEventListener('click', () => {
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }, { once: true });
+  </script>
+</body>
+</html>

@@ -146,5 +146,14 @@ window.MODEL_RECORDS = [
     src: "results/trilogy-token-saving/muse-spark/index.html",
     note: "三合一题作品（鹈鹕+悟空+秦始皇，18 处元素命中），原文件放在 muse-spark 目录已归位",
     createdAt: "2026-09-16T07:43:00.000Z"
+  },
+  {
+    id: "seed-tri-gemini-3-8-flash", testId: "trilogy-token-saving",
+    testTitle: "三合一省 token 版（鹈鹕×孙悟空×秦始皇）", testType: "graphic",
+    model: "Gemini 3.8 Flash (High)", channel: "Antigravity 会话",
+    date: "2026-09-16", result: "pass",
+    src: "results/trilogy-token-saving/gemini-3.8-flash/index.html",
+    note: "高精细度 2D SVG 矢量动画：孙悟空驾驶舱手握操纵杆+火眼金睛闪烁+金箍棒备用；机翼涂装警示条纹与巨型涡扇喷气引擎；鹈鹕蹬踏公路车+平展双翼托举北极熊；秦始皇头戴冕旒与劳保护目镜，手持锂电钻高速旋拧机翼塔螺栓带真实火花；支持三套环境主题、原生 Web Audio 音效模拟与 SVG 导出",
+    createdAt: "2026-09-16T08:00:00.000Z"
   }
 ];

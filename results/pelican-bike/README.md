@@ -15,6 +15,12 @@
 | `gpt-extra/` | 待补充：GPT extra 版本 | — |
 | `other/` | 待补充 | — |
 
+## 飞书可贴版
+
+- `pelican-bike.svg`：SMIL 自包含动画 SVG（浏览器打开即动，基于 sol-high 视觉重制）。
+- `pelican-bike.gif`：同源渲染的 5s 循环 GIF（20fps，1MB）——飞书不渲染贴入的 SVG 动画，贴飞书用这个（拖入聊天/文档即可）。
+- 生成脚本：`make_pelican.py`（会话暂存），同一套几何同时产出 SVG 与 GIF 帧。
+
 ## 预览
 
 - 用浏览器直接打开各子目录的 html 即可。
