@@ -1,0 +1,77 @@
+name: 实测战报
+description: 提交一次模型实测结果，由社区投票形成结论
+title: "[report] 模型名 · 题目"
+labels: ["report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提交后，这条 issue 就是站上的一条战报。
+
+        其他人会用表情投票：**👍 = 我也复现了降智**，**👎 = 我测是正常的**。
+        满 3 票后自动判定：降智票 ≥ 2/3 判为降智，≤ 1/3 判为正常，之间为有争议。
+
+  - type: dropdown
+    id: test
+    attributes:
+      label: 题目
+      description: 从公共题库中选择你跑的那道题
+      options:
+        - 鹈鹕骑自行车 (pelican-bike)
+        - 孙悟空开飞机 (wukong-plane)
+        - 秦始皇骑北极熊 (qinshihuang-bear)
+        - 三合一省 token 版（鹈鹕×孙悟空×秦始皇） (trilogy-token-saving)
+        - 糖果逻辑题（答案应为 21） (candy-logic)
+    validations:
+      required: true
+
+  - type: input
+    id: model
+    attributes:
+      label: 模型
+      description: 写清版本，例如 Gemini 3.8 Flash、Claude Opus 5
+      placeholder: Gemini 3.8 Flash
+    validations:
+      required: true
+
+  - type: input
+    id: channel
+    attributes:
+      label: 渠道
+      description: 在哪里跑的，例如 OpenCode 2、官方网页版、API
+      placeholder: OpenCode 2
+
+  - type: input
+    id: date
+    attributes:
+      label: 测试日期
+      description: 格式 YYYY-MM-DD
+      placeholder: "2026-09-16"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: claim
+    attributes:
+      label: 我的判定
+      description: 你自己的结论。最终结论以投票为准。
+      options:
+        - 降智 — 明显不如以前
+        - 存疑 — 部分指标退化
+        - 正常 — 符合预期
+    validations:
+      required: true
+
+  - type: input
+    id: link
+    attributes:
+      label: 作品链接
+      description: 把产出放到 Gist / CodePen / 任意可公开访问的地址。本站不托管他人文件。
+      placeholder: https://gist.github.com/...
+
+  - type: textarea
+    id: note
+    attributes:
+      label: 说明
+      description: 哪一条 checklist 没过，具体怎么崩的。越具体越容易被复现验证。
+      placeholder: 腿为单段直线、无膝盖折点，脚与踏板脱节。
