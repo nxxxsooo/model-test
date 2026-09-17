@@ -1,15 +1,14 @@
-name: 实测战报
-description: 提交一次模型实测结果，由社区投票形成结论
-title: "[report] 模型名 · 题目"
-labels: ["report"]
+name: 投一个样例
+description: 提交某个模型在某道题上的真实产出
+title: "[sample] 题目"
+labels: ["sample"]
 body:
   - type: markdown
     attributes:
       value: |
-        提交后，这条 issue 就是站上的一条战报。
+        本站不给结论，只陈列产出。你怎么看写在「你的观察」里就行，不用纠结算不算「降智」。
 
-        其他人会用表情投票：**👍 = 我也复现了降智**，**👎 = 我测是正常的**。
-        满 3 票后自动判定：降智票 ≥ 2/3 判为降智，≤ 1/3 判为正常，之间为有争议。
+        合并后作品会存进仓库 `results/`，在题目页直接可看，不依赖外链。
 
   - type: input
     id: test
@@ -45,30 +44,32 @@ body:
     id: date
     attributes:
       label: 测试日期
-      description: 格式 YYYY-MM-DD
-      placeholder: "2026-09-16"
+      placeholder: "2026-09-17"
     validations:
       required: true
 
-  - type: input
-    id: claim
-    attributes:
-      label: 我的判定
-      description: 填 `降智` / `存疑` / `正常` 三者之一。最终结论以投票为准。
-      placeholder: 降智
-    validations:
-      required: true
-
-  - type: input
+  - type: textarea
     id: link
     attributes:
-      label: 作品链接
-      description: 把产出放到 Gist / CodePen / 任意可公开访问的地址。本站不托管他人文件。
-      placeholder: https://gist.github.com/...
+      label: 产出
+      description: |
+        二选一：贴 Gist / CodePen 链接，或者直接把完整 HTML 代码贴在下面的代码块里。
+        代码会被原样存进仓库，所以请贴完整可运行的单文件。
+      placeholder: |
+        https://gist.github.com/...
+
+        或者：
+
+        ```html
+        <!DOCTYPE html>
+        ...
+        ```
+    validations:
+      required: true
 
   - type: textarea
     id: note
     attributes:
-      label: 说明
-      description: 哪一条 checklist 没过，具体怎么崩的。越具体越容易被复现验证。
-      placeholder: 腿为单段直线、无膝盖折点，脚与踏板脱节。
+      label: 你的观察
+      description: 你觉得哪里好、哪里崩了。具体比结论有用——说清楚是哪个部位怎么不对。
+      placeholder: 腿是单段直线，没有膝盖折点，脚和踏板脱开了。

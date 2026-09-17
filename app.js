@@ -1,6 +1,6 @@
-/* 模型降智监测 · 前端逻辑
- * 数据三层：GitHub Issues（实时） → data/snapshot.json（降级） → data/records.js（基准存档）
- * 无构建、无依赖、可 file:// 直开。
+/* 降智测试题集 · 纯静态画廊
+ * 数据全部来自仓库：data/tests.js + data/samples.js + results/**
+ * 无运行时接口、无投票、无结论。
  */
 (function () {
   "use strict";
@@ -8,14 +8,10 @@
   var CFG = window.APP_CONFIG || {};
   var REPO = (CFG.repo && CFG.repo.owner + "/" + CFG.repo.name) || "";
   var REPO_URL = "https://github.com/" + REPO;
-  var API_URL = "https://api.github.com/repos/" + REPO + "/issues?state=open&per_page=100&labels=" +
-    encodeURIComponent(CFG.reportLabel || "report");
-  var CACHE_KEY = "mdw_live_cache_v1";
+  var OBS = CFG.observation || {};
+  var THUMB_W = 1200;
 
-  var STATE = { records: [], filter: "all", source: "archive", staleAt: null };
-
-  // ---------------- utils ----------------
-  function $(s) { return document.querySelector(s); }
+  function $(s, r) { return (r || document).querySelector(s); }
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
@@ -28,445 +24,289 @@
     clearTimeout(toast._t);
     toast._t = setTimeout(function () { t.classList.remove("show"); }, 1800);
   }
-  function parseDate(s) {
-    if (!s) return null;
-    var d = new Date(s);
-    return isNaN(d.getTime()) ? null : d;
-  }
-  function daysAgo(d) {
-    if (!d) return Infinity;
-    return (Date.now() - d.getTime()) / 86400000;
-  }
-  function relTime(d) {
-    if (!d) return "—";
-    var days = daysAgo(d);
-    if (days < 1) return "今天";
-    if (days < 2) return "昨天";
-    if (days < 30) return Math.floor(days) + " 天前";
-    return d.toISOString().slice(0, 10);
-  }
-  function todayStr() { return new Date().toISOString().slice(0, 10); }
 
-  function allTests() { return window.MODEL_TESTS || []; }
+  function tests() { return window.MODEL_TESTS || []; }
+  function samples() { return window.SAMPLES || []; }
   function findTest(id) {
-    var list = allTests();
-    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    var l = tests();
+    for (var i = 0; i < l.length; i++) if (l[i].id === id) return l[i];
     return null;
   }
-
-  // ---------------- 判定 ----------------
-  function verdictOf(rec) {
-    if (rec.source === "archive") return rec.claim;
-    var v = CFG.verdict || {};
-    var min = v.minVotes || 3;
-    var total = rec.up + rec.down;
-    if (total < min) return "pending";
-    var ratio = rec.up / total;
-    if (ratio >= (v.failRatio || 2 / 3)) return "fail";
-    if (ratio <= (v.passRatio || 1 / 3)) return "pass";
-    return "suspect";
-  }
-  var VERDICT_TEXT = { fail: "降智", pass: "正常", suspect: "有争议", pending: "待验证" };
-  function badge(v, extra) {
-    return '<span class="badge ' + v + '">' + VERDICT_TEXT[v] + (extra || "") + "</span>";
+  function samplesOf(id) {
+    return samples().filter(function (s) { return s.testId === id; })
+      .sort(function (a, b) { return (b.date || "").localeCompare(a.date || ""); });
   }
 
-  // ---------------- 存档层 ----------------
-  function archiveRecords() {
-    return (window.MODEL_RECORDS || []).map(function (r) {
-      var d = parseDate(r.date) || parseDate(r.createdAt);
-      return {
-        key: r.id,
-        source: "archive",
-        testId: r.testId,
-        testTitle: r.testTitle || (findTest(r.testId) || {}).title || r.testId,
-        model: r.model,
-        channel: r.channel || "",
-        date: d,
-        claim: r.result === "pending" ? "pending" : r.result,
-        link: r.src || "",
-        note: r.note || "",
-        contributor: "",
-        up: 0, down: 0, issueUrl: ""
-      };
-    });
-  }
-
-  // ---------------- Issue 解析 ----------------
-  function splitSections(body) {
-    var out = {};
-    if (!body) return out;
-    var re = /^###[ \t]+(.+?)[ \t]*$/gm, m, marks = [];
-    while ((m = re.exec(body))) marks.push({ label: m[1].trim(), start: m.index + m[0].length });
-    for (var i = 0; i < marks.length; i++) {
-      var end = i + 1 < marks.length ? body.lastIndexOf("###", marks[i + 1].start) : body.length;
-      var val = body.slice(marks[i].start, end).trim();
-      if (/^_no response_$/i.test(val)) val = "";
-      out[marks[i].label] = val;
-    }
-    return out;
-  }
-
-  function normTest(raw) {
-    if (!raw) return "";
-    var inParen = raw.match(/\(([a-z0-9][a-z0-9-]*)\)/i);
-    if (inParen && findTest(inParen[1])) return inParen[1];
-    var list = allTests();
-    for (var i = 0; i < list.length; i++) {
-      if (raw === list[i].id || raw.indexOf(list[i].id) >= 0) return list[i].id;
-      if (raw.indexOf(list[i].title) >= 0) return list[i].id;
-    }
-    return raw.trim();
-  }
-
-  function normClaim(raw) {
-    var s = (raw || "").toLowerCase();
-    if (s.indexOf("降智") >= 0 || s.indexOf("fail") >= 0) return "fail";
-    if (s.indexOf("存疑") >= 0 || s.indexOf("争议") >= 0 || s.indexOf("suspect") >= 0) return "suspect";
-    if (s.indexOf("正常") >= 0 || s.indexOf("pass") >= 0) return "pass";
-    return "pending";
-  }
-
-  function parseIssue(issue) {
-    if (!issue || issue.pull_request) return null;
-    var L = CFG.labels || {};
-    var sec = splitSections(issue.body);
-    var testId = normTest(sec[L.test]);
-    var model = (sec[L.model] || "").split("\n")[0].trim();
-    if (!testId || !model) return null;
-
-    var linkRaw = sec[L.link] || "";
-    var urlMatch = linkRaw.match(/https?:\/\/\S+/);
-    var dateRaw = (sec[L.date] || "").match(/\d{4}-\d{1,2}-\d{1,2}/);
-    var rx = issue.reactions || {};
-
-    return {
-      key: "gh-" + issue.number,
-      source: "live",
-      testId: testId,
-      testTitle: (findTest(testId) || {}).title || testId,
-      model: model,
-      channel: (sec[L.channel] || "").split("\n")[0].trim(),
-      date: parseDate(dateRaw ? dateRaw[0] : issue.created_at),
-      claim: normClaim(sec[L.claim]),
-      link: urlMatch ? urlMatch[0] : "",
-      note: sec[L.note] || "",
-      contributor: (issue.user && issue.user.login) || "",
-      up: rx["+1"] || 0,
-      down: rx["-1"] || 0,
-      issueUrl: issue.html_url
-    };
-  }
-
-  // ---------------- 实时层 ----------------
-  function readCache() {
-    try {
-      var raw = sessionStorage.getItem(CACHE_KEY);
-      if (!raw) return null;
-      var o = JSON.parse(raw);
-      if (Date.now() - o.at > (CFG.cacheTtlMs || 300000)) return null;
-      return o;
-    } catch (e) { return null; }
-  }
-  function writeCache(issues) {
-    try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), issues: issues })); } catch (e) {}
-  }
-
-  function fetchJSON(url) {
-    if (typeof fetch !== "function") return Promise.reject(new Error("no fetch"));
-    return fetch(url, { headers: { Accept: "application/vnd.github+json" } }).then(function (r) {
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      return r.json();
-    });
-  }
-
-  function loadLive() {
-    var cached = readCache();
-    if (cached) return Promise.resolve({ issues: cached.issues, source: "live", at: cached.at });
-
-    return fetchJSON(API_URL).then(function (issues) {
-      writeCache(issues);
-      return { issues: issues, source: "live", at: Date.now() };
-    }).catch(function () {
-      return fetchJSON(CFG.snapshotUrl || "data/snapshot.json").then(function (snap) {
-        var issues = snap.issues || [];
-        if (!issues.length) return { issues: [], source: "archive", at: null };
-        return { issues: issues, source: "snapshot", at: parseDate(snap.generatedAt) };
-      }).catch(function () {
-        return { issues: [], source: "archive", at: null };
+  // ---------- 缩略图 ----------
+  var io = null;
+  function observer() {
+    if (io) return io;
+    io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        var box = e.target;
+        io.unobserve(box);
+        var src = box.getAttribute("data-src");
+        if (!src) return;
+        var f = document.createElement("iframe");
+        f.setAttribute("sandbox", "allow-scripts");
+        f.setAttribute("loading", "lazy");
+        f.setAttribute("tabindex", "-1");
+        f.setAttribute("aria-hidden", "true");
+        f.src = src;
+        f.addEventListener("load", function () {
+          var ph = $(".ph", box);
+          if (ph) ph.remove();
+        });
+        box.appendChild(f);
+        scaleThumb(box);
       });
+    }, { rootMargin: "300px" });
+    return io;
+  }
+
+  function scaleThumb(box) {
+    var f = box.querySelector("iframe");
+    if (!f) return;
+    var k = box.clientWidth / THUMB_W;
+    f.style.transform = "scale(" + k + ")";
+    f.style.height = Math.round(box.clientHeight / k) + "px";
+  }
+
+  function scaleAll() {
+    Array.prototype.forEach.call(document.querySelectorAll(".thumb"), scaleThumb);
+  }
+
+  function thumbHtml(src, label) {
+    return '<div class="thumb" data-src="' + esc(src) + '">' +
+      '<div class="ph">' + esc(label || "载入中") + "</div></div>";
+  }
+
+  function mountThumbs(root) {
+    Array.prototype.forEach.call((root || document).querySelectorAll(".thumb[data-src]"), function (b) {
+      observer().observe(b);
     });
   }
 
-  // ---------------- 渲染：脉搏 ----------------
-  function renderPulse() {
-    var recs = STATE.records;
-    var recent = recs.filter(function (r) { return daysAgo(r.date) <= 7; });
-    var judged = recent.filter(function (r) { return verdictOf(r) !== "pending"; });
-    var fails = judged.filter(function (r) { return verdictOf(r) === "fail"; });
+  // ---------- 列表视图 ----------
+  function renderList() {
+    var list = tests();
+    $("#tests-aside").textContent = list.length + " 道题 · " + samples().length + " 个样例";
 
-    var cls, title, sub;
-    if (!judged.length) {
-      cls = "idle"; title = "暂无近期判定";
-      sub = "最近 7 天还没有形成结论的战报。跑一道题，提交第一条。";
-    } else if (!fails.length) {
-      cls = "ok"; title = "近期未见降智";
-      sub = "最近 7 天的 " + judged.length + " 条已判定战报全部正常或有争议，没有被判为降智的模型。";
-    } else if (fails.length / judged.length >= 0.5 && fails.length >= 3) {
-      cls = "bad"; title = "多个模型正在降智";
-      sub = "最近 7 天 " + judged.length + " 条已判定战报中有 " + fails.length + " 条被判为降智，涉及 " +
-        uniq(fails.map(function (r) { return r.model; })).join("、") + "。";
-    } else {
-      cls = "warn"; title = "局部模型疑似降智";
-      sub = "最近 7 天有 " + fails.length + " 条战报被判为降智：" +
-        uniq(fails.map(function (r) { return r.model; })).join("、") + "。其余模型表现正常。";
-    }
+    $("#test-list").innerHTML = list.map(function (t) {
+      var ss = samplesOf(t.id);
+      var strip = ss.length
+        ? ss.slice(0, 4).map(function (s) { return thumbHtml(s.src, s.model); }).join("")
+        : '<div class="tc-empty" style="grid-column:1/-1">还没有样例<br>等你来投第一个</div>';
+      return '<article class="test-card" data-id="' + esc(t.id) + '">' +
+        "<div>" +
+          '<h3 class="tc-title">' + esc(t.title) + "</h3>" +
+          '<div class="tc-meta">' + esc((t.tags || []).join(" · ")) +
+            '<span class="dot">·</span><span class="num">' + ss.length + "</span> 个样例</div>" +
+          '<div class="tc-prompt">' + esc(t.prompt) + "</div>" +
+        "</div>" +
+        '<div class="tc-strip">' + strip + "</div>" +
+        "</article>";
+    }).join("");
 
-    var el = $("#pulse-status");
-    el.className = "pulse-status " + cls;
-    el.textContent = title;
-    $("#pulse-sub").textContent = sub;
-
-    var last24 = recs.filter(function (r) { return daysAgo(r.date) <= 1; }).length;
-    var votes = recs.reduce(function (n, r) { return n + r.up + r.down; }, 0);
-    $("#pulse-stats").innerHTML = [
-      stat(last24, "24 小时新增"),
-      stat(recent.length, "近 7 天战报"),
-      stat(recs.length, "累计战报"),
-      stat(votes, "累计票数")
-    ].join("");
-  }
-  function stat(k, l) {
-    return '<div><div class="stat-k num">' + k + '</div><div class="stat-l">' + l + "</div></div>";
-  }
-  function uniq(arr) {
-    return arr.filter(function (v, i) { return arr.indexOf(v) === i; });
+    mountThumbs($("#test-list"));
   }
 
-  function renderNotice() {
-    var el = $("#data-notice");
-    if (STATE.source === "live") { el.className = "notice hidden"; return; }
-    el.className = "notice";
-    if (STATE.source === "snapshot") {
-      el.textContent = "GitHub 实时数据读取失败（可能触发了 60 次/小时的 API 限流），当前显示仓库快照" +
-        (STATE.staleAt ? "（生成于 " + STATE.staleAt.toISOString().slice(0, 10) + "）" : "") + "，票数可能滞后。";
-    } else {
-      el.textContent = "当前离线或无法访问 GitHub，仅显示仓库内的基准存档记录，社区战报与票数不可用。";
-    }
+  // ---------- 详情视图 ----------
+  var detailState = { id: null, filter: "all" };
+
+  function renderDetail(id) {
+    var t = findTest(id);
+    if (!t) { location.hash = "#/"; return; }
+    detailState.id = id;
+
+    $("#d-title").textContent = t.title;
+
+    var src = t.source || {};
+    $("#d-src").innerHTML = src.url
+      ? "题目来源：" + esc(src.author || src.handle || "原帖") +
+        ' <a href="' + esc(src.url) + '" target="_blank" rel="noopener">查看原帖 ↗</a>' +
+        (src.note ? "<br>" + esc(src.note) : "")
+      : "";
+
+    $("#d-prompt").textContent = t.prompt;
+
+    $("#d-refs").innerHTML = refsHtml(t.reference || {});
+
+    $("#btn-submit-this").href = issueUrl(t);
+
+    renderSamples();
   }
 
-  // ---------------- 渲染：模型状态 ----------------
-  function renderModels() {
-    var byModel = {};
-    STATE.records.forEach(function (r) {
-      var m = byModel[r.model] || (byModel[r.model] = { model: r.model, recs: [] });
-      m.recs.push(r);
-    });
-    var rows = Object.keys(byModel).map(function (k) {
-      var m = byModel[k];
-      m.recs.sort(function (a, b) { return (b.date || 0) - (a.date || 0); });
-      var latest = m.recs[0];
-      return {
-        model: m.model,
-        verdict: verdictOf(latest),
-        isArchive: latest.source === "archive",
-        up: m.recs.reduce(function (n, r) { return n + r.up; }, 0),
-        down: m.recs.reduce(function (n, r) { return n + r.down; }, 0),
-        count: m.recs.length,
-        date: latest.date
-      };
-    }).sort(function (a, b) { return (b.date || 0) - (a.date || 0); });
-
-    $("#model-rows").innerHTML = rows.length ? rows.map(function (r) {
-      return "<tr>" +
-        '<td class="model-name">' + esc(r.model) + "</td>" +
-        "<td>" + badge(r.verdict) + (r.isArchive ? ' <span class="self-claim">基准</span>' : "") + "</td>" +
-        '<td class="hide-sm num">' + (r.up + r.down ? "👍 " + r.up + " · 👎 " + r.down : "—") + "</td>" +
-        '<td class="hide-sm num">' + r.count + "</td>" +
-        '<td class="t-right">' + relTime(r.date) + "</td>" +
-        "</tr>";
-    }).join("") : '<tr><td colspan="5" class="empty">暂无数据</td></tr>';
+  function bullets(arr) {
+    return '<ul class="pts">' + arr.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>";
   }
 
-  // ---------------- 渲染：战报 ----------------
-  function renderFilters() {
-    var ids = uniq(STATE.records.map(function (r) { return r.testId; }));
-    var html = ['<button class="chip' + (STATE.filter === "all" ? " on" : "") + '" data-f="all">全部</button>'];
-    html.push('<button class="chip' + (STATE.filter === "fail" ? " on" : "") + '" data-f="fail">仅降智</button>');
-    ids.forEach(function (id) {
-      var t = findTest(id);
-      html.push('<button class="chip' + (STATE.filter === id ? " on" : "") + '" data-f="' + esc(id) + '">' +
-        esc(t ? t.title : id) + "</button>");
-    });
-    $("#report-filters").innerHTML = html.join("");
-  }
+  function refsHtml(ref) {
+    var cols = [];
 
-  function visibleRecords() {
-    var f = STATE.filter;
-    return STATE.records.filter(function (r) {
-      if (f === "all") return true;
-      if (f === "fail") return verdictOf(r) === "fail";
-      return r.testId === f;
-    }).sort(function (a, b) { return (b.date || 0) - (a.date || 0); });
-  }
-
-  function renderReports() {
-    var list = visibleRecords();
-    $("#reports-count").textContent = list.length + " 条";
-    $("#report-list").innerHTML = list.length ? list.map(reportHtml).join("")
-      : '<div class="empty">没有符合条件的战报。</div>';
-  }
-
-  function reportHtml(r) {
-    var v = verdictOf(r);
-    var meta = [esc(r.testTitle)];
-    if (r.channel) meta.push(esc(r.channel));
-    meta.push(relTime(r.date));
-    if (r.contributor) meta.push("@" + esc(r.contributor));
-
-    var actions = [];
-    if (r.link) {
-      actions.push('<a class="link-btn" href="' + esc(r.link) + '" target="_blank" rel="noopener">查看作品 ↗</a>');
-    }
-    if (r.source === "live") {
-      actions.push('<a class="vote" href="' + esc(r.issueUrl) + '" target="_blank" rel="noopener" ' +
-        'title="在 GitHub 上用 👍 表示同样复现降智">👍 复现降智 <span class="c">' + r.up + "</span></a>");
-      actions.push('<a class="vote" href="' + esc(r.issueUrl) + '" target="_blank" rel="noopener" ' +
-        'title="在 GitHub 上用 👎 表示我测是正常的">👎 我测正常 <span class="c">' + r.down + "</span></a>");
-      if (v === "pending") {
-        actions.push('<span class="self-claim">提交者自报：' + VERDICT_TEXT[r.claim] + "</span>");
-      }
-    } else {
-      actions.push('<span class="self-claim">维护者按 checklist 判定的基准存档，不参与投票</span>');
-    }
-
-    return '<article class="report">' +
-      '<div class="r-top">' + badge(v) + '<span class="r-model">' + esc(r.model) + "</span></div>" +
-      '<div class="r-meta">' + meta.join('<span class="sep">/</span>') + "</div>" +
-      (r.note ? '<p class="r-note clamp">' + esc(r.note) + "</p>" : "") +
-      '<div class="r-actions">' + actions.join("") + "</div>" +
-      "</article>";
-  }
-
-  // ---------------- 渲染：题库 ----------------
-  function renderTests() {
-    $("#test-list").innerHTML = allTests().map(function (t) {
-      var ref = t.reference || {};
-      var block = function (title, arr) {
-        if (!arr || !arr.length) return "";
-        return '<div class="check-title">' + title + '</div><ul class="check">' +
-          arr.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>";
-      };
-      return '<details class="test"><summary>' + esc(t.title) +
-        '<span class="test-tags">' + esc((t.tags || []).join(" · ")) + "</span></summary>" +
-        '<div class="test-body">' +
-        '<pre class="prompt">' + esc(t.prompt) + "</pre>" +
-        '<button class="ghost" data-copy="' + esc(t.id) + '">复制 prompt</button>' +
-        block("通过标准", ref.checklist) +
-        block("降智特征", ref.failSigns) +
-        (t.source && t.source.url
-          ? '<div class="check-title">来源：<a href="' + esc(t.source.url) + '" target="_blank" rel="noopener">' +
-            esc(t.source.author || t.source.handle || "原帖") + " ↗</a></div>"
+    if (ref.answer) {
+      cols.push("<div>" +
+        '<div class="col-title">参考答案</div>' +
+        '<div class="answer">' + esc(ref.answer) + "</div>" +
+        (ref.explanation
+          ? '<details class="expl"><summary>为什么是这个答案</summary>' +
+            '<div class="txt">' + esc(ref.explanation) + "</div></details>"
           : "") +
-        "</div></details>";
-    }).join("");
-  }
-
-  // ---------------- 提交 ----------------
-  function renderForm() {
-    $("#f-test").innerHTML = allTests().map(function (t) {
-      return '<option value="' + esc(t.id) + '">' + esc(t.title) + "</option>";
-    }).join("");
-    $("#f-date").value = todayStr();
-  }
-
-  function buildIssueUrl() {
-    var t = findTest($("#f-test").value);
-    var model = $("#f-model").value.trim();
-    if (!model) { toast("请填写模型名称"); return null; }
-    var claimSel = $("#f-claim");
-    var F = CFG.fields || {};
-
-    var q = {};
-    q.template = CFG.issueTemplate || "report.yml";
-    q.labels = CFG.reportLabel || "report";
-    q.title = "[report] " + model + " · " + (t ? t.title : "");
-    q[F.test] = t ? t.title + " (" + t.id + ")" : "";
-    q[F.model] = model;
-    q[F.channel] = $("#f-channel").value.trim();
-    q[F.date] = $("#f-date").value || todayStr();
-    q[F.claim] = claimSel.options[claimSel.selectedIndex].text;
-    q[F.link] = $("#f-link").value.trim();
-    q[F.note] = $("#f-note").value.trim();
-
-    var parts = Object.keys(q).filter(function (k) { return q[k]; }).map(function (k) {
-      return encodeURIComponent(k) + "=" + encodeURIComponent(q[k]);
-    });
-    return REPO_URL + "/issues/new?" + parts.join("&");
-  }
-
-  // ---------------- 启动 ----------------
-  function refresh(live) {
-    var recs = archiveRecords();
-    if (live && live.issues.length) {
-      live.issues.forEach(function (i) {
-        var r = parseIssue(i);
-        if (r) recs.push(r);
-      });
+        "</div>");
     }
-    STATE.records = recs;
-    STATE.source = live ? live.source : "archive";
-    STATE.staleAt = live && live.at ? new Date(live.at) : null;
 
-    renderPulse();
-    renderNotice();
-    renderModels();
-    renderFilters();
-    renderReports();
+    if (ref.checklist && ref.checklist.length) {
+      cols.push("<div>" +
+        '<div class="col-title">可以看什么</div>' + bullets(ref.checklist) + "</div>");
+    }
+
+    if (ref.failSigns && ref.failSigns.length) {
+      cols.push("<div>" +
+        '<div class="col-title">常见的崩法</div>' + bullets(ref.failSigns) + "</div>");
+    }
+
+    return cols.join("");
   }
 
+  function renderSamples() {
+    var all = samplesOf(detailState.id);
+    var counts = { all: all.length };
+    all.forEach(function (s) { counts[s.observation] = (counts[s.observation] || 0) + 1; });
+
+    var keys = ["all"].concat(Object.keys(OBS).filter(function (k) { return counts[k]; }));
+    $("#d-filters").innerHTML = all.length ? keys.map(function (k) {
+      var label = k === "all" ? "全部" : OBS[k];
+      return '<button class="chip' + (detailState.filter === k ? " on" : "") + '" data-f="' + k + '">' +
+        esc(label) + ' <span class="num">' + (counts[k] || 0) + "</span></button>";
+    }).join("") : "";
+
+    var list = detailState.filter === "all" ? all
+      : all.filter(function (s) { return s.observation === detailState.filter; });
+
+    $("#d-count").textContent = all.length ? all.length + " 个样例" : "";
+
+    if (!all.length) {
+      $("#d-samples").innerHTML = '<div class="empty">这道题还没有任何样例。<br>' +
+        '<a class="btn" href="' + esc(issueUrl(findTest(detailState.id))) +
+        '" target="_blank" rel="noopener">投第一个</a></div>';
+      return;
+    }
+
+    $("#d-samples").innerHTML = '<div class="grid">' + list.map(sampleHtml).join("") + "</div>";
+    mountThumbs($("#d-samples"));
+  }
+
+  function sampleHtml(s) {
+    var meta = [];
+    if (s.channel) meta.push(esc(s.channel));
+    if (s.date) meta.push(esc(s.date));
+    if (s.contributor) meta.push("@" + esc(s.contributor));
+
+    var hasWork = !!s.src;
+    return '<article class="sample' + (hasWork ? "" : " text") + '">' +
+      (hasWork ? thumbHtml(s.src, s.model) : "") +
+      '<div class="body">' +
+        (s.answer ? '<div class="s-answer">' + esc(s.answer) + "</div>" : "") +
+        '<div class="s-model">' + esc(s.model) + "</div>" +
+        '<div class="s-meta">' + meta.join(" · ") + "</div>" +
+        (s.note ? '<p class="s-note" data-toggle>' + esc(s.note) + "</p>" : "") +
+        '<div class="s-foot">' +
+          '<span class="tag ' + esc(s.observation) + '">' + esc(OBS[s.observation] || "未评价") + "</span>" +
+          (hasWork
+            ? '<a class="s-open" href="' + esc(s.src) + '" target="_blank" rel="noopener">打开完整作品 ↗</a>'
+            : "") +
+        "</div>" +
+      "</div></article>";
+  }
+
+  // ---------- 投稿链接 ----------
+  function issueUrl(t) {
+    var F = CFG.fields || {};
+    var q = {};
+    q.template = CFG.issueTemplate || "sample.yml";
+    q.labels = CFG.sampleLabel || "sample";
+    if (t) {
+      q.title = "[sample] " + t.title;
+      q[F.test] = t.title + " (" + t.id + ")";
+    } else {
+      q.title = "[sample] ";
+    }
+    q[F.date] = new Date().toISOString().slice(0, 10);
+    return REPO_URL + "/issues/new?" + Object.keys(q).filter(function (k) { return q[k]; })
+      .map(function (k) { return encodeURIComponent(k) + "=" + encodeURIComponent(q[k]); }).join("&");
+  }
+
+  // ---------- 路由 ----------
+  function route() {
+    var h = location.hash || "#/";
+    var m = h.match(/^#\/t\/(.+)$/);
+    if (m) {
+      $("#view-list").classList.add("hidden");
+      $("#view-detail").classList.remove("hidden");
+      detailState.filter = "all";
+      renderDetail(decodeURIComponent(m[1]));
+      window.scrollTo(0, 0);
+    } else {
+      $("#view-detail").classList.add("hidden");
+      $("#view-list").classList.remove("hidden");
+      if (h === "#tests" || h === "#submit") {
+        var el = $(h === "#tests" ? "#tests" : "#submit");
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+    requestAnimationFrame(scaleAll);
+  }
+
+  // ---------- 事件 ----------
   function bind() {
-    $("#report-filters").addEventListener("click", function (e) {
+    $("#test-list").addEventListener("click", function (e) {
+      var card = e.target.closest(".test-card");
+      if (card) location.hash = "#/t/" + encodeURIComponent(card.getAttribute("data-id"));
+    });
+
+    $("#d-filters").addEventListener("click", function (e) {
       var b = e.target.closest("button[data-f]");
       if (!b) return;
-      STATE.filter = b.getAttribute("data-f");
-      renderFilters();
-      renderReports();
+      detailState.filter = b.getAttribute("data-f");
+      renderSamples();
+      requestAnimationFrame(scaleAll);
     });
 
-    $("#test-list").addEventListener("click", function (e) {
-      var b = e.target.closest("button[data-copy]");
-      if (!b) return;
-      var t = findTest(b.getAttribute("data-copy"));
+    $("#d-samples").addEventListener("click", function (e) {
+      var n = e.target.closest("[data-toggle]");
+      if (n) n.classList.toggle("open");
+    });
+
+    $("#btn-copy").addEventListener("click", function () {
+      var t = findTest(detailState.id);
       if (!t) return;
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(t.prompt).then(function () { toast("prompt 已复制"); },
+        navigator.clipboard.writeText(t.prompt).then(
+          function () { toast("提示词已复制"); },
           function () { toast("复制失败，请手动选中"); });
       } else {
         toast("当前环境不支持自动复制");
       }
     });
 
-    $("#btn-submit").addEventListener("click", function () {
-      var url = buildIssueUrl();
-      if (!url) return;
-      window.open(url, "_blank", "noopener");
+    window.addEventListener("hashchange", route);
+    window.addEventListener("resize", function () {
+      clearTimeout(scaleAll._t);
+      scaleAll._t = setTimeout(scaleAll, 120);
     });
   }
 
   function init() {
     $("#tagline").textContent = CFG.tagline || "";
     $("#repo-link").href = REPO_URL;
-    $("#foot-minvotes").textContent = (CFG.verdict && CFG.verdict.minVotes) || 3;
-    $("#foot-repo").innerHTML = '源码与全部战报：<a href="' + REPO_URL + '" target="_blank" rel="noopener">' +
-      esc(REPO) + "</a>";
+    $("#btn-submit").href = issueUrl(null);
+    $("#foot-repo").innerHTML = '源码与全部样例：<a href="' + REPO_URL +
+      '" target="_blank" rel="noopener">' + esc(REPO) + "</a>";
 
-    renderTests();
-    renderForm();
+    renderList();
     bind();
-    refresh(null);
-
-    loadLive().then(refresh).catch(function () { /* 已降级到存档层 */ });
+    route();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

@@ -3,30 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>模型降智监测 · 社区实测与公开计票</title>
-<meta name="description" content="社区实测 AI 模型是否降智，证据公开，结论由 GitHub 投票产生。">
+<title>降智测试题集 · 同一道题，不同模型的真实产出</title>
+<meta name="description" content="一套可复制的模型测试题，加上各模型在同一题上的真实产出样例。不给结论，不排名，你自己看。">
 <link rel="icon" href="favicon.svg">
 <style>
   :root {
-    --bg: #ffffff;
-    --soft: #fafafa;
-    --ink: #0a0a0a;
-    --ink-2: #565656;
-    --ink-3: #8e8e8e;
-    --line: #e6e6e6;
-    --line-2: #f0f0f0;
-    --ok: #15803d;
-    --ok-bg: #f2f9f4;
-    --warn: #b45309;
-    --warn-bg: #fdf8f0;
-    --bad: #b91c1c;
-    --bad-bg: #fdf4f4;
-    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", Inter, system-ui, sans-serif;
+    --bg: #15130f;
+    --panel: #1d1a15;
+    --panel-2: #24201a;
+    --line: #2f2a22;
+    --line-2: #3d362c;
+    --ink: #ece5d7;
+    --ink-2: #a89d8a;
+    --ink-3: #6e6656;
+    --accent: #e0873f;
+    --ok: #7fa86a;
+    --issue: #c96b5a;
+    --mixed: #c2a04e;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
     --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   }
 
   * { box-sizing: border-box; }
-
   html { -webkit-text-size-adjust: 100%; }
 
   body {
@@ -35,184 +33,196 @@
     color: var(--ink);
     font-family: var(--sans);
     font-size: 15px;
-    line-height: 1.65;
+    line-height: 1.7;
     -webkit-font-smoothing: antialiased;
   }
 
-  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 28px; }
 
-  a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
-  a:hover { border-bottom-color: var(--ink); }
-
-  h1, h2, h3 { font-weight: 600; letter-spacing: -0.01em; margin: 0; }
-
+  a { color: var(--ink); text-decoration: none; }
+  h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.015em; }
   .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 
   /* ---------- header ---------- */
-  header {
-    border-bottom: 1px solid var(--line);
-    padding: 22px 0;
-    margin-bottom: 56px;
+  header { border-bottom: 1px solid var(--line); }
+  .head-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 18px 0; flex-wrap: wrap;
   }
-  .head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-  .brand { font-size: 16px; font-weight: 600; }
-  .brand span { color: var(--ink-3); font-weight: 400; margin-left: 10px; font-size: 13px; }
-  .head-nav { display: flex; gap: 18px; font-size: 13px; color: var(--ink-2); }
-  .head-nav a { border: none; color: var(--ink-2); }
-  .head-nav a:hover { color: var(--ink); }
+  .brand { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  .brand a { display: inline-flex; align-items: baseline; gap: 10px; }
+  .brand em { font-style: normal; color: var(--ink-3); font-weight: 400; font-size: 13px; }
+  .head-nav { display: flex; gap: 20px; font-size: 13px; color: var(--ink-2); }
+  .head-nav a:hover { color: var(--accent); }
 
-  /* ---------- sections ---------- */
-  section { margin-bottom: 64px; scroll-margin-top: 24px; }
-  .sec-head {
-    display: flex; align-items: baseline; justify-content: space-between;
-    gap: 12px; margin-bottom: 18px; padding-bottom: 10px;
-    border-bottom: 1px solid var(--line);
-  }
-  .sec-head h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); font-weight: 600; }
-  .sec-head .aside { font-size: 12px; color: var(--ink-3); }
+  /* ---------- hero ---------- */
+  .hero { padding: 76px 0 60px; border-bottom: 1px solid var(--line); }
+  .hero h1 { font-size: 46px; line-height: 1.15; letter-spacing: -0.03em; max-width: 18ch; }
+  .hero p { color: var(--ink-2); font-size: 17px; max-width: 54ch; margin: 20px 0 0; }
+  .hero-note { color: var(--ink-3); font-size: 14px; max-width: 54ch; margin: 14px 0 0; }
+  .hero-acts { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
 
-  /* ---------- pulse ---------- */
-  .pulse-status {
-    font-size: 40px; line-height: 1.25; font-weight: 600;
-    letter-spacing: -0.02em; margin-bottom: 14px;
-  }
-  .pulse-status.ok { color: var(--ok); }
-  .pulse-status.warn { color: var(--warn); }
-  .pulse-status.bad { color: var(--bad); }
-  .pulse-status.idle { color: var(--ink-3); }
-  .pulse-sub { color: var(--ink-2); font-size: 15px; max-width: 60ch; }
-  .pulse-stats { display: flex; gap: 40px; margin-top: 28px; flex-wrap: wrap; }
-  .stat-k { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; }
-  .stat-l { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
-
-  .notice {
-    margin-top: 24px; padding: 10px 14px; border: 1px solid var(--line);
-    background: var(--soft); font-size: 13px; color: var(--ink-2);
-  }
-  .notice.hidden { display: none; }
-
-  /* ---------- model table ---------- */
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th {
-    text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
-    color: var(--ink-3); font-weight: 600; padding: 0 12px 8px 0; border-bottom: 1px solid var(--line);
-  }
-  td { padding: 12px 12px 12px 0; border-bottom: 1px solid var(--line-2); vertical-align: top; }
-  tr:last-child td { border-bottom: none; }
-  td.model-name { font-weight: 500; }
-  .t-right { text-align: right; padding-right: 0; }
-
-  /* ---------- verdict badge ---------- */
-  .badge {
-    display: inline-block; font-size: 12px; font-weight: 500;
-    padding: 2px 8px; border: 1px solid; white-space: nowrap;
-  }
-  .badge.fail { color: var(--bad); border-color: #eccaca; background: var(--bad-bg); }
-  .badge.pass { color: var(--ok); border-color: #c8e3d0; background: var(--ok-bg); }
-  .badge.suspect { color: var(--warn); border-color: #ecd9b8; background: var(--warn-bg); }
-  .badge.pending { color: var(--ink-3); border-color: var(--line); background: var(--soft); }
-
-  /* ---------- reports ---------- */
-  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-  .chip {
-    font: inherit; font-size: 13px; cursor: pointer;
-    padding: 4px 12px; border: 1px solid var(--line); background: transparent; color: var(--ink-2);
-  }
-  .chip:hover { border-color: var(--ink-3); }
-  .chip.on { background: var(--ink); color: #fff; border-color: var(--ink); }
-
-  .report { padding: 20px 0; border-bottom: 1px solid var(--line-2); }
-  .report:last-child { border-bottom: none; }
-  .r-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
-  .r-model { font-weight: 600; font-size: 16px; letter-spacing: -0.01em; }
-  .r-meta { font-size: 13px; color: var(--ink-3); }
-  .r-meta .sep { margin: 0 6px; color: var(--line); }
-  .r-note { color: var(--ink-2); font-size: 14px; margin: 8px 0 0; max-width: 72ch; }
-  .r-note.clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  .r-actions { display: flex; align-items: center; gap: 16px; margin-top: 12px; flex-wrap: wrap; font-size: 13px; }
-  .vote {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 4px 10px; border: 1px solid var(--line); color: var(--ink-2);
-  }
-  .vote:hover { border-color: var(--ink); color: var(--ink); }
-  .vote .c { font-family: var(--mono); font-variant-numeric: tabular-nums; }
-  .link-btn { font-size: 13px; color: var(--ink-2); }
-  .self-claim { font-size: 12px; color: var(--ink-3); }
-
-  .empty { color: var(--ink-3); font-size: 14px; padding: 28px 0; }
-
-  /* ---------- submit form ---------- */
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
-  .field { display: flex; flex-direction: column; gap: 6px; }
-  .field.full { grid-column: 1 / -1; }
-  label { font-size: 12px; color: var(--ink-3); letter-spacing: 0.02em; }
-  input, select, textarea {
-    font: inherit; font-size: 14px; color: var(--ink); background: var(--bg);
-    border: 1px solid var(--line); padding: 8px 10px; border-radius: 0;
-  }
-  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--ink); }
-  textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
   .btn {
     font: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
-    padding: 10px 20px; border: 1px solid var(--ink); background: var(--ink); color: #fff;
+    padding: 10px 20px; border: 1px solid var(--accent); background: var(--accent); color: #17130d;
+    display: inline-block;
   }
-  .btn:hover { background: #333; border-color: #333; }
-  .btn:disabled { background: var(--ink-3); border-color: var(--ink-3); cursor: not-allowed; }
-  .form-foot { display: flex; align-items: center; gap: 16px; margin-top: 20px; flex-wrap: wrap; }
-  .form-hint { font-size: 12px; color: var(--ink-3); max-width: 46ch; }
+  .btn:hover { background: #eb9450; border-color: #eb9450; }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-2); }
+  .btn.ghost:hover { border-color: var(--ink-2); background: var(--panel); }
 
-  /* ---------- tests ---------- */
-  details.test { border-bottom: 1px solid var(--line-2); padding: 14px 0; }
-  details.test:last-child { border-bottom: none; }
-  details.test > summary {
-    cursor: pointer; list-style: none; display: flex; align-items: baseline;
-    gap: 12px; font-weight: 500;
+  /* ---------- sections ---------- */
+  section { padding: 56px 0; }
+  .sec-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 12px; margin-bottom: 26px;
   }
-  details.test > summary::-webkit-details-marker { display: none; }
-  details.test > summary::before { content: "+"; color: var(--ink-3); font-family: var(--mono); }
-  details.test[open] > summary::before { content: "−"; }
-  .test-tags { font-size: 12px; color: var(--ink-3); font-weight: 400; }
-  .test-body { padding: 14px 0 4px 22px; }
+  .sec-head h2 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--ink-3); font-weight: 600;
+  }
+  .sec-head .aside { font-size: 12px; color: var(--ink-3); }
+
+  /* ---------- test list ---------- */
+  .test-card {
+    display: grid; grid-template-columns: 1fr 340px; gap: 28px;
+    padding: 26px 0; border-top: 1px solid var(--line); cursor: pointer;
+    align-items: start;
+  }
+  .test-card:hover .tc-title { color: var(--accent); }
+  .tc-title { font-size: 22px; letter-spacing: -0.02em; transition: color .15s; }
+  .tc-meta { font-size: 12px; color: var(--ink-3); margin-top: 6px; }
+  .tc-meta .dot { margin: 0 8px; }
+  .tc-prompt {
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.6; color: var(--ink-2);
+    background: var(--panel); border: 1px solid var(--line); padding: 10px 12px; margin-top: 14px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .tc-strip { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .tc-empty {
+    border: 1px dashed var(--line-2); color: var(--ink-3); font-size: 13px;
+    display: flex; align-items: center; justify-content: center; min-height: 112px; text-align: center;
+  }
+
+  /* ---------- thumbnails ---------- */
+  .thumb {
+    position: relative; overflow: hidden; background: #fff;
+    border: 1px solid var(--line-2); aspect-ratio: 3 / 2;
+  }
+  .thumb iframe {
+    position: absolute; top: 0; left: 0; width: 1200px; height: 800px;
+    border: 0; transform-origin: 0 0; pointer-events: none;
+  }
+  .thumb .ph {
+    position: absolute; inset: 0; background: var(--panel-2);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-3); font-size: 11px; font-family: var(--mono);
+  }
+
+  /* ---------- detail ---------- */
+  .back { font-size: 13px; color: var(--ink-2); display: inline-block; margin-bottom: 26px; }
+  .back:hover { color: var(--accent); }
+  .detail-head { padding: 44px 0 0; }
+  .detail-head h1 { font-size: 34px; letter-spacing: -0.025em; }
+  .detail-head .src { font-size: 13px; color: var(--ink-3); margin-top: 10px; }
+  .detail-head .src a { color: var(--ink-2); border-bottom: 1px solid var(--line-2); }
+
   pre.prompt {
-    background: var(--soft); border: 1px solid var(--line); padding: 12px 14px;
-    font-family: var(--mono); font-size: 13px; line-height: 1.6;
-    white-space: pre-wrap; word-break: break-word; margin: 0 0 10px;
+    background: var(--panel); border: 1px solid var(--line); padding: 16px 18px;
+    font-family: var(--mono); font-size: 13px; line-height: 1.7; color: var(--ink);
+    white-space: pre-wrap; word-break: break-word; margin: 0;
   }
-  .check-title { font-size: 12px; color: var(--ink-3); margin: 14px 0 6px; letter-spacing: 0.02em; }
-  ul.check { margin: 0; padding-left: 18px; font-size: 13px; color: var(--ink-2); }
-  ul.check li { margin-bottom: 3px; }
-  .ghost {
-    font: inherit; font-size: 13px; cursor: pointer; padding: 4px 12px;
-    border: 1px solid var(--line); background: transparent; color: var(--ink-2);
+  .prompt-row { display: flex; gap: 12px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .col-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); margin-bottom: 10px; }
+  ul.pts { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; }
+  ul.pts li { margin-bottom: 5px; }
+  .answer {
+    font-family: var(--mono); font-size: 26px; color: var(--accent);
+    border: 1px solid var(--line-2); background: var(--panel); padding: 14px 18px; display: inline-block;
   }
-  .ghost:hover { border-color: var(--ink); color: var(--ink); }
+  details.expl { margin-top: 14px; }
+  details.expl summary {
+    cursor: pointer; font-size: 13px; color: var(--ink-2); list-style: none;
+  }
+  details.expl summary::-webkit-details-marker { display: none; }
+  details.expl summary::before { content: "+ "; font-family: var(--mono); color: var(--accent); }
+  details.expl[open] summary::before { content: "− "; }
+  details.expl .txt {
+    font-size: 13.5px; color: var(--ink-2); line-height: 1.75; margin-top: 10px;
+    border-left: 2px solid var(--line-2); padding-left: 14px;
+  }
+
+  .sample.text .body { padding-top: 16px; }
+  .s-answer { font-family: var(--mono); font-size: 20px; color: var(--ink); margin-bottom: 6px; }
+
+  /* ---------- sample grid ---------- */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+  .sample { border: 1px solid var(--line); background: var(--panel); }
+  .sample .body { padding: 14px 16px 16px; }
+  .s-model { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  .s-meta { font-size: 12px; color: var(--ink-3); margin-top: 3px; }
+  .s-note {
+    font-size: 13px; color: var(--ink-2); margin: 10px 0 0; line-height: 1.6;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .s-note.open { -webkit-line-clamp: unset; }
+  .s-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
+  .s-open { font-size: 12px; color: var(--ink-2); border-bottom: 1px solid var(--line-2); }
+  .s-open:hover { color: var(--accent); border-color: var(--accent); }
+  .tag {
+    font-size: 11px; padding: 1px 7px; border: 1px solid; white-space: nowrap;
+  }
+  .tag.ok { color: var(--ok); border-color: #3c4d33; }
+  .tag.issue { color: var(--issue); border-color: #543029; }
+  .tag.mixed { color: var(--mixed); border-color: #4d4227; }
+  .tag.unrated { color: var(--ink-3); border-color: var(--line-2); }
+
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+  .chip {
+    font: inherit; font-size: 13px; cursor: pointer; padding: 3px 12px;
+    border: 1px solid var(--line-2); background: transparent; color: var(--ink-2);
+  }
+  .chip:hover { border-color: var(--ink-2); }
+  .chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  .empty {
+    border: 1px dashed var(--line-2); padding: 44px 20px; text-align: center;
+    color: var(--ink-3); font-size: 14px;
+  }
+  .empty .btn { margin-top: 16px; }
+
+  /* ---------- submit ---------- */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 26px; }
+  .step-n { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+  .step-t { font-size: 15px; font-weight: 600; margin-top: 4px; }
+  .step-d { font-size: 13.5px; color: var(--ink-2); margin-top: 4px; }
 
   /* ---------- footer ---------- */
-  footer {
-    border-top: 1px solid var(--line); padding: 24px 0 48px;
-    font-size: 13px; color: var(--ink-3);
-  }
-  footer p { margin: 0 0 6px; max-width: 72ch; }
-  footer a { color: var(--ink-3); border-bottom-color: var(--line); }
-  footer a:hover { color: var(--ink); }
+  footer { border-top: 1px solid var(--line); padding: 28px 0 56px; font-size: 13px; color: var(--ink-3); }
+  footer p { margin: 0 0 8px; max-width: 74ch; }
+  footer a { color: var(--ink-2); border-bottom: 1px solid var(--line-2); }
+  footer a:hover { color: var(--accent); }
 
-  /* ---------- toast ---------- */
   #toast {
-    position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%);
-    background: var(--ink); color: #fff; font-size: 13px; padding: 9px 18px;
+    position: fixed; left: 50%; bottom: 34px; transform: translateX(-50%);
+    background: var(--ink); color: var(--bg); font-size: 13px; padding: 9px 18px;
     opacity: 0; pointer-events: none; transition: opacity .18s; z-index: 50;
   }
   #toast.show { opacity: 1; }
 
-  @media (max-width: 640px) {
-    .wrap { padding: 0 18px; }
-    header { margin-bottom: 40px; }
-    section { margin-bottom: 48px; }
-    .pulse-status { font-size: 30px; }
-    .pulse-stats { gap: 28px; }
-    .form-grid { grid-template-columns: 1fr; }
-    .hide-sm { display: none; }
-    table { font-size: 13px; }
+  .hidden { display: none !important; }
+
+  @media (max-width: 820px) {
+    .wrap { padding: 0 20px; }
+    .hero { padding: 52px 0 40px; }
+    .hero h1 { font-size: 32px; }
+    .test-card { grid-template-columns: 1fr; gap: 16px; }
+    .tc-strip { grid-template-columns: repeat(2, 1fr); }
+    .two-col { grid-template-columns: 1fr; gap: 22px; }
+    .steps { grid-template-columns: 1fr; gap: 16px; }
+    .detail-head h1 { font-size: 26px; }
   }
 </style>
 </head>
@@ -220,113 +230,106 @@
 
 <header>
   <div class="wrap head-row">
-    <div class="brand">模型降智监测<span id="tagline"></span></div>
+    <div class="brand">
+      <a href="#/">降智测试题集 <em id="tagline"></em></a>
+    </div>
     <nav class="head-nav">
-      <a href="#reports">战报</a>
-      <a href="#submit">提交</a>
-      <a href="#tests">题库</a>
+      <a href="#/">题目</a>
+      <a href="#submit">投稿</a>
       <a id="repo-link" href="#" target="_blank" rel="noopener">GitHub</a>
     </nav>
   </div>
 </header>
 
-<main class="wrap">
-
-  <section id="pulse">
-    <div class="pulse-status idle" id="pulse-status">加载中</div>
-    <div class="pulse-sub" id="pulse-sub">正在读取社区战报…</div>
-    <div class="pulse-stats" id="pulse-stats"></div>
-    <div class="notice hidden" id="data-notice"></div>
-  </section>
-
-  <section id="models">
-    <div class="sec-head">
-      <h2>模型状态</h2>
-      <span class="aside">按最近一次实测排序</span>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>模型</th>
-          <th>当前判定</th>
-          <th class="hide-sm">票数</th>
-          <th class="hide-sm">战报</th>
-          <th class="t-right">最近实测</th>
-        </tr>
-      </thead>
-      <tbody id="model-rows"></tbody>
-    </table>
-  </section>
-
-  <section id="reports">
-    <div class="sec-head">
-      <h2>社区战报</h2>
-      <span class="aside" id="reports-count"></span>
-    </div>
-    <div class="filters" id="report-filters"></div>
-    <div id="report-list"></div>
-  </section>
-
-  <section id="submit">
-    <div class="sec-head">
-      <h2>提交你的实测</h2>
-      <span class="aside">跳转 GitHub 完成提交</span>
-    </div>
-    <div class="form-grid">
-      <div class="field">
-        <label for="f-test">题目</label>
-        <select id="f-test"></select>
-      </div>
-      <div class="field">
-        <label for="f-model">模型（含版本）</label>
-        <input id="f-model" placeholder="例如 Gemini 3.8 Flash">
-      </div>
-      <div class="field">
-        <label for="f-channel">渠道 / 客户端</label>
-        <input id="f-channel" placeholder="例如 OpenCode 2、官方网页版">
-      </div>
-      <div class="field">
-        <label for="f-date">测试日期</label>
-        <input id="f-date" type="date">
-      </div>
-      <div class="field">
-        <label for="f-claim">你的判定</label>
-        <select id="f-claim">
-          <option value="fail">降智 — 明显不如以前</option>
-          <option value="suspect">存疑 — 部分指标退化</option>
-          <option value="pass">正常 — 符合预期</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="f-link">作品链接（Gist / CodePen / 任意可访问 URL）</label>
-        <input id="f-link" placeholder="https://gist.github.com/...">
-      </div>
-      <div class="field full">
-        <label for="f-note">说明：哪一条 checklist 没过，具体怎么崩的</label>
-        <textarea id="f-note" maxlength="500" placeholder="例如：腿为单段直线、无膝盖折点，脚与踏板脱节。"></textarea>
+<!-- ============ 列表视图 ============ -->
+<div id="view-list">
+  <div class="hero">
+    <div class="wrap">
+      <h1>同一道题，不同模型的真实产出</h1>
+      <p>一套可以直接复制的测试题，加上各个模型跑出来的原始结果。全部可以点开看。</p>
+      <p class="hero-note">这里不给结论，不排名，不投票。「降智」本来就没有客观阈值——同一份产出，有人觉得能用，有人觉得崩了。你自己看。</p>
+      <div class="hero-acts">
+        <a class="btn" href="#tests">挑一道题</a>
+        <a class="btn ghost" href="#submit">投个样例</a>
       </div>
     </div>
-    <div class="form-foot">
-      <button class="btn" id="btn-submit">前往 GitHub 提交</button>
-      <span class="form-hint">提交会打开一个已填好的 GitHub Issue 页面，你点一下 Submit 即可。需要 GitHub 账号。</span>
-    </div>
-  </section>
+  </div>
 
   <section id="tests">
-    <div class="sec-head">
-      <h2>公共题库</h2>
-      <span class="aside">复制 prompt，按 checklist 判定</span>
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>题目</h2>
+        <span class="aside" id="tests-aside"></span>
+      </div>
+      <div id="test-list"></div>
     </div>
-    <div id="test-list"></div>
+  </section>
+</div>
+
+<!-- ============ 详情视图 ============ -->
+<div id="view-detail" class="hidden">
+  <div class="wrap detail-head">
+    <a class="back" href="#/">← 全部题目</a>
+    <h1 id="d-title"></h1>
+    <div class="src" id="d-src"></div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <div class="sec-head"><h2>提示词</h2><span class="aside">原样复制，改了就失去可比性</span></div>
+      <pre class="prompt" id="d-prompt"></pre>
+      <div class="prompt-row">
+        <button class="btn ghost" id="btn-copy">复制提示词</button>
+        <a class="btn ghost" id="btn-submit-this" href="#">投一个这道题的样例</a>
+      </div>
+    </div>
   </section>
 
-</main>
+  <section>
+    <div class="wrap two-col" id="d-refs"></div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>样例</h2>
+        <span class="aside" id="d-count"></span>
+      </div>
+      <div class="filters" id="d-filters"></div>
+      <div id="d-samples"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ 投稿 ============ -->
+<section id="submit">
+  <div class="wrap">
+    <div class="sec-head"><h2>投稿</h2><span class="aside">需要 GitHub 账号</span></div>
+    <div class="steps">
+      <div>
+        <div class="step-n">01</div>
+        <div class="step-t">复制一道题</div>
+        <div class="step-d">原样发给你要测的模型，不要改提示词。</div>
+      </div>
+      <div>
+        <div class="step-n">02</div>
+        <div class="step-t">留下产出</div>
+        <div class="step-d">把结果贴成 Gist，或直接把 HTML 代码贴进 issue。</div>
+      </div>
+      <div>
+        <div class="step-n">03</div>
+        <div class="step-t">开一个 issue</div>
+        <div class="step-d">合并后作品会存进仓库，在题目页直接可看。</div>
+      </div>
+    </div>
+    <a class="btn" id="btn-submit" href="#" target="_blank" rel="noopener">开一个投稿 issue</a>
+  </div>
+</section>
 
 <footer>
   <div class="wrap">
-    <p><strong>结论怎么来的：</strong>每条战报对应一个 GitHub Issue。<span class="num">👍</span> 表示「我也复现了降智」，<span class="num">👎</span> 表示「我测是正常的」。满 <span class="num" id="foot-minvotes">3</span> 票后，降智票占比 ≥ 2/3 判为降智，≤ 1/3 判为正常，之间为有争议。</p>
-    <p>标注「基准」的条目是维护者按 checklist 逐项判定的存档作品，不参与投票。</p>
-    <p>数据实时来自 GitHub Issues，未认证 API 限 60 次/小时/IP，页面缓存 5 分钟；读取失败时自动降级到仓库内快照并在上方提示。</p>
+    <p>本站只陈列证据。样例上的「符合预期 / 有明显问题」是<strong>提交者自己的观察</strong>，用来帮你筛选，不是本站的判定。</p>
+    <p>所有作品由本站托管在仓库里，不依赖外链，不会失效。题目来源标在每道题下方。</p>
     <p id="foot-repo"></p>
   </div>
 </footer>
@@ -335,7 +338,7 @@
 
 <script src="data/config.js"></script>
 <script src="data/tests.js"></script>
-<script src="data/records.js"></script>
+<script src="data/samples.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
