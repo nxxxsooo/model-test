@@ -1,0 +1,35 @@
+name: covers
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: every sample with src must have a preview mapping and file
+        run: |
+          node -e '
+            const fs = require("fs"), vm = require("vm");
+            const load = (f, k) => {
+              const ctx = { window: {} };
+              vm.createContext(ctx);
+              vm.runInContext(fs.readFileSync(f, "utf8"), ctx, { filename: f });
+              return ctx.window[k];
+            };
+            const samples = load("data/samples.js", "SAMPLES");
+            const previews = load("data/previews.js", "SAMPLE_PREVIEWS");
+            let bad = 0;
+            for (const s of samples) {
+              if (!s.src) continue;
+              const p = previews[s.id];
+              if (!p) { console.error("missing mapping:", s.id); bad = 1; continue; }
+              if (!fs.existsSync(p)) { console.error("missing file:", s.id, p); bad = 1; }
+              if (!fs.existsSync(s.src)) { console.error("missing src:", s.id, s.src); bad = 1; }
+            }
+            process.exit(bad);
+          '

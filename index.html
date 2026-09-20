@@ -1,451 +1,129 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>降智测试题集 · 同一道题，不同模型的真实产出</title>
-<meta name="description" content="一套可复制的模型测试题，加上各模型在同一题上的真实产出样例。不给结论，不排名，你自己看。">
-<link rel="icon" href="favicon.svg">
-<style>
-  :root {
-    --bg: #15130f;
-    --panel: #1d1a15;
-    --panel-2: #24201a;
-    --line: #2f2a22;
-    --line-2: #3d362c;
-    --ink: #ece5d7;
-    --ink-2: #a89d8a;
-    --ink-3: #6e6656;
-    --accent: #e0873f;
-    --ok: #7fa86a;
-    --issue: #c96b5a;
-    --mixed: #c2a04e;
-    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-  }
-
-  * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
-
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: var(--sans);
-    font-size: 15px;
-    line-height: 1.65;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 28px; }
-
-  a { color: var(--ink); text-decoration: none; }
-  h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.015em; }
-  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
-
-  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-  /* ---------- header ---------- */
-  header { border-bottom: 1px solid var(--line); }
-  .head-row {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 16px; padding: 14px 0; flex-wrap: wrap;
-  }
-  .brand { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
-  .brand a { display: inline-flex; align-items: baseline; gap: 10px; }
-  .brand em { font-style: normal; color: var(--ink-3); font-weight: 400; font-size: 13px; }
-  .head-nav { display: flex; gap: 20px; font-size: 13px; color: var(--ink-2); }
-  .head-nav a:hover { color: var(--accent); }
-
-  /* ---------- intro ---------- */
-  .intro { padding: 40px 0 34px; border-bottom: 1px solid var(--line); }
-  .intro h1 { font-size: 27px; line-height: 1.3; letter-spacing: -0.02em; max-width: 26ch; }
-  .intro p { color: var(--ink-2); font-size: 15px; max-width: 62ch; margin: 12px 0 0; }
-  .intro-note { color: var(--ink-3); font-size: 13.5px; max-width: 62ch; margin: 8px 0 0; }
-
-  .btn {
-    font: inherit; font-size: 13.5px; font-weight: 500; cursor: pointer;
-    padding: 7px 16px; border: 1px solid var(--accent); background: var(--accent); color: #17130d;
-    display: inline-block;
-  }
-  .btn:hover { background: #eb9450; border-color: #eb9450; }
-  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-2); }
-  .btn.ghost:hover { border-color: var(--ink-2); background: var(--panel); }
-  .btn.sm { font-size: 12.5px; padding: 5px 12px; }
-  .btn[disabled] { opacity: .4; cursor: not-allowed; }
-  .btn[disabled]:hover { background: var(--accent); border-color: var(--accent); }
-  .btn.ghost[disabled]:hover { background: transparent; border-color: var(--line-2); }
-
-  /* ---------- sections ---------- */
-  section { padding: 34px 0; }
-  .sec-head {
-    display: flex; align-items: baseline; justify-content: space-between;
-    gap: 12px; margin-bottom: 16px;
-  }
-  .sec-head h2 {
-    font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.1em;
-    color: var(--ink-3); font-weight: 600;
-  }
-  .sec-head .aside { font-size: 12px; color: var(--ink-3); }
-
-  /* ---------- test index ---------- */
-  .t-row {
-    display: grid; grid-template-columns: 1fr 232px; gap: 24px;
-    padding: 18px 0; border-top: 1px solid var(--line); align-items: center;
-  }
-  .t-row:hover .t-title { color: var(--accent); }
-  .t-main { min-width: 0; }
-  .t-title { font-size: 19px; letter-spacing: -0.015em; transition: color .15s; }
-  .t-title a::after { content: ""; position: absolute; inset: 0; }
-  .t-row { position: relative; }
-  .t-meta { font-size: 12px; color: var(--ink-3); margin-top: 4px; }
-  .t-meta .dot { margin: 0 7px; opacity: .6; }
-  .t-prompt {
-    font-family: var(--mono); font-size: 12px; line-height: 1.55; color: var(--ink-2);
-    margin-top: 9px; max-width: 70ch;
-    display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
-  }
-  .t-side { display: flex; justify-content: flex-end; }
-  .t-none {
-    font-size: 12.5px; color: var(--ink-3); border: 1px dashed var(--line-2);
-    padding: 7px 12px; text-align: center; width: 100%;
-  }
-  .t-none a { color: var(--ink-2); border-bottom: 1px solid var(--line-2); position: relative; z-index: 1; }
-  .t-none a:hover { color: var(--accent); }
-
-  /* ---------- thumbnails ---------- */
-  .thumb {
-    position: relative; overflow: hidden; background: #fff;
-    border: 1px solid var(--line-2); aspect-ratio: 3 / 2; width: 100%;
-  }
-  .thumb iframe {
-    position: absolute; top: 0; left: 0; width: 1200px; height: 800px;
-    border: 0; transform-origin: 0 0;
-  }
-  .thumb.static iframe { pointer-events: none; }
-  .thumb .ph {
-    position: absolute; inset: 0; background: var(--panel-2); border: 0;
-    display: flex; flex-direction: column; gap: 6px;
-    align-items: center; justify-content: center;
-    color: var(--ink-3); font-size: 11.5px; font-family: var(--mono);
-    cursor: pointer; font: inherit; font-size: 11.5px; text-align: center; padding: 8px;
-  }
-  .thumb .ph:hover { color: var(--ink); background: #2a251e; }
-  .thumb .ph .run {
-    display: inline-flex; align-items: center; gap: 5px;
-    border: 1px solid var(--line-2); padding: 3px 10px; color: var(--ink-2); font-size: 11.5px;
-  }
-  .thumb .ph:hover .run { border-color: var(--accent); color: var(--accent); }
-  .thumb .ph .mdl { color: var(--ink-2); font-size: 11.5px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-  /* ---------- detail ---------- */
-  .back { font-size: 13px; color: var(--ink-2); display: inline-block; margin-bottom: 18px; }
-  .back:hover { color: var(--accent); }
-  .detail-head { padding: 30px 0 0; }
-  .detail-head h1 { font-size: 28px; letter-spacing: -0.022em; }
-  .detail-head .dmeta { font-size: 12.5px; color: var(--ink-3); margin-top: 7px; }
-  .detail-head .dmeta .dot { margin: 0 7px; opacity: .6; }
-  .detail-head .src { font-size: 12.5px; color: var(--ink-3); margin-top: 6px; }
-  .detail-head .src a { color: var(--ink-2); border-bottom: 1px solid var(--line-2); }
-  .detail-head .src a:hover { color: var(--accent); }
-
-  pre.prompt {
-    background: var(--panel); border: 1px solid var(--line); padding: 14px 16px;
-    font-family: var(--mono); font-size: 12.5px; line-height: 1.65; color: var(--ink);
-    white-space: pre-wrap; word-break: break-word; margin: 0;
-  }
-  .prompt-row { display: flex; gap: 10px; margin-top: 10px; align-items: center; flex-wrap: wrap; }
-
-  .ref-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 28px; align-items: start; }
-  /* checklist 条目比崩法长，给它更多宽度，避免一列换行一列留白 */
-  .ref-cols.two-up { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
-  .ref-cols.three-up { grid-template-columns: auto minmax(0, 1.35fr) minmax(0, 1fr); }
-  .col-title { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); margin-bottom: 9px; }
-  .ck { margin: 0; padding: 0; list-style: none; font-size: 13.5px; color: var(--ink-2); }
-  .ck li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; margin-bottom: 6px; line-height: 1.55; }
-  .ck .k { font-family: var(--mono); color: var(--accent); font-size: 12px; padding-top: 1px; }
-  ul.pts { margin: 0; padding-left: 17px; color: var(--ink-2); font-size: 13.5px; }
-  ul.pts li { margin-bottom: 5px; line-height: 1.55; }
-  .answer {
-    font-family: var(--mono); font-size: 24px; color: var(--accent);
-    border: 1px solid var(--line-2); background: var(--panel); padding: 11px 16px; display: inline-block;
-  }
-  details.expl { margin-top: 12px; }
-  details.expl summary { cursor: pointer; font-size: 13px; color: var(--ink-2); list-style: none; }
-  details.expl summary::-webkit-details-marker { display: none; }
-  details.expl summary::before { content: "+ "; font-family: var(--mono); color: var(--accent); }
-  details.expl[open] summary::before { content: "− "; }
-  details.expl .txt {
-    font-size: 13px; color: var(--ink-2); line-height: 1.7; margin-top: 9px;
-    border-left: 2px solid var(--line-2); padding-left: 13px;
-  }
-
-  /* ---------- sample grid ---------- */
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); gap: 18px; }
-  .sample { border: 1px solid var(--line); background: var(--panel); display: flex; flex-direction: column; }
-  .sample.picked { border-color: var(--accent); }
-  .sample .body { padding: 12px 14px 14px; flex: 1; display: flex; flex-direction: column; }
-  .s-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-  .s-model { font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.4; }
-  .s-meta { font-size: 11.5px; color: var(--ink-3); margin-top: 2px; }
-  .s-answer { font-family: var(--mono); font-size: 19px; color: var(--ink); margin-bottom: 4px; }
-  .s-note {
-    font-size: 12.5px; color: var(--ink-2); margin: 9px 0 0; line-height: 1.6; cursor: pointer;
-    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-  }
-  .s-note.open { -webkit-line-clamp: unset; }
-  .s-foot {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line);
-  }
-  .s-open { font-size: 12px; color: var(--ink-2); border-bottom: 1px solid var(--line-2); }
-  .s-open:hover { color: var(--accent); border-color: var(--accent); }
-
-  /* observation: 文字标记，不是本站评分徽章 */
-  .obs { font-size: 11.5px; color: var(--ink-2); display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
-  .obs::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ink-3); flex: none; }
-  .obs.ok::before { background: var(--ok); }
-  .obs.issue::before { background: var(--issue); }
-  .obs.mixed::before { background: var(--mixed); }
-
-  .pick { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-3); cursor: pointer; white-space: nowrap; }
-  .pick input { accent-color: var(--accent); margin: 0; cursor: pointer; }
-  .pick:hover { color: var(--ink-2); }
-
-  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-  .chip {
-    font: inherit; font-size: 12.5px; cursor: pointer; padding: 3px 11px;
-    border: 1px solid var(--line-2); background: transparent; color: var(--ink-2);
-  }
-  .chip:hover { border-color: var(--ink-2); }
-  .chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-
-  .empty {
-    border: 1px dashed var(--line-2); padding: 36px 20px; text-align: center;
-    color: var(--ink-3); font-size: 13.5px;
-  }
-  .empty .btn { margin-top: 14px; }
-
-  /* ---------- compare ---------- */
-  #cmp-bar {
-    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(140%);
-    background: var(--panel-2); border: 1px solid var(--line-2);
-    display: flex; align-items: center; gap: 14px; padding: 9px 14px;
-    font-size: 12.5px; color: var(--ink-2); z-index: 40; transition: transform .2s;
-    max-width: calc(100vw - 32px);
-  }
-  #cmp-bar.show { transform: translateX(-50%) translateY(0); }
-  #cmp-bar .hint { color: var(--ink-3); }
-  #cmp-clear { font: inherit; font-size: 12.5px; background: none; border: 0; color: var(--ink-3); cursor: pointer; padding: 0; }
-  #cmp-clear:hover { color: var(--issue); }
-
-  #cmp {
-    position: fixed; inset: 0; background: var(--bg); z-index: 60;
-    display: flex; flex-direction: column;
-  }
-  .cmp-head {
-    display: flex; align-items: center; justify-content: space-between; gap: 14px;
-    padding: 12px 20px; border-bottom: 1px solid var(--line); flex: none; flex-wrap: wrap;
-  }
-  .cmp-head h2 { font-size: 14px; }
-  .cmp-head .sub { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
-  .cmp-tools { display: flex; align-items: center; gap: 10px; }
-  .cmp-body { flex: 1; overflow: auto; padding: 18px 20px; }
-  .cmp-grid { display: grid; gap: 16px; align-items: start; }
-  .cmp-pane { border: 1px solid var(--line); background: var(--panel); display: flex; flex-direction: column; min-width: 0; }
-  .cmp-pane .cp-head { padding: 9px 12px; border-bottom: 1px solid var(--line); }
-  .cmp-pane .cp-model { font-size: 13.5px; font-weight: 600; line-height: 1.4; }
-  .cmp-pane .cp-meta { font-size: 11.5px; color: var(--ink-3); margin-top: 2px; }
-  .cmp-pane .cp-note { font-size: 12px; color: var(--ink-2); line-height: 1.55; padding: 9px 12px; border-top: 1px solid var(--line); }
-  .audio-note { font-size: 12px; color: var(--ink-3); }
-
-  /* ---------- submit ---------- */
-  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-bottom: 20px; }
-  .step-n { font-family: var(--mono); font-size: 11.5px; color: var(--accent); }
-  .step-t { font-size: 14.5px; font-weight: 600; margin-top: 3px; }
-  .step-d { font-size: 13px; color: var(--ink-2); margin-top: 3px; line-height: 1.55; }
-  .submit-inline {
-    display: flex; align-items: center; justify-content: space-between; gap: 14px;
-    border: 1px solid var(--line); background: var(--panel); padding: 12px 16px; flex-wrap: wrap;
-  }
-  .submit-inline p { margin: 0; font-size: 13px; color: var(--ink-2); }
-
-  /* ---------- footer ---------- */
-  footer { border-top: 1px solid var(--line); padding: 24px 0 48px; font-size: 12.5px; color: var(--ink-3); }
-  footer p { margin: 0 0 7px; max-width: 76ch; line-height: 1.6; }
-  footer a { color: var(--ink-2); border-bottom: 1px solid var(--line-2); }
-  footer a:hover { color: var(--accent); }
-
-  #toast {
-    position: fixed; left: 50%; bottom: 34px; transform: translateX(-50%);
-    background: var(--ink); color: var(--bg); font-size: 13px; padding: 9px 18px;
-    opacity: 0; pointer-events: none; transition: opacity .18s; z-index: 80;
-  }
-  #toast.show { opacity: 1; }
-
-  .hidden { display: none !important; }
-  .sr {
-    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
-  }
-
-  @media (max-width: 860px) {
-    .wrap { padding: 0 18px; }
-    .intro { padding: 30px 0 26px; }
-    .intro h1 { font-size: 22px; }
-    .t-row { grid-template-columns: 1fr; gap: 12px; }
-    .t-side { justify-content: stretch; }
-    .t-side .thumb { max-width: 260px; }
-    .steps { grid-template-columns: 1fr; gap: 14px; }
-    .detail-head h1 { font-size: 23px; }
-    .grid { grid-template-columns: 1fr; }
-    .ref-cols, .ref-cols.two-up, .ref-cols.three-up { grid-template-columns: 1fr; gap: 20px; }
-    .cmp-grid { grid-template-columns: 1fr !important; }
-    .cmp-body { padding: 14px; }
-    #cmp-bar { left: 16px; right: 16px; transform: translateY(140%); max-width: none; }
-    #cmp-bar.show { transform: translateY(0); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    * { transition: none !important; }
-  }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <title>降智测试题集 · 同一道题，不同模型的真实产出</title>
+  <meta name="description" content="复制同一道测试题，查看不同模型的原始产出，选择样例并排对照。观察来自贡献者，本站不排名。">
+  <link rel="icon" href="favicon.svg">
+  <link rel="stylesheet" href="app.css">
 </head>
 <body>
-
-<header>
-  <div class="wrap head-row">
-    <div class="brand">
-      <a href="#/">降智测试题集 <em id="tagline"></em></a>
-    </div>
-    <nav class="head-nav">
-      <a href="#/">题目</a>
-      <a href="#submit">投稿</a>
-      <a id="repo-link" href="#" target="_blank" rel="noopener">GitHub</a>
-    </nav>
-  </div>
-</header>
-
-<!-- ============ 列表视图 ============ -->
-<div id="view-list">
-  <div class="intro">
-    <div class="wrap">
-      <h1>同一道题，不同模型的真实产出</h1>
-      <p>一套可以直接复制的测试题，加上各个模型跑出来的原始结果。全部可以点开看，也可以挑几个并排比。</p>
-      <p class="intro-note">这里不给结论，不排名，不投票。「降智」本来就没有客观阈值——同一份产出，有人觉得能用，有人觉得崩了。你自己看。</p>
-    </div>
-  </div>
-
-  <section id="tests">
-    <div class="wrap">
-      <div class="sec-head">
-        <h2>题目</h2>
-        <span class="aside" id="tests-aside"></span>
+  <div id="site">
+    <a class="skip-link" href="#main">跳到正文</a>
+    <header class="site-header">
+      <a class="brand" href="#/">降智测试题集</a>
+      <nav class="header-nav" aria-label="主导航">
+        <a id="nav-tests" href="#/">题目</a>
+        <a id="nav-submit" href="#submit">投稿</a>
+      </nav>
+      <div class="header-actions">
+        <a id="repo-link" class="repo-link" href="#" target="_blank" rel="noopener">GitHub ↗</a>
+        <a class="btn" href="#submit">贡献一个样例</a>
       </div>
-      <div id="test-list"></div>
-    </div>
-  </section>
+    </header>
 
-  <section id="submit">
-    <div class="wrap">
-      <div class="sec-head"><h2>投稿</h2><span class="aside">需要 GitHub 账号</span></div>
-      <div class="steps">
-        <div>
-          <div class="step-n">01</div>
-          <div class="step-t">复制一道题</div>
-          <div class="step-d">原样发给你要测的模型，不要改提示词。</div>
+    <div class="app-layout">
+      <aside class="sidebar" aria-label="题目目录">
+        <a class="sidebar-heading" id="all-tests" href="#/">全部题目</a>
+        <nav id="test-nav" aria-label="选择一道题"></nav>
+        <div class="sidebar-foot">
+          <p id="sidebar-count"></p>
+          <p>只陈列原始产出。<br>观察来自贡献者。</p>
         </div>
-        <div>
-          <div class="step-n">02</div>
-          <div class="step-t">留下产出</div>
-          <div class="step-d">把结果贴成 Gist，或直接把 HTML 代码贴进 issue。</div>
+      </aside>
+
+      <main id="main" tabindex="-1">
+        <div id="view-list">
+          <div class="page-heading">
+            <div><h1>同一道题，真实产出。</h1><p>复制提示词，查看原始作品，选几个样例并排对照。</p></div>
+            <span class="muted inventory" id="tests-aside"></span>
+          </div>
+          <section id="tests" aria-label="已有样例的题目">
+            <div class="test-grid" id="test-list"></div>
+          </section>
+          <section class="pending-section" id="pending-section" aria-labelledby="pending-title">
+            <h2 class="section-label" id="pending-title">还没有样例的题目</h2>
+            <div id="pending-tests"></div>
+          </section>
+          <div class="collection-foot"><p>原样跑题 → 留下产出 → 提交 GitHub issue</p><a href="#submit">怎么投稿 ↗</a></div>
         </div>
-        <div>
-          <div class="step-n">03</div>
-          <div class="step-t">开一个 issue</div>
-          <div class="step-d">合并后作品会存进仓库，在题目页直接可看。</div>
+
+        <div id="view-detail" hidden>
+          <a class="back-link" href="#/">← 全部题目</a>
+          <div class="page-heading detail-heading">
+            <div><h1 id="d-title" tabindex="-1"></h1><div class="meta" id="d-meta"></div><div class="source" id="d-src"></div></div>
+            <a class="btn secondary" id="btn-submit-this" href="#" target="_blank" rel="noopener">投这道题的样例</a>
+          </div>
+
+          <section class="prompt-panel" aria-label="原始提示词">
+            <div class="prompt-content"><span class="prompt-label">原始提示词</span><pre id="d-prompt"></pre></div>
+            <button type="button" class="btn" id="btn-copy">复制提示词</button>
+          </section>
+
+          <div class="detail-workspace">
+            <aside class="guide" id="d-guide" aria-label="观察参考">
+              <details id="guide-details" open>
+                <summary><span class="guide-desktop-title">对照着看</span><span class="guide-mobile-title">观察要点与常见问题</span></summary>
+                <div class="guide-body"><p class="muted" id="d-ref-aside"></p><div id="d-refs"></div></div>
+              </details>
+            </aside>
+            <section class="sample-section" aria-labelledby="samples-heading">
+              <div class="samples-toolbar"><h2 id="samples-heading">样例 <span class="num" id="d-count"></span></h2><div class="filters" id="d-filters" aria-label="按贡献者观察筛选"></div></div>
+              <div id="d-samples"></div>
+            </section>
+          </div>
         </div>
-      </div>
-      <a class="btn" id="btn-submit" href="#" target="_blank" rel="noopener">开一个投稿 issue</a>
+
+        <section id="view-submit" hidden aria-labelledby="submit-title">
+          <a class="back-link" href="#/">← 全部题目</a>
+          <div class="page-heading"><div><h1 id="submit-title" tabindex="-1">留下你的真实产出。</h1><p>原样测试，保留结果，再把你的观察分享给大家。</p></div></div>
+          <ol class="submit-steps">
+            <li><h2>复制一道题</h2><p>原样发给你要测的模型，保留完整提示词。</p><a href="#/">去挑一道题 ↗</a></li>
+            <li><h2>留下产出</h2><p>保存完整 HTML 或回答，并记录模型名、渠道、日期。可以贴 Gist，也可以把代码贴进 issue。</p></li>
+            <li><h2>提交 GitHub issue</h2><p>附上原始产出和你的观察；收录后，样例会出现在题目页。</p></li>
+          </ol>
+          <a class="btn" id="btn-submit" href="#" target="_blank" rel="noopener">开一个投稿 issue ↗</a>
+          <p class="muted">需要 GitHub 账号。本站只展示证据，不对模型排名。</p>
+        </section>
+
+        <footer class="site-footer">
+          <p>「符合预期／有明显问题／部分退化」是贡献者的观察，用于筛选，不是本站的判定。</p>
+          <p id="foot-repo"></p>
+        </footer>
+      </main>
     </div>
-  </section>
-</div>
 
-<!-- ============ 详情视图 ============ -->
-<div id="view-detail" class="hidden">
-  <div class="wrap detail-head">
-    <a class="back" href="#/">← 全部题目</a>
-    <h1 id="d-title"></h1>
-    <div class="dmeta" id="d-meta"></div>
-    <div class="src" id="d-src"></div>
-  </div>
-
-  <section>
-    <div class="wrap">
-      <div class="sec-head"><h2>提示词</h2><span class="aside">原样复制，改了就失去可比性</span></div>
-      <pre class="prompt" id="d-prompt"></pre>
-      <div class="prompt-row">
-        <button class="btn ghost" id="btn-copy">复制提示词</button>
-        <a class="btn ghost" id="btn-submit-this" href="#" target="_blank" rel="noopener">投一个这道题的样例</a>
-      </div>
-    </div>
-  </section>
-
-  <section id="d-ref-sec">
-    <div class="wrap">
-      <div class="sec-head"><h2>评分口径</h2><span class="aside" id="d-ref-aside"></span></div>
-      <div class="ref-cols" id="d-refs"></div>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap">
-      <div class="sec-head">
-        <h2>样例</h2>
-        <span class="aside" id="d-count"></span>
-      </div>
-      <div class="filters" id="d-filters"></div>
-      <div id="d-samples"></div>
-    </div>
-  </section>
-</div>
-
-<!-- ============ 并排对比 ============ -->
-<div id="cmp-bar">
-  <span><span class="num" id="cmp-n">0</span> 个已选</span>
-  <span class="hint" id="cmp-hint">再选 1 个就能比</span>
-  <button class="btn sm" id="cmp-open" disabled>并排对比</button>
-  <button id="cmp-clear">清空</button>
-</div>
-
-<div id="cmp" class="hidden" role="dialog" aria-modal="true" aria-labelledby="cmp-title">
-  <div class="cmp-head">
-    <div>
-      <h2 id="cmp-title">并排对比</h2>
-      <div class="sub" id="cmp-sub"></div>
-    </div>
-    <div class="cmp-tools">
-      <span class="audio-note">默认静音，逐个点「运行」</span>
-      <button class="btn ghost sm" id="cmp-close">关闭</button>
+    <div class="compare-bar" id="cmp-bar" hidden aria-label="已选样例">
+      <span class="selection-count">已选 <span id="cmp-n" class="num">0</span> / 4</span>
+      <span class="selection-names" id="cmp-names"></span>
+      <span class="selection-hint" id="cmp-hint">再选 1 个就能比</span>
+      <button type="button" class="btn" id="cmp-open" disabled>并排对比</button>
+      <button type="button" class="text-button" id="cmp-clear">清空</button>
     </div>
   </div>
-  <div class="cmp-body">
-    <div class="cmp-grid" id="cmp-grid"></div>
-  </div>
-</div>
 
-<footer>
-  <div class="wrap">
-    <p>本站只陈列证据。样例上的「符合预期 / 有明显问题」是<strong>提交者自己的观察</strong>，用来帮你筛选，不是本站的判定。</p>
-    <p>所有作品由本站托管在仓库里，不依赖外链，不会失效。题目来源标在每道题下方。</p>
-    <p id="foot-repo"></p>
-  </div>
-</footer>
+  <dialog id="cmp" aria-labelledby="cmp-title" aria-describedby="cmp-sub">
+    <header class="compare-header">
+      <button type="button" class="btn secondary" id="cmp-close">← 返回样例</button>
+      <div class="compare-heading"><h2 id="cmp-title">并排对比</h2><p id="cmp-sub"></p></div>
+      <span class="muted compare-limit">最多对比 4 个</span>
+      <button type="button" class="btn secondary" id="cmp-adjust">调整选择</button>
+    </header>
+    <div class="compare-body">
+      <section class="prompt-panel compare-prompt" aria-label="共用提示词"><pre id="cmp-prompt"></pre><button type="button" class="btn secondary" id="cmp-copy">复制提示词</button></section>
+      <div class="compare-grid" id="cmp-grid"></div>
+      <p class="compare-caption">逐个运行原始作品，细节由你判断。观察来自贡献者，本站不做排名。</p>
+    </div>
+  </dialog>
 
-<div id="toast"></div>
-
-<script src="data/config.js"></script>
-<script src="data/tests.js"></script>
-<script src="data/samples.js"></script>
-<script src="app.js"></script>
+  <div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+  <noscript><p class="noscript">请启用 JavaScript 以浏览题目和样例，也可以直接查看本仓库的 data/ 与 results/ 文件。</p></noscript>
+  <script src="data/config.js"></script>
+  <script src="data/tests.js"></script>
+  <script src="data/samples.js"></script>
+  <script src="data/previews.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
