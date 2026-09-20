@@ -61,10 +61,11 @@ jobs:
           BRANCH="sample/${{ github.event.issue.number }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b "$BRANCH"
+          git checkout -B "$BRANCH"
           git add results "data/samples.js" "data/previews.js" "assets/previews/${{ steps.stage.outputs.sample_id }}.webp"
           node --check data/samples.js 2>/dev/null || node -e 'const fs=require("fs"),vm=require("vm");const c={window:{}};vm.createContext(c);vm.runInContext(fs.readFileSync("data/samples.js","utf8"),c);console.log("samples:",c.window.SAMPLES.length)'
-          git commit -m "sample: ${{ steps.stage.outputs.model }} on ${{ steps.stage.outputs.test_id }} (#${{ github.event.issue.number }})"
+          git commit -m "sample: ${{ steps.stage.outputs.model }} on ${{ steps.stage.outputs.test_id }} (#${{ github.event.issue.number }})" || true
+          git fetch origin "$BRANCH" || true
           git push origin "$BRANCH" --force-with-lease
           EXISTING=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number')
           if [ -z "$EXISTING" ]; then
