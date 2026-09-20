@@ -1,0 +1,81 @@
+name: sample-intake
+on:
+  issues:
+    types: [opened, edited, labeled]
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+jobs:
+  intake:
+    if: contains(github.event.issue.labels.*.name, 'sample')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: parse issue and stage files
+        id: stage
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+        run: |
+          cat > /tmp/issue-body.md <<'BODYEOF'
+          ${{ github.event.issue.body }}
+          BODYEOF
+          ISSUE_BODY_FILE=/tmp/issue-body.md python3 .github/scripts/auto-sample.py
+      - name: screenshot preview
+        if: steps.stage.outcome == 'success'
+        run: |
+          sudo apt-get install -y libwebp-dev > /dev/null 2>&1 || true
+          pip install pillow playwright
+          python3 -m playwright install chromium
+          python3 -m http.server 8777 --bind 127.0.0.1 &
+          SERVER_PID=$!
+          sleep 2
+          python3 - <<'EOF'
+          import os, subprocess
+          from PIL import Image
+          sid = "${{ steps.stage.outputs.sample_id }}"
+          test = "${{ steps.stage.outputs.test_id }}"
+          slug = "${{ steps.stage.outputs.slug }}"
+          png = "/tmp/%s.png" % sid
+          subprocess.run(["python3", "-m", "playwright", "screenshot",
+                          "--viewport-size=1200,800", "--wait-for-timeout=2500",
+                          "http://127.0.0.1:8777/results/%s/%s/index.html" % (test, slug),
+                          png], check=True)
+          Image.open(png).convert("RGB").save(
+              "assets/previews/%s.webp" % sid, "WEBP", quality=86, method=6)
+          print("preview ok")
+          EOF
+          kill $SERVER_PID
+      - name: open PR
+        if: steps.stage.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="sample/${{ github.event.issue.number }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add results "data/samples.js" "data/previews.js" "assets/previews/${{ steps.stage.outputs.sample_id }}.webp"
+          node --check data/samples.js 2>/dev/null || node -e 'const fs=require("fs"),vm=require("vm");const c={window:{}};vm.createContext(c);vm.runInContext(fs.readFileSync("data/samples.js","utf8"),c);console.log("samples:",c.window.SAMPLES.length)'
+          git commit -m "sample: ${{ steps.stage.outputs.model }} on ${{ steps.stage.outputs.test_id }} (#${{ github.event.issue.number }})"
+          git push origin "$BRANCH" --force-with-lease
+          EXISTING=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number')
+          if [ -z "$EXISTING" ]; then
+            PR=$(gh pr create --title "收录样例：${{ steps.stage.outputs.model }}（${{ steps.stage.outputs.test_id }}）" --body "来自 #${{ github.event.issue.number }} 的自动收录，合并后样例即上线。Closes #${{ github.event.issue.number }}")
+            gh issue comment "${{ github.event.issue.number }}" --body "已转成 PR：$PR，合并后自动上线。"
+          else
+            gh issue comment "${{ github.event.issue.number }}" --body "已更新到同一 PR（#$EXISTING），合并后自动上线。"
+          fi
+      - name: comment on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" --body "自动收录失败了，麻烦检查下：题目是否按「标题 (id)」格式填写、产出是否有 Gist 链接或完整的 HTML 代码块。人工看到后会跟进。"
