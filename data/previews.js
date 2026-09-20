@@ -19,5 +19,6 @@ window.SAMPLE_PREVIEWS = {
   "s-tri-codem-flight": "assets/previews/codem-flight-trilogy.webp",
   "s-tri-muse-spark-1-3": "assets/previews/muse-spark-trilogy.webp",
   "s-tri-gemini-3-8-flash": "assets/previews/gemini-trilogy.webp",
-  "s-tri-sol-medium": "assets/previews/sol-medium-trilogy.webp"
+  "s-tri-sol-medium": "assets/previews/sol-medium-trilogy.webp",
+  "s-pelican-bike-e2e-probe": "assets/previews/s-pelican-bike-e2e-probe.webp"
 };
