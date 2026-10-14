@@ -14,9 +14,16 @@
   var VIEW_H = 800;
   var MAX_COMPARE = 4;
   var TITLE = "降智测试题集";
-  var state = { testId: null, filter: "all", picked: [], compare: false };
-  var guideMedia = window.matchMedia("(min-width: 1200px)");
-  var guideDesktop = guideMedia.matches;
+  var state = {
+    testId: null,
+    filter: "all",
+    picked: [],
+    compare: false,
+    compareRowLayout: false,
+    promptExpanded: false,
+    guideOpen: window.matchMedia("(min-width: 1400px)").matches,
+    railCollapsed: false
+  };
   var returnFocus = null;
 
   function $(s, root) { return (root || document).querySelector(s); }
@@ -40,7 +47,6 @@
   function observation(s) { return OBS[s.observation] || "未评价"; }
   function samplesOf(id) {
     return samples().filter(function (s) { return s.testId === id; }).sort(function (a, b) {
-      // 同一天先展示有封面的样例；不按贡献者观察或模型质量排序。
       return (b.date || "").localeCompare(a.date || "") ||
         Number(!!PREVIEWS[b.id]) - Number(!!PREVIEWS[a.id]) || samples().indexOf(a) - samples().indexOf(b);
     });
@@ -99,11 +105,18 @@
     $("#sidebar-count").textContent = tests().length + " 道题 · " + samples().length + " 个样例";
   }
 
-  function coverHtml(s) {
-    if (!s || !PREVIEWS[s.id]) return '<span class="cover-fallback">查看这道题的原始样例</span>';
-    return '<img data-cover src="' + esc(PREVIEWS[s.id]) + '" alt="' + esc(s.model) +
-      ' 的原始作品截图" width="1200" height="800" loading="eager" fetchpriority="high">' +
-      '<span class="cover-fallback" hidden>封面暂不可用，仍可查看原始样例</span>';
+  function mosaicHtml(list) {
+    var withCover = list.filter(function (s) { return !!PREVIEWS[s.id]; }).slice(0, 4);
+    if (!withCover.length) {
+      return '<div class="mosaic-cell"><span class="cover-fallback">查看这道题的原始样例</span></div>';
+    }
+    return withCover.map(function (s, idx) {
+      return '<div class="mosaic-cell">' +
+        '<img data-cover src="' + esc(PREVIEWS[s.id]) + '" alt="' + esc(s.model) +
+        ' 的原始作品截图" width="1200" height="800" loading="' + (idx === 0 ? "eager" : "lazy") + '">' +
+        '<span class="cover-fallback" hidden>封面暂不可用</span>' +
+        '<span class="mosaic-tag">' + esc(s.model) + "</span></div>";
+    }).join("");
   }
 
   function renderList() {
@@ -112,20 +125,21 @@
     $("#tests-aside").textContent = tests().length + " 道题 · " + samples().length + " 个样例";
     $("#test-list").innerHTML = populated.map(function (t) {
       var list = samplesOf(t.id);
-      return '<article class="test-card"><a class="test-preview" href="' + testUrl(t.id) +
-        '" aria-label="查看' + esc(shortTitle(t)) + '的样例">' + coverHtml(list[0]) + "</a>" +
+      var coverCount = Math.min(4, Math.max(1, list.filter(function (s) { return !!PREVIEWS[s.id]; }).length));
+      return '<article class="test-card"><a class="test-preview mosaic-' + coverCount + '" href="' + testUrl(t.id) +
+        '" aria-label="查看' + esc(shortTitle(t)) + '的 ' + list.length + ' 个样例">' + mosaicHtml(list) + "</a>" +
         '<div class="test-body"><div class="test-title-row"><h2><a href="' + testUrl(t.id) + '">' +
         esc(shortTitle(t)) + '</a></h2><span class="meta num">' + list.length + " 个样例</span></div>" +
         '<p class="meta">' + typeLabel(t) + " · 难度 " + (t.difficulty || 1) + "/3</p>" +
         '<p class="test-description">' + esc(t.prompt) + '</p><div class="test-actions">' +
-        '<a class="btn" href="' + testUrl(t.id) + '">查看样例</a>' +
-        '<button type="button" class="btn secondary" data-copy="' + esc(t.id) + '">复制提示词</button>' +
+        '<a class="btn btn-sm" href="' + testUrl(t.id) + '">浏览全部样例</a>' +
+        '<button type="button" class="btn secondary btn-sm" data-copy="' + esc(t.id) + '">复制提示词</button>' +
         "</div></div></article>";
     }).join("");
     $("#pending-tests").innerHTML = pending.map(function (t) {
       return '<article class="pending-row"><h3><a href="' + testUrl(t.id) + '">' + esc(shortTitle(t)) +
         '</a></h3><span class="meta">' + typeLabel(t) + '</span><div class="pending-actions">' +
-        '<a class="btn secondary" href="' + testUrl(t.id) + '">查看提示词</a>' +
+        '<a class="btn secondary btn-sm" href="' + testUrl(t.id) + '">查看提示词</a>' +
         '<a class="text-link" href="' + esc(issueUrl(t)) + '" target="_blank" rel="noopener">投第一个样例 ↗</a>' +
         "</div></article>";
     }).join("");
@@ -133,10 +147,16 @@
     if (!tests().length) $("#test-list").innerHTML = '<p class="muted">题库暂未载入，请刷新页面。</p>';
   }
 
-  function listHtml(items, ordered) {
-    var tag = ordered ? "ol" : "ul";
-    return "<" + tag + ">" + items.map(function (item) { return "<li>" + esc(item) + "</li>"; }).join("") + "</" + tag + ">";
+  function listHtml(items, alphaIndexed) {
+    if (alphaIndexed) {
+      return '<ol class="checklist-alpha">' + items.map(function (item, idx) {
+        var code = String.fromCharCode(65 + idx);
+        return '<li><span class="check-code" aria-hidden="true">' + code + '</span><span>' + esc(item) + "</span></li>";
+      }).join("") + "</ol>";
+    }
+    return "<ul>" + items.map(function (item) { return "<li>" + esc(item) + "</li>"; }).join("") + "</ul>";
   }
+
   function refsHtml(ref) {
     var sections = [];
     if (ref.answer != null) {
@@ -144,13 +164,44 @@
         "</p>" + (ref.explanation ? '<details><summary>为什么是这个答案 ＋</summary><p>' + esc(ref.explanation) + "</p></details>" : "") + "</section>");
     }
     if (ref.checklist && ref.checklist.length) {
-      // 这是题目检查项；不推断原始备注里 A/B/D 等标记与数组序号的对应关系。
-      sections.push('<section class="reference-section"><h3>可以看什么</h3>' + listHtml(ref.checklist, true) + "</section>");
+      sections.push('<section class="reference-section"><h3>观察检查点</h3>' + listHtml(ref.checklist, true) + "</section>");
     }
     if (ref.failSigns && ref.failSigns.length) {
-      sections.push('<section class="reference-section"><h3>常见的问题</h3>' + listHtml(ref.failSigns, false) + "</section>");
+      sections.push('<section class="reference-section"><h3>常见退化迹象</h3>' + listHtml(ref.failSigns, false) + "</section>");
     }
     return sections.join("");
+  }
+
+  function syncPromptClamp(t) {
+    var promptText = (t && t.prompt) || "";
+    var lines = promptText.split(/\r?\n/).length;
+    var isLong = promptText.length > 160 || lines > 3;
+    var panel = $("#d-prompt-panel");
+    var toggle = $("#btn-prompt-toggle");
+    $("#d-prompt-stats").textContent = isLong ? (promptText.length + " 字 · " + lines + " 行") : "";
+    toggle.hidden = !isLong;
+    if (!isLong) {
+      panel.classList.remove("is-clamped");
+      toggle.setAttribute("aria-expanded", "true");
+      return;
+    }
+    panel.classList.toggle("is-clamped", !state.promptExpanded);
+    toggle.setAttribute("aria-expanded", state.promptExpanded ? "true" : "false");
+    toggle.textContent = state.promptExpanded ? "收起提示词" : "展开完整提示词";
+  }
+
+  function syncGuideVisibility() {
+    var workspace = $("#d-workspace");
+    var toggle = $("#btn-guide-toggle");
+    var guide = $("#d-guide");
+    if (guide.hidden) {
+      workspace.classList.add("guide-collapsed");
+      toggle.hidden = true;
+      return;
+    }
+    toggle.hidden = false;
+    workspace.classList.toggle("guide-collapsed", !state.guideOpen);
+    toggle.setAttribute("aria-expanded", state.guideOpen ? "true" : "false");
   }
 
   function renderDetail(t) {
@@ -160,46 +211,60 @@
     $("#d-meta").textContent = meta.join(" · ");
     var source = t.source || {};
     $("#d-src").innerHTML = (source.url ? '来源：<a href="' + esc(source.url) + '" target="_blank" rel="noopener">' +
-      esc(source.author || source.handle || "原帖") + " ↗</a>" : "") +
-      (source.note ? '<details class="source-note"><summary>题目出处说明</summary><p>' + esc(source.note) + "</p></details>" : "");
+      esc(source.author || source.handle || "原帖") + " ↗</a>" : (source.author ? "整理：" + esc(source.author) : "")) +
+      (source.note ? '<details class="source-note"><summary>题目说明</summary><p>' + esc(source.note) + "</p></details>" : "");
     $("#d-prompt").textContent = t.prompt;
     $("#btn-copy").setAttribute("data-copy", t.id);
     $("#btn-submit-this").href = issueUrl(t);
+    state.promptExpanded = false;
+    syncPromptClamp(t);
+
     var ref = t.reference || {};
-    $("#d-ref-aside").textContent = ref.answer != null ? "参考答案与解释供你核对。" : "检查点帮助观察，不代表本站裁决。";
+    var checkCount = ((ref.checklist && ref.checklist.length) || 0) + ((ref.failSigns && ref.failSigns.length) || 0);
+    $("#d-guide-count").textContent = checkCount ? String(checkCount) : "";
+    $("#d-ref-aside").textContent = ref.answer != null ? "参考答案与解释供你核对。" : "A / B / C 编号供对照阅读，不代表本站评分。";
     $("#d-refs").innerHTML = refsHtml(ref);
     $("#d-guide").hidden = !$("#d-refs").children.length;
-    $("#guide-details").open = guideMedia.matches;
+    syncGuideVisibility();
     renderSamples();
   }
 
   function metaOf(s) {
     return [s.channel, s.date, s.contributor ? "@" + s.contributor : ""].filter(Boolean).join(" · ");
   }
+
   function previewHtml(s) {
     return '<figure class="preview" data-sample="' + esc(s.id) + '">' +
       (PREVIEWS[s.id] ? '<img data-preview src="' + esc(PREVIEWS[s.id]) + '" alt="' + esc(s.model) +
-        ' 的作品截图，动画可按需运行" width="1200" height="800" loading="lazy">' : "") +
+        ' 的作品截图，可点击运行动画" width="1200" height="800" loading="lazy">' : "") +
       '<div class="preview-placeholder"' + (PREVIEWS[s.id] ? " hidden" : "") + '><strong>按需运行原始作品</strong>' +
-      '<span>点击下方「运行作品」查看动画</span></div></figure>';
+      '<span>点击「▷ 运行作品」加载实时沙盒</span></div>' +
+      '<button type="button" class="canvas-trigger" data-run aria-pressed="false" aria-label="运行 ' +
+      esc(s.model) + ' 的作品">▷ 运行作品</button></figure>';
   }
-  function workActions(s) {
-    return '<div class="sample-actions"><button type="button" class="btn secondary" data-run aria-pressed="false" aria-label="运行 ' +
-      esc(s.model) + ' 的作品">▷ 运行作品</button><a href="work.html?sample=' + encodeURIComponent(s.id) +
-      '" target="_blank" rel="noopener">完整作品 ↗</a></div>';
-  }
+
   function sampleHtml(s) {
     var selected = state.picked.indexOf(s.id) !== -1;
+    var obsKey = s.observation || "unrated";
     return '<article class="sample work' + (selected ? " picked" : "") + '" data-sid="' + esc(s.id) + '">' +
-      (s.src ? previewHtml(s) : "") + '<div class="sample-body"><div class="sample-title-row"><h3 class="sample-model">' +
-      esc(s.model) + "</h3>" + (s.src ? '<label class="pick"><input type="checkbox" data-pick aria-label="选择 ' + esc(s.model) +
-      ' 进行对比"' + (selected ? " checked" : "") + '>对比</label>' : "") + "</div>" +
+      (s.src ? previewHtml(s) : "") +
+      '<div class="sample-body">' +
+      '<div class="sample-title-row">' +
+      '<h3 class="sample-model">' + esc(s.model) + "</h3>" +
+      '<div class="sample-head-controls">' +
+      '<span class="obs-badge" data-obs="' + esc(obsKey) + '" title="贡献者观察"><span class="obs-dot" aria-hidden="true"></span>' + esc(observation(s)) + "</span>" +
+      (s.src ? '<label class="pick"><input type="checkbox" data-pick aria-label="选择 ' + esc(s.model) +
+        ' 进行对比"' + (selected ? " checked" : "") + ">对比</label>" : "") +
+      "</div></div>" +
+      '<div class="sample-meta-row">' +
       '<p class="meta">' + esc(metaOf(s)) + "</p>" +
+      (s.src ? '<div class="sample-actions"><a href="work.html?sample=' + encodeURIComponent(s.id) + '" target="_blank" rel="noopener">独立试玩 ↗</a></div>' : "") +
+      "</div>" +
       (s.answer ? '<p class="sample-answer">' + esc(s.answer) + "</p>" : "") +
-      (s.src ? workActions(s) : "") + '<p class="observation">' + esc(observation(s)) + " · 贡献者观察</p>" +
-      (s.note ? '<details class="sample-note"><summary>查看完整观察</summary><p>' + esc(s.note) + '</p></details><p class="note-preview" aria-hidden="true">' + esc(s.note) + "</p>" : "") +
+      (s.note ? '<details class="sample-note"><summary><span class="note-summary-text">' + esc(s.note) + '</span><span class="note-toggle-label" aria-hidden="true"></span></summary></details>' : "") +
       "</div></article>";
   }
+
   function renderSamples() {
     disposePreviews($("#d-samples"));
     var all = samplesOf(state.testId);
@@ -225,7 +290,6 @@
     }
   }
 
-  // Stop means unload: sandboxed, independently generated pages have no shared pause API.
   function scalePreview(box) {
     var frame = $("iframe", box);
     if (!frame || !box.clientWidth) return;
@@ -234,6 +298,7 @@
     frame.style.height = Math.round(box.clientHeight / scale) + "px";
   }
   function scaleAll() { $$(".preview").forEach(scalePreview); }
+
   function stopPreview(work, restore) {
     var box = $(".preview", work);
     if (!box) return;
@@ -243,30 +308,33 @@
     var loading = $(".preview-loading", box);
     if (loading) loading.remove();
     box.removeAttribute("aria-busy");
+    work.classList.remove("is-running");
     if (restore) {
       var img = $("img", box);
       if (img && !img.getAttribute("data-failed")) img.hidden = false;
       $(".preview-placeholder", box).hidden = !!(img && !img.getAttribute("data-failed"));
       var button = $("[data-run]", work);
-      button.textContent = "▷ 运行作品";
-      button.setAttribute("aria-pressed", "false");
-      var sample = findSample(work.getAttribute("data-sid"));
-      button.setAttribute("aria-label", "运行 " + (sample ? sample.model : "") + " 的作品");
+      if (button) {
+        button.textContent = "▷ 运行作品";
+        button.setAttribute("aria-pressed", "false");
+        var sample = findSample(work.getAttribute("data-sid"));
+        button.setAttribute("aria-label", "运行 " + (sample ? sample.model : "") + " 的作品");
+      }
     }
   }
   function disposePreviews(root) {
     $$(".work", root).forEach(function (work) { stopPreview(work, true); });
   }
-  function togglePreview(button) {
-    var work = button.closest(".work");
+  function startPreview(work) {
     var box = $(".preview", work);
-    if ($("iframe", box)) { stopPreview(work, true); return; }
+    if (!box || $("iframe", box)) return;
     var s = findSample(work.getAttribute("data-sid"));
     if (!s || !s.src) return;
     var img = $("img", box);
     if (img) img.hidden = true;
     $(".preview-placeholder", box).hidden = true;
     box.setAttribute("aria-busy", "true");
+    work.classList.add("is-running");
     var loading = document.createElement("div");
     loading.className = "preview-loading";
     loading.textContent = "正在载入原始作品…";
@@ -289,12 +357,21 @@
     frame.src = s.src + "?raw=1";
     box.appendChild(frame);
     scalePreview(box);
-    button.textContent = "□ 停止预览";
-    button.setAttribute("aria-pressed", "true");
-    button.setAttribute("aria-label", "停止 " + s.model + " 的作品");
+    var button = $("[data-run]", work);
+    if (button) {
+      button.textContent = "□ 停止";
+      button.setAttribute("aria-pressed", "true");
+      button.setAttribute("aria-label", "停止 " + s.model + " 的作品");
+    }
     box.loadTimer = setTimeout(function () {
       loading.textContent = "载入时间较长，可停止重试或打开完整作品";
     }, 12000);
+  }
+  function togglePreview(button) {
+    var work = button.closest(".work");
+    var box = $(".preview", work);
+    if ($("iframe", box)) stopPreview(work, true);
+    else startPreview(work);
   }
 
   function syncSelection() {
@@ -326,10 +403,25 @@
     syncSelection();
   }
   function compareSampleHtml(s) {
-    return '<article class="sample work" data-sid="' + esc(s.id) + '"><div class="sample-header"><div><h3>' + esc(s.model) +
-      '</h3><p class="meta">' + esc(metaOf(s)) + "</p></div></div>" + previewHtml(s) + workActions(s) +
-      '<div class="compare-observation"><p class="observation">' + esc(observation(s)) + " · 贡献者观察</p>" +
+    var obsKey = s.observation || "unrated";
+    return '<article class="sample work" data-sid="' + esc(s.id) + '">' +
+      '<div class="sample-header"><div><h3>' + esc(s.model) + '</h3><p class="meta">' + esc(metaOf(s)) + '</p></div>' +
+      '<a class="text-link" href="work.html?sample=' + encodeURIComponent(s.id) + '" target="_blank" rel="noopener">独立试玩 ↗</a></div>' +
+      previewHtml(s) +
+      '<div class="compare-observation">' +
+      '<span class="obs-badge" data-obs="' + esc(obsKey) + '"><span class="obs-dot" aria-hidden="true"></span>' + esc(observation(s)) + " · 贡献者观察</span>" +
       (s.note ? "<p>" + esc(s.note) + "</p>" : "") + "</div></article>";
+  }
+  function syncCompareLayoutBtn() {
+    var btn = $("#cmp-layout");
+    var grid = $("#cmp-grid");
+    var n = state.picked.length;
+    btn.hidden = n < 3;
+    grid.setAttribute("data-count", String(n));
+    grid.classList.toggle("cols-row", state.compareRowLayout && n >= 3);
+    btn.setAttribute("aria-pressed", state.compareRowLayout ? "true" : "false");
+    btn.textContent = state.compareRowLayout ? "切换 2×2 网格" : "单行等宽横比";
+    scaleAll();
   }
   function openCompare() {
     if (state.picked.length < 2 || state.compare) return;
@@ -343,6 +435,7 @@
     $("#cmp-copy").setAttribute("data-copy", t.id);
     $("#cmp-grid").innerHTML = state.picked.map(function (id) { return compareSampleHtml(findSample(id)); }).join("");
     state.compare = true;
+    syncCompareLayoutBtn();
     document.body.style.overflow = "hidden";
     var dialog = $("#cmp");
     if (dialog.showModal) dialog.showModal();
@@ -398,14 +491,29 @@
 
   function bind() {
     $(".skip-link").addEventListener("click", function (e) { e.preventDefault(); $("#main").focus(); });
+    $("#rail-toggle").addEventListener("click", function () {
+      state.railCollapsed = !state.railCollapsed;
+      $("#app-layout").classList.toggle("rail-collapsed", state.railCollapsed);
+      $("#rail-toggle").setAttribute("aria-expanded", state.railCollapsed ? "false" : "true");
+      setTimeout(scaleAll, 50);
+    });
+    $("#btn-prompt-toggle").addEventListener("click", function () {
+      state.promptExpanded = !state.promptExpanded;
+      syncPromptClamp(findTest(state.testId));
+    });
+    $("#btn-guide-toggle").addEventListener("click", function () {
+      state.guideOpen = !state.guideOpen;
+      syncGuideVisibility();
+      setTimeout(scaleAll, 50);
+    });
     document.addEventListener("click", function (e) {
       var target = e.target.closest ? e.target : e.target.parentElement;
+      if (!target) return;
       var copy = target.closest("[data-copy]");
-      if (copy) { copyPrompt(copy.getAttribute("data-copy")); return; }
+      if (copy) { e.preventDefault(); copyPrompt(copy.getAttribute("data-copy")); return; }
       var run = target.closest("[data-run]");
       if (run) togglePreview(run);
     });
-    // Cover failure must not remove access to the original work.
     document.addEventListener("error", function (e) {
       var image = e.target;
       if (!image.matches || !image.matches("img[data-preview], img[data-cover]")) return;
@@ -432,6 +540,19 @@
       if (first) first.focus({ preventScroll: true });
     });
     $("#cmp-open").addEventListener("click", openCompare);
+    $("#cmp-run-all").addEventListener("click", function () {
+      $$(".work", $("#cmp-grid")).forEach(function (work) {
+        stopPreview(work, true);
+        startPreview(work);
+      });
+    });
+    $("#cmp-stop-all").addEventListener("click", function () {
+      disposePreviews($("#cmp-grid"));
+    });
+    $("#cmp-layout").addEventListener("click", function () {
+      state.compareRowLayout = !state.compareRowLayout;
+      syncCompareLayoutBtn();
+    });
     $("#cmp-close").addEventListener("click", function () { closeCompare(true); });
     $("#cmp-adjust").addEventListener("click", function () { closeCompare(true); });
     $("#cmp").addEventListener("cancel", function (e) { e.preventDefault(); closeCompare(true); });
@@ -442,10 +563,6 @@
     window.addEventListener("resize", function () {
       clearTimeout(scaleAll.timer);
       scaleAll.timer = setTimeout(scaleAll, 100);
-      if (guideDesktop !== guideMedia.matches) {
-        guideDesktop = guideMedia.matches;
-        $("#guide-details").open = guideDesktop;
-      }
     });
   }
   function init() {

@@ -13,7 +13,13 @@
   <div id="site">
     <a class="skip-link" href="#main">跳到正文</a>
     <header class="site-header">
-      <a class="brand" href="#/">降智测试题集</a>
+      <div class="header-brand-group">
+        <button type="button" class="icon-btn" id="rail-toggle" aria-expanded="true" aria-controls="site-sidebar" title="收起或展开题目目录">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 5h18M3 12h18M3 19h18"/><path d="M9 5v14"/></svg>
+          <span class="sr-only">切换题目目录</span>
+        </button>
+        <a class="brand" href="#/">降智测试题集</a>
+      </div>
       <nav class="header-nav" aria-label="主导航">
         <a id="nav-tests" href="#/">题目</a>
         <a id="nav-submit" href="#submit">投稿</a>
@@ -24,8 +30,8 @@
       </div>
     </header>
 
-    <div class="app-layout">
-      <aside class="sidebar" aria-label="题目目录">
+    <div class="app-layout" id="app-layout">
+      <aside class="sidebar" id="site-sidebar" aria-label="题目目录">
         <a class="sidebar-heading" id="all-tests" href="#/">全部题目</a>
         <nav id="test-nav" aria-label="选择一道题"></nav>
         <div class="sidebar-foot">
@@ -54,25 +60,44 @@
           <a class="back-link" href="#/">← 全部题目</a>
           <div class="page-heading detail-heading">
             <div><h1 id="d-title" tabindex="-1"></h1><div class="meta" id="d-meta"></div><div class="source" id="d-src"></div></div>
-            <a class="btn secondary" id="btn-submit-this" href="#" target="_blank" rel="noopener">投这道题的样例</a>
+            <div class="detail-heading-actions">
+              <a class="btn secondary" id="btn-submit-this" href="#" target="_blank" rel="noopener">投这道题的样例</a>
+            </div>
           </div>
 
-          <section class="prompt-panel" aria-label="原始提示词">
-            <div class="prompt-content"><span class="prompt-label">原始提示词</span><pre id="d-prompt"></pre></div>
-            <button type="button" class="btn" id="btn-copy">复制提示词</button>
+          <section class="prompt-panel" id="d-prompt-panel" aria-label="原始提示词">
+            <div class="prompt-bar">
+              <span class="prompt-label">原始提示词</span>
+              <span class="prompt-stats meta num" id="d-prompt-stats"></span>
+              <div class="prompt-actions">
+                <button type="button" class="btn secondary btn-sm" id="btn-prompt-toggle" aria-expanded="false" hidden>展开完整提示词</button>
+                <button type="button" class="btn btn-sm" id="btn-copy">复制提示词</button>
+              </div>
+            </div>
+            <div class="prompt-Viewport" id="d-prompt-box">
+              <pre id="d-prompt"></pre>
+            </div>
           </section>
 
-          <div class="detail-workspace">
+          <div class="detail-workspace" id="d-workspace">
+            <section class="sample-section" aria-labelledby="samples-heading">
+              <div class="samples-toolbar">
+                <h2 id="samples-heading">样例 <span class="num" id="d-count"></span></h2>
+                <div class="filters" id="d-filters" aria-label="按贡献者观察筛选"></div>
+                <button type="button" class="btn secondary btn-sm guide-toggle-btn" id="btn-guide-toggle" aria-expanded="true" aria-controls="d-guide">
+                  <span>对照检查点</span>
+                  <span class="num" id="d-guide-count"></span>
+                </button>
+              </div>
+              <div id="d-samples"></div>
+            </section>
+
             <aside class="guide" id="d-guide" aria-label="观察参考">
               <details id="guide-details" open>
                 <summary><span class="guide-desktop-title">对照着看</span><span class="guide-mobile-title">观察要点与常见问题</span></summary>
                 <div class="guide-body"><p class="muted" id="d-ref-aside"></p><div id="d-refs"></div></div>
               </details>
             </aside>
-            <section class="sample-section" aria-labelledby="samples-heading">
-              <div class="samples-toolbar"><h2 id="samples-heading">样例 <span class="num" id="d-count"></span></h2><div class="filters" id="d-filters" aria-label="按贡献者观察筛选"></div></div>
-              <div id="d-samples"></div>
-            </section>
           </div>
         </div>
 
@@ -106,15 +131,25 @@
 
   <dialog id="cmp" aria-labelledby="cmp-title" aria-describedby="cmp-sub">
     <header class="compare-header">
-      <button type="button" class="btn secondary" id="cmp-close">← 返回样例</button>
+      <button type="button" class="btn secondary btn-sm" id="cmp-close">← 返回样例</button>
       <div class="compare-heading"><h2 id="cmp-title">并排对比</h2><p id="cmp-sub"></p></div>
-      <span class="muted compare-limit">最多对比 4 个</span>
-      <button type="button" class="btn secondary" id="cmp-adjust">调整选择</button>
+      <div class="compare-controls" role="group" aria-label="对比批量操作">
+        <button type="button" class="btn btn-sm" id="cmp-run-all">▷ 全部运行</button>
+        <button type="button" class="btn secondary btn-sm" id="cmp-stop-all">□ 全部停止</button>
+        <button type="button" class="btn secondary btn-sm" id="cmp-layout" aria-pressed="false" hidden>单行等宽</button>
+        <button type="button" class="btn secondary btn-sm" id="cmp-adjust">调整选择</button>
+      </div>
     </header>
     <div class="compare-body">
-      <section class="prompt-panel compare-prompt" aria-label="共用提示词"><pre id="cmp-prompt"></pre><button type="button" class="btn secondary" id="cmp-copy">复制提示词</button></section>
+      <details class="compare-prompt-details">
+        <summary>
+          <span>查看共用提示词</span>
+          <button type="button" class="btn secondary btn-sm" id="cmp-copy">复制提示词</button>
+        </summary>
+        <pre id="cmp-prompt"></pre>
+      </details>
       <div class="compare-grid" id="cmp-grid"></div>
-      <p class="compare-caption">逐个运行原始作品，细节由你判断。观察来自贡献者，本站不做排名。</p>
+      <p class="compare-caption">可一键同帧运行或逐个运行原始作品，细节由你判断。观察来自贡献者，本站不做排名。</p>
     </div>
   </dialog>
 

@@ -135,7 +135,7 @@ window.MODEL_TESTS = [
   },
   {
     id: "mythic-five-stack",
-    title: "高空五层神话叠罗汉：狂暴打螺丝",
+    title: "五层叠罗汉",
     type: "graphic",
     tags: ["图形题", "交互游戏", "物理平衡", "五层叠罗汉"],
     difficulty: 3,
