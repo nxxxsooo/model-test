@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>高空重工 · 鹈鹕 × 孙悟空 × 秦始皇（2D 动画 SVG）</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; min-height: 100vh; display: grid; place-items: center;
+    background: radial-gradient(130% 120% at 50% -10%, #16395f 0%, #0a1a2b 55%, #04080e 100%);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  }
+  .wrap { width: min(1660px, 100vw); padding: clamp(0px, 1.4vw, 22px); }
+  .stage {
+    position: relative; border-radius: 18px; overflow: hidden;
+    box-shadow: 0 34px 90px -34px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.08);
+  }
+  svg { display: block; width: 100%; height: auto; }
+
+  /* ---------- ambient motion ---------- */
+  .flyer { animation: bob 4.6s ease-in-out infinite; }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+  .drift  { animation: drift 48s linear infinite; }
+  .drift2 { animation: drift 84s linear infinite; }
+  @keyframes drift { from { transform: translateX(0); } to { transform: translateX(-1600px); } }
+
+  .streak { animation: streak 2.4s linear infinite; }
+  @keyframes streak {
+    0%   { transform: translateX(360px); opacity: 0; }
+    12%  { opacity: .7; }
+    82%  { opacity: .55; }
+    100% { transform: translateX(-1780px); opacity: 0; }
+  }
+
+  .spark  { animation: spark .46s steps(2, end) infinite; }
+  .spark2 { animation: spark .38s steps(2, end) infinite .16s; }
+  .spark3 { animation: spark .54s steps(2, end) infinite .08s; }
+  @keyframes spark {
+    0%, 100% { opacity: 0; transform: scale(.35); }
+    45%      { opacity: 1; transform: scale(1); }
+  }
+  .eyeGlow { animation: glow 1.7s ease-in-out infinite; }
+  @keyframes glow { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flyer, .drift, .drift2, .streak, .spark, .spark2, .spark3, .eyeGlow { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="stage">
+    <svg id="scene" viewBox="0 0 1600 920" role="img" aria-labelledby="ttl dsc">
+      <title id="ttl">鹈鹕骑着自行车在孙悟空的大型飞机机翼上骑行，展开翅膀托着秦始皇的北极熊，秦始皇骑在熊上打螺丝</title>
+      <desc id="dsc">2D 动画：一架大型飞机在高空飞行，鹈鹕在机翼上蹬自行车、双翼展开托起一头北极熊，秦始皇骑在熊背上手持电钻拧螺丝并溅出火花，孙悟空在机头驾驶舱里握着金箍棒驾驶。</desc>
+
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0"   stop-color="#0b3f77"/>
+          <stop offset=".36" stop-color="#2f7cbe"/>
+          <stop offset=".70" stop-color="#8fc8e8"/>
+          <stop offset="1"   stop-color="#e2f2fc"/>
+        </linearGradient>
+        <radialGradient id="sunGlow" cx=".5" cy=".5" r=".5">
+          <stop offset="0"   stop-color="#fff9d4" stop-opacity=".95"/>
+          <stop offset=".45" stop-color="#ffe07a" stop-opacity=".36"/>
+          <stop offset="1"   stop-color="#ffd45e" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0"   stop-color="#ffffff"/>
+          <stop offset=".48" stop-color="#f1f6fb"/>
+          <stop offset="1"   stop-color="#c6d5e4"/>
+        </linearGradient>
+        <linearGradient id="wingG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f8fbfd"/>
+          <stop offset="1" stop-color="#b9c9da"/>
+        </linearGradient>
+        <linearGradient id="nacelle" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#e6edf4"/>
+          <stop offset="1" stop-color="#93a5b6"/>
+        </linearGradient>
+        <linearGradient id="glass" x1="0" y1="0" x2=".35" y2="1">
+          <stop offset="0" stop-color="#ddf4ff" stop-opacity=".80"/>
+          <stop offset="1" stop-color="#4ea6d6" stop-opacity=".70"/>
+        </linearGradient>
+        <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0"   stop-color="#ffeaa6"/>
+          <stop offset=".5"  stop-color="#f2c23f"/>
+          <stop offset="1"   stop-color="#b98110"/>
+        </linearGradient>
+        <linearGradient id="bear" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffffff"/>
+          <stop offset="1" stop-color="#d6e6f3"/>
+        </linearGradient>
+        <linearGradient id="robe" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#363650"/>
+          <stop offset="1" stop-color="#11111b"/>
+        </linearGradient>
+        <linearGradient id="pel" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffffff"/>
+          <stop offset="1" stop-color="#dde9f2"/>
+        </linearGradient>
+        <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f1f5f9"/>
+          <stop offset="1" stop-color="#93a3b2"/>
+        </linearGradient>
+        <linearGradient id="beak" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffc063"/>
+          <stop offset="1" stop-color="#e8892a"/>
+        </linearGradient>
+        <filter id="soft" x="-25%" y="-25%" width="150%" height="170%">
+          <feDropShadow dx="0" dy="9" stdDeviation="11" flood-color="#06182c" flood-opacity=".30"/>
+        </filter>
+        <filter id="lift" x="-30%" y="-30%" width="160%" height="180%">
+          <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#0a2038" flood-opacity=".35"/>
+        </filter>
+
+        <!-- reusable parts -->
+        <g id="wheel">
+          <circle r="54" fill="none" stroke="#1b2830" stroke-width="12"/>
+          <circle r="48" fill="none" stroke="#2d3e48" stroke-width="5"/>
+          <circle r="44" fill="none" stroke="#eaf2f8" stroke-width="3"/>
+          <circle r="44" fill="none" stroke="#7e97a6" stroke-width="1.1"/>
+          <g stroke="#dce9f2" stroke-width="2.2" opacity=".92">
+            <path d="M0-44V44M-44 0H44M-31-31 31 31M-31 31 31-31M-42-13 42 13M-42 13 42-13M-13-42 13 42M13-42-13 42"/>
+          </g>
+          <circle r="9" fill="#eef4f8" stroke="#7e97a6" stroke-width="3"/>
+          <circle r="3" fill="#8ba1ae"/>
+        </g>
+        <g id="cloud">
+          <ellipse cx="0" cy="0" rx="78" ry="34"/>
+          <ellipse cx="-62" cy="10" rx="52" ry="26"/>
+          <ellipse cx="62" cy="8" rx="56" ry="28"/>
+          <ellipse cx="-22" cy="-20" rx="46" ry="30"/>
+          <ellipse cx="26" cy="-24" rx="40" ry="28"/>
+        </g>
+        <g id="fan">
+          <circle r="26" fill="#202d36" stroke="#4a5b68" stroke-width="3"/>
+          <g fill="#cfdae4">
+            <path d="M0-23 L7-6 L-7-6 Z"/><path d="M20 11 L4 4 L11-8 Z"/><path d="M-20 11 L-4 4 L-11-8 Z"/>
+            <path d="M0 23 L-7 6 L7 6 Z"/><path d="M-20-11 L-4-4 L-11 8 Z"/><path d="M20-11 L4-4 L11 8 Z"/>
+          </g>
+          <circle r="6" fill="#e6eef4" stroke="#5a6b78" stroke-width="2"/>
+        </g>
+      </defs>
+
+      <!-- ================= SKY ================= -->
+      <rect width="1600" height="920" fill="url(#sky)"/>
+
+      <g transform="translate(1372 130)">
+        <circle r="176" fill="url(#sunGlow)"/>
+        <g opacity=".78" stroke="#ffe9a3" stroke-width="5" stroke-linecap="round">
+          <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="96s" repeatCount="indefinite"/>
+          <path d="M0-104V-140M0 104V140M-104 0H-140M104 0H140M-74-74-99-99M74-74 99-99M-74 74-99 99M74 74 99 99"/>
+        </g>
+        <circle r="60" fill="#fff6c8"/>
+        <circle r="60" fill="none" stroke="#ffe79a" stroke-width="7" opacity=".85"/>
+      </g>
+
+      <!-- far clouds -->
+      <g fill="#ffffff" opacity=".78" class="drift">
+        <use href="#cloud" transform="translate(180 148) scale(1.5)"/>
+        <use href="#cloud" transform="translate(660 92) scale(.95)"/>
+        <use href="#cloud" transform="translate(1090 214) scale(1.25)"/>
+        <use href="#cloud" transform="translate(1780 148) scale(1.5)"/>
+        <use href="#cloud" transform="translate(2260 92) scale(.95)"/>
+        <use href="#cloud" transform="translate(2690 214) scale(1.25)"/>
+      </g>
+      <g fill="#ffffff" opacity=".5" class="drift2">
+        <use href="#cloud" transform="translate(140 430) scale(1.9)"/>
+        <use href="#cloud" transform="translate(760 512) scale(1.4)"/>
+        <use href="#cloud" transform="translate(1330 452) scale(1.7)"/>
+        <use href="#cloud" transform="translate(1740 430) scale(1.9)"/>
+        <use href="#cloud" transform="translate(2360 512) scale(1.4)"/>
+        <use href="#cloud" transform="translate(2930 452) scale(1.7)"/>
+      </g>
+
+      <!-- ================= FLIGHT GROUP ================= -->
+      <g class="flyer">
+      <g>
+        <animateTransform attributeName="transform" type="rotate"
+          values="-0.5 800 780; 0.5 800 780; -0.5 800 780" dur="4.6s" repeatCount="indefinite"/>
+
+        <!-- AIRFRAME -->
+        <g filter="url(#soft)">
+          <!-- horizontal stabiliser -->
+          <path d="M 254 700 L 110 670 Q 92 667 97 690 L 106 718 Q 111 733 130 726 L 260 720 Z"
+                fill="url(#body)" stroke="#a4b7c8" stroke-width="3" stroke-linejoin="round"/>
+          <!-- vertical fin -->
+          <path d="M 270 690 L 178 490 Q 170 468 197 473 L 264 490 Q 288 497 279 522 L 274 690 Z"
+                fill="url(#body)" stroke="#a4b7c8" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M 206 686 L 196 520" stroke="#d94a4a" stroke-width="11" stroke-linecap="round" opacity=".85"/>
+          <circle cx="226" cy="586" r="15" fill="none" stroke="#e0b13c" stroke-width="4"/>
+          <!-- fuselage -->
+          <path d="M 262 690 H 1272 C 1354 690 1406 722 1406 763 C 1406 804 1354 836 1272 836 H 262 C 198 836 162 804 162 763 C 162 722 198 690 262 690 Z"
+                fill="url(#body)" stroke="#a4b7c8" stroke-width="3.5"/>
+        </g>
+
+        <!-- fuselage detailing -->
+        <path d="M 205 792 H 1382" stroke="#d94a4a" stroke-width="15" stroke-linecap="round"/>
+        <path d="M 205 810 H 1382" stroke="#e0b13c" stroke-width="5" stroke-linecap="round"/>
+        <path d="M 230 736 H 1330" stroke="#c3d2df" stroke-width="3" opacity=".9"/>
+        <!-- windows -->
+        <g fill="#7fb6d6" stroke="#5d8ba8" stroke-width="2">
+          <rect x="556" y="712" width="34" height="26" rx="11"/>
+          <rect x="622" y="712" width="34" height="26" rx="11"/>
+          <rect x="688" y="712" width="34" height="26" rx="11"/>
+          <rect x="754" y="712" width="34" height="26" rx="11"/>
+          <rect x="820" y="712" width="34" height="26" rx="11"/>
+          <rect x="886" y="712" width="34" height="26" rx="11"/>
+          <rect x="952" y="712" width="34" height="26" rx="11"/>
+          <rect x="1018" y="712" width="34" height="26" rx="11"/>
+        </g>
+        <!-- livery: emblem + name (kept clear of the port engine nacelle) -->
+        <circle cx="486" cy="756" r="28" fill="url(#gold)" stroke="#a8791a" stroke-width="3"/>
+        <path d="M 486 736 C 498 736 504 746 500 756 C 506 764 498 774 486 774 C 474 774 466 764 472 756 C 468 746 474 736 486 736 Z"
+              fill="#b4322c" opacity=".92"/>
+        <circle cx="478" cy="752" r="2.6" fill="#2a1a12"/><circle cx="494" cy="752" r="2.6" fill="#2a1a12"/>
+        <text x="532" y="768" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif"
+              font-size="34" font-weight="800" fill="#b4322c" letter-spacing="3">大圣航空</text>
+
+        <!-- MAIN WING (the platform) -->
+        <g filter="url(#soft)">
+          <path d="M 1082 618 L 158 624 Q 112 628 108 654 Q 104 684 150 690 L 1082 690 Z"
+                fill="url(#wingG)" stroke="#a4b7c8" stroke-width="3.5" stroke-linejoin="round"/>
+        </g>
+        <path d="M 152 632 Q 340 626 1080 622" fill="none" stroke="#ffffff" stroke-width="3.5" opacity=".85"/>
+        <g stroke="#a9bccd" stroke-width="1.6" opacity=".85">
+          <path d="M 320 627 L 320 687M 520 626 L 520 687M 760 625 L 760 688M 980 624 L 980 689"/>
+        </g>
+        <path d="M 158 684 L 1080 684" stroke="#9db2c4" stroke-width="2.4" opacity=".8"/>
+        <g fill="#8fa6b8" opacity=".9">
+          <circle cx="250" cy="640" r="2.4"/><circle cx="420" cy="638" r="2.4"/><circle cx="600" cy="637" r="2.4"/>
+          <circle cx="860" cy="635" r="2.4"/><circle cx="1040" cy="634" r="2.4"/>
+        </g>
+        <circle cx="126" cy="644" r="7" fill="#e2453d" stroke="#8d1f19" stroke-width="2"/>
+        <circle cx="126" cy="644" r="12" fill="#ff6a5e" opacity=".45">
+          <animate attributeName="opacity" values=".1;.55;.1" dur="1.4s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- ENGINES -->
+        <g>
+          <rect x="336" y="684" width="42" height="16" rx="4" fill="#8fa2b3"/>
+          <path d="M 308 698 H 424 Q 448 700 448 730 Q 448 760 424 762 H 308 Q 290 760 290 730 Q 290 700 308 698 Z"
+                fill="url(#nacelle)" stroke="#7f93a6" stroke-width="3"/>
+          <g transform="translate(430 730)"><g id="fanA"><use href="#fan"/></g></g>
+          <path d="M 300 716 H 420" stroke="#ffffff" stroke-width="2.5" opacity=".6"/>
+        </g>
+        <g>
+          <rect x="912" y="684" width="42" height="16" rx="4" fill="#8fa2b3"/>
+          <path d="M 884 698 H 1000 Q 1024 700 1024 730 Q 1024 760 1000 762 H 884 Q 866 760 866 730 Q 866 700 884 698 Z"
+                fill="url(#nacelle)" stroke="#7f93a6" stroke-width="3"/>
+          <g transform="translate(1006 730)"><g id="fanB"><use href="#fan"/></g></g>
+          <path d="M 876 716 H 996" stroke="#ffffff" stroke-width="2.5" opacity=".6"/>
+        </g>
+
+        <!-- COCKPIT + SUN WUKONG -->
+        <g>
+          <!-- canopy shell -->
+          <path d="M 1078 690 Q 1114 582 1234 576 Q 1352 582 1386 690 Z"
+                fill="#dceaf5" stroke="#a4b7c8" stroke-width="3.5" stroke-linejoin="round"/>
+          <!-- interior -->
+          <path d="M 1092 686 Q 1124 596 1234 590 Q 1342 596 1372 686 Z" fill="#2a3d4e"/>
+          <!-- instrument panel -->
+          <path d="M 1150 686 L 1170 636 L 1330 636 L 1348 686 Z" fill="#3a4d5d" stroke="#22323f" stroke-width="2"/>
+          <g fill="#8fe3c6" opacity=".95">
+            <circle cx="1206" cy="656" r="6"/><circle cx="1236" cy="652" r="6"/><circle cx="1266" cy="656" r="6"/>
+          </g>
+          <g fill="#ff8f7a"><rect x="1296" y="646" width="26" height="8" rx="3"/><rect x="1296" y="660" width="26" height="8" rx="3"/></g>
+
+          <!-- body -->
+          <path d="M 1196 690 Q 1198 664 1226 660 Q 1256 664 1258 690 Z" fill="#c0392b" stroke="#8e2418" stroke-width="2.5"/>
+          <path d="M 1198 676 Q 1228 668 1256 676" fill="none" stroke="#e0b13c" stroke-width="5"/>
+          <!-- arm + yoke -->
+          <path d="M 1244 674 Q 1268 678 1288 672" fill="none" stroke="#c0392b" stroke-width="15" stroke-linecap="round"/>
+          <path d="M 1298 690 L 1296 654" stroke="#3a4d5d" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 1282 652 H 1312" stroke="#22323f" stroke-width="11" stroke-linecap="round"/>
+          <circle cx="1288" cy="670" r="8" fill="#f0c08a" stroke="#c9925c" stroke-width="2"/>
+
+          <!-- head -->
+          <circle cx="1228" cy="640" r="27" fill="#f0c08a" stroke="#c9925c" stroke-width="2.5"/>
+          <circle cx="1201" cy="640" r="10" fill="#e8b47e" stroke="#c9925c" stroke-width="2"/>
+          <circle cx="1255" cy="640" r="10" fill="#e8b47e" stroke="#c9925c" stroke-width="2"/>
+          <ellipse cx="1231" cy="648" rx="17" ry="18" fill="#f9dcb6"/>
+          <!-- fur -->
+          <path d="M 1202 632 Q 1204 604 1228 602 Q 1252 604 1254 632 Q 1240 618 1228 618 Q 1216 618 1202 632 Z" fill="#8a5a3b"/>
+          <!-- 紧箍 gold headband -->
+          <path d="M 1202 630 Q 1228 616 1254 630" fill="none" stroke="url(#gold)" stroke-width="6.5" stroke-linecap="round"/>
+          <circle cx="1228" cy="619" r="5" fill="url(#gold)" stroke="#a8791a" stroke-width="1.6"/>
+          <!-- eyes: 火眼金睛 -->
+          <ellipse cx="1219" cy="640" rx="6" ry="7" fill="#2b1d14"/>
+          <ellipse cx="1240" cy="640" rx="6" ry="7" fill="#2b1d14"/>
+          <circle cx="1221" cy="638" r="2.2" fill="#fff"/><circle cx="1242" cy="638" r="2.2" fill="#fff"/>
+          <g class="eyeGlow" fill="#ffd24a">
+            <ellipse cx="1219" cy="640" rx="4" ry="4.6"/><ellipse cx="1240" cy="640" rx="4" ry="4.6"/>
+          </g>
+          <path d="M 1210 630 Q 1219 625 1228 630" fill="none" stroke="#5c3a24" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M 1232 630 Q 1241 625 1250 630" fill="none" stroke="#5c3a24" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M 1224 654 Q 1230 658 1236 654" fill="none" stroke="#a9663c" stroke-width="2.4" stroke-linecap="round"/>
+          <ellipse cx="1214" cy="652" rx="5" ry="3.4" fill="#efb5a0" opacity=".65"/>
+          <ellipse cx="1246" cy="652" rx="5" ry="3.4" fill="#efb5a0" opacity=".65"/>
+
+          <!-- 金箍棒 -->
+          <g transform="rotate(-16 1262 664)">
+            <rect x="1256" y="498" width="13" height="172" rx="6.5" fill="url(#gold)" stroke="#a8791a" stroke-width="2"/>
+            <rect x="1252" y="492" width="21" height="24" rx="6" fill="#8c1f18" stroke="#5c130f" stroke-width="2"/>
+            <rect x="1252" y="652" width="21" height="24" rx="6" fill="#8c1f18" stroke="#5c130f" stroke-width="2"/>
+            <rect x="1256" y="548" width="13" height="10" fill="#8c1f18"/>
+            <rect x="1256" y="612" width="13" height="10" fill="#8c1f18"/>
+          </g>
+
+          <!-- canopy glass over everything -->
+          <path d="M 1078 690 Q 1114 582 1234 576 Q 1352 582 1386 690 Z"
+                fill="url(#glass)" stroke="#8ba3b6" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M 1140 686 Q 1168 606 1234 598" fill="none" stroke="#ffffff" stroke-width="6" opacity=".55" stroke-linecap="round"/>
+          <path d="M 1234 578 L 1234 686" stroke="#8ba3b6" stroke-width="3" opacity=".7"/>
+        </g>
+
+        <!-- ================= BIKE ================= -->
+        <g id="bike">
+          <ellipse cx="644" cy="622" rx="152" ry="13" fill="#0b2540" opacity=".17"/>
+
+          <!-- far side: leg, crank, pedal, foot (behind the frame) -->
+          <path id="legFar" d="M578 456L600 520L618 540" fill="none" stroke="#c9772e" stroke-width="15"
+                stroke-linecap="round" stroke-linejoin="round"/>
+          <line id="crankFar" x1="644" y1="566" x2="644" y2="592" stroke="#33434e" stroke-width="7" stroke-linecap="round"/>
+          <g id="pedalFar"><rect x="-15" y="-5" width="30" height="10" rx="3.5" fill="#26343d"/></g>
+          <g id="footFar">
+            <path d="M -17 0 Q -6 -9 14 -2 L 19 5 Q 0 11 -17 7 Z" fill="#c9772e" stroke="#9a561d" stroke-width="2"/>
+          </g>
+
+          <!-- wheels -->
+          <g transform="translate(540 564)"><g id="wheelR"><use href="#wheel"/></g></g>
+          <g transform="translate(748 564)"><g id="wheelF"><use href="#wheel"/></g></g>
+          <circle cx="540" cy="564" r="12" fill="#48596a" stroke="#2b3b44" stroke-width="3"/>
+          <path d="M 540 553 L 644 545 M 540 575 L 644 587" stroke="#3b4a55" stroke-width="4.5" fill="none"/>
+
+          <!-- frame -->
+          <g fill="none" stroke="#1f8a94" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M 644 566 L 590 472"/>
+            <path d="M 590 472 L 540 564"/>
+            <path d="M 644 566 L 540 564"/>
+            <path d="M 590 472 L 722 462"/>
+            <path d="M 644 566 L 722 462"/>
+            <path d="M 748 564 L 722 462"/>
+          </g>
+          <g fill="none" stroke="#59b6b8" stroke-width="3" stroke-linecap="round" opacity=".85">
+            <path d="M 596 474 L 716 465M 649 560 L 716 468M 592 478 L 546 560"/>
+          </g>
+          <!-- chainring -->
+          <circle cx="644" cy="566" r="24" fill="#d8e3ec" stroke="#48596a" stroke-width="4"/>
+          <circle cx="644" cy="566" r="14" fill="none" stroke="#7d8f9d" stroke-width="2.5"/>
+          <g stroke="#7d8f9d" stroke-width="2.4">
+            <path d="M 644 542 V 590M 620 566 H 668M 627 549 661 583M 661 549 627 583"/>
+          </g>
+          <!-- saddle -->
+          <path d="M 562 466 Q 590 456 614 466 Q 608 480 584 478 Q 564 477 562 466 Z"
+                fill="#26343d" stroke="#121c23" stroke-width="2.5"/>
+          <!-- handlebar -->
+          <path d="M 722 462 L 762 452" stroke="#26343d" stroke-width="9" stroke-linecap="round"/>
+          <path d="M 748 452 L 776 444" stroke="#26343d" stroke-width="9" stroke-linecap="round"/>
+          <circle cx="776" cy="444" r="7" fill="#1a252c"/>
+
+          <!-- near side: crank, leg, pedal, foot -->
+          <line id="crankNear" x1="644" y1="566" x2="644" y2="540" stroke="#3f5261" stroke-width="8" stroke-linecap="round"/>
+          <path id="legNear" d="M594 462L616 524L644 540" fill="none" stroke="#e0893c" stroke-width="17"
+                stroke-linecap="round" stroke-linejoin="round"/>
+          <g id="pedalNear"><rect x="-16" y="-5.5" width="32" height="11" rx="3.5" fill="#2b3b44" stroke="#121c23" stroke-width="1.5"/></g>
+          <g id="footNear">
+            <path d="M -18 0 Q -6 -10 15 -2 L 20 5 Q 0 12 -18 7 Z" fill="#e0893c" stroke="#a96522" stroke-width="2"/>
+          </g>
+        </g>
+
+        <!-- ================= PELICAN ================= -->
+        <g id="pelican">
+          <!-- wings (spread wide — the bear stands on them) -->
+          <path d="M 636 384 C 566 370 478 380 414 402 C 466 430 548 440 612 428 C 632 424 643 404 636 384 Z"
+                fill="url(#pel)" stroke="#9fb3c4" stroke-width="3.5" stroke-linejoin="round"/>
+          <g fill="none" stroke="#bccfdd" stroke-width="2.6" stroke-linecap="round">
+            <path d="M 628 392 C 566 382 500 388 442 404"/>
+            <path d="M 620 402 C 566 396 512 400 462 412"/>
+            <path d="M 612 412 C 572 410 534 414 498 422"/>
+          </g>
+          <path d="M 668 380 C 738 364 822 374 886 396 C 838 424 758 434 694 420 C 674 415 661 398 668 380 Z"
+                fill="url(#pel)" stroke="#9fb3c4" stroke-width="3.5" stroke-linejoin="round"/>
+          <g fill="none" stroke="#bccfdd" stroke-width="2.6" stroke-linecap="round">
+            <path d="M 676 390 C 738 380 804 386 860 400"/>
+            <path d="M 684 400 C 740 394 794 400 842 410"/>
+            <path d="M 692 410 C 736 408 774 412 812 420"/>
+          </g>
+          <path d="M 418 400 Q 402 400 396 410 Q 412 412 424 408 Z" fill="#e0893c"/>
+          <path d="M 884 394 Q 900 394 906 404 Q 890 406 878 402 Z" fill="#e0893c"/>
+
+          <!-- tail -->
+          <path d="M 606 424 L 556 400 Q 546 396 550 412 L 566 452 Z"
+                fill="url(#pel)" stroke="#9fb3c4" stroke-width="3" stroke-linejoin="round"/>
+
+          <!-- body -->
+          <path d="M 586 430 C 574 394 602 372 640 372 C 680 372 704 394 696 432 C 690 464 666 476 638 476 C 610 476 596 462 586 430 Z"
+                fill="url(#pel)" stroke="#9fb3c4" stroke-width="3.5"/>
+          <path d="M 604 452 C 618 468 660 470 682 450" fill="none" stroke="#c6d7e3" stroke-width="5" stroke-linecap="round"/>
+
+          <!-- scarf -->
+          <g transform="translate(700 372)">
+            <g>
+              <animateTransform attributeName="transform" type="rotate"
+                values="-7 0 0; 9 0 0; -7 0 0" dur="1.1s" repeatCount="indefinite"/>
+              <path d="M 0 0 Q -46 -14 -84 6 Q -60 14 -22 10 Z" fill="#e0463c" stroke="#a82a22" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M -30 4 Q -56 0 -74 8" fill="none" stroke="#ff7d6e" stroke-width="2.5"/>
+            </g>
+          </g>
+          <path d="M 668 386 Q 690 372 712 380 Q 700 396 674 400 Z" fill="#e0463c" stroke="#a82a22" stroke-width="2.5"/>
+
+          <!-- neck + head -->
+          <path d="M 660 396 Q 690 366 728 358" fill="none" stroke="url(#pel)" stroke-width="30" stroke-linecap="round"/>
+          <path d="M 660 396 Q 690 366 728 358" fill="none" stroke="#9fb3c4" stroke-width="2.5" opacity=".0"/>
+          <circle cx="748" cy="350" r="21" fill="url(#pel)" stroke="#9fb3c4" stroke-width="3.5"/>
+          <path d="M 736 332 Q 748 322 760 332 Q 754 340 742 340 Z" fill="#e6eef4" stroke="#9fb3c4" stroke-width="2"/>
+          <!-- beak -->
+          <path d="M 762 344 L 890 350 Q 902 352 888 358 L 764 358 Z"
+                fill="url(#beak)" stroke="#b56a17" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M 762 357 Q 782 398 836 392 Q 872 386 884 358 Q 830 380 762 353 Z"
+                fill="#f8c877" stroke="#c9761f" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M 780 366 Q 810 386 848 372" fill="none" stroke="#e2a34a" stroke-width="2.4"/>
+          <!-- eye -->
+          <circle cx="756" cy="342" r="5.2" fill="#1e2b34"/>
+          <circle cx="758" cy="340" r="1.9" fill="#fff"/>
+          <path d="M 744 332 Q 754 327 764 333" fill="none" stroke="#6d8798" stroke-width="2.4" stroke-linecap="round"/>
+        </g>
+
+        <!-- ================= POLAR BEAR (on the pelican's wings) ================= -->
+        <g id="bearG">
+          <g>
+            <animateTransform attributeName="transform" type="rotate"
+              values="-1.4 590 400; 1.4 590 400; -1.4 590 400" dur="2.6s" repeatCount="indefinite"/>
+            <!-- legs -->
+            <rect x="518" y="318" width="30" height="84" rx="15" fill="#cfe0ee" stroke="#8fa8bf" stroke-width="2.4"/>
+            <rect x="554" y="320" width="30" height="84" rx="15" fill="url(#bear)" stroke="#8fa8bf" stroke-width="2.4"/>
+            <rect x="612" y="316" width="30" height="84" rx="15" fill="#cfe0ee" stroke="#8fa8bf" stroke-width="2.4"/>
+            <rect x="648" y="318" width="30" height="84" rx="15" fill="url(#bear)" stroke="#8fa8bf" stroke-width="2.4"/>
+            <!-- body -->
+            <path d="M 508 286 C 508 248 544 238 584 238 C 616 238 644 246 656 264 L 656 288 C 656 324 624 332 584 332 C 544 332 508 322 508 286 Z"
+                  fill="url(#bear)" stroke="#8fa8bf" stroke-width="3.5"/>
+            <path d="M 536 314 Q 584 332 636 312" fill="none" stroke="#c2d6e6" stroke-width="5" stroke-linecap="round"/>
+            <!-- head -->
+            <path d="M 664 272 Q 692 238 722 248 Q 746 258 742 286 Q 736 310 706 306 Q 678 300 664 272 Z"
+                  fill="url(#bear)" stroke="#8fa8bf" stroke-width="3.5"/>
+            <circle cx="686" cy="230" r="13" fill="url(#bear)" stroke="#8fa8bf" stroke-width="3"/>
+            <circle cx="686" cy="230" r="6" fill="#e8c3cc"/>
+            <circle cx="724" cy="226" r="13" fill="url(#bear)" stroke="#8fa8bf" stroke-width="3"/>
+            <circle cx="724" cy="226" r="6" fill="#e8c3cc"/>
+            <path d="M 700 264 Q 742 254 762 268 Q 748 288 706 284 Z" fill="#f4f9fd" stroke="#8fa8bf" stroke-width="2.6"/>
+            <ellipse cx="762" cy="266" rx="9" ry="7" fill="#2b3b44"/>
+            <path d="M 754 280 Q 762 288 770 280" fill="none" stroke="#5a7183" stroke-width="2.4" stroke-linecap="round"/>
+            <circle cx="724" cy="254" r="5" fill="#2b3b44"/><circle cx="726" cy="252" r="1.8" fill="#fff"/>
+            <!-- harness -->
+            <path d="M 566 236 Q 562 296 580 332" fill="none" stroke="#8c5a2b" stroke-width="9" stroke-linecap="round" opacity=".9"/>
+            <path d="M 566 236 Q 562 296 580 332" fill="none" stroke="#c98a44" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+          </g>
+        </g>
+
+        <!-- ================= QIN SHI HUANG + SCREW GUN ================= -->
+        <g id="qin">
+          <g>
+            <animateTransform attributeName="transform" type="translate"
+              values="0 0; 0 -2.5; 0 0; 0 2.5; 0 0" dur="0.32s" repeatCount="indefinite"/>
+            <!-- robe -->
+            <path d="M 560 244 Q 540 250 532 274 L 526 306 Q 566 314 600 306 L 606 246 Z"
+                  fill="url(#robe)" stroke="#c9a227" stroke-width="2.4"/>
+            <path d="M 556 246 L 550 180 Q 547 162 566 160 L 600 160 Q 618 162 615 182 L 608 248 Z"
+                  fill="url(#robe)" stroke="#c9a227" stroke-width="3"/>
+            <path d="M 556 246 L 550 180 Q 547 162 566 160 L 600 160 Q 618 162 615 182 L 608 248"
+                  fill="none" stroke="#b4322c" stroke-width="7" opacity=".92" stroke-linejoin="round"/>
+            <g fill="none" stroke="#e0b13c" stroke-width="2" opacity=".85">
+              <path d="M 564 196 Q 574 208 586 196"/>
+              <path d="M 566 222 Q 578 234 592 222"/>
+              <path d="M 570 250 Q 582 262 596 250"/>
+            </g>
+            <!-- left arm -->
+            <path d="M 566 184 Q 556 208 566 230" fill="none" stroke="#1b1b26" stroke-width="14" stroke-linecap="round"/>
+            <circle cx="566" cy="232" r="8" fill="#eec49a" stroke="#c99a6c" stroke-width="2"/>
+            <!-- right arm reaching the screw gun -->
+            <path d="M 574 182 Q 594 198 612 214" fill="none" stroke="#1b1b26" stroke-width="15" stroke-linecap="round"/>
+            <!-- head -->
+            <rect x="570" y="150" width="17" height="16" fill="#e8bd92"/>
+            <circle cx="556" cy="150" r="18" fill="#eec49a" stroke="#c99a6c" stroke-width="2.5"/>
+            <path d="M 546 160 Q 556 200 578 190 Q 570 170 574 160 Z" fill="#2a2320"/>
+            <path d="M 540 148 Q 546 142 554 144" fill="none" stroke="#2a2320" stroke-width="3" stroke-linecap="round"/>
+            <ellipse cx="562" cy="144" rx="3.4" ry="2.6" fill="#2a2320"/>
+            <path d="M 572 142 Q 578 138 583 142" fill="none" stroke="#2a2320" stroke-width="2.6" stroke-linecap="round"/>
+            <!-- cap -->
+            <path d="M 537 138 Q 537 114 556 114 Q 575 114 575 138 Z" fill="#1b1b26" stroke="#c9a227" stroke-width="2.4"/>
+            <!-- 冕旒 board -->
+            <path d="M 518 112 L 596 112 L 604 98 L 512 98 Z" fill="#1b1b26" stroke="#c9a227" stroke-width="2.6" stroke-linejoin="round"/>
+            <path d="M 520 104 H 598" stroke="#e0b13c" stroke-width="2" opacity=".8"/>
+            <!-- bead strings (front + back) -->
+            <g fill="#f4f7fa" stroke="#a9c0d4" stroke-width="1.4">
+              <circle cx="602" cy="116" r="4"/><circle cx="603" cy="128" r="4"/><circle cx="604" cy="140" r="4"/>
+              <circle cx="605" cy="152" r="4"/>
+              <circle cx="514" cy="116" r="4"/><circle cx="513" cy="128" r="4"/><circle cx="512" cy="140" r="4"/>
+            </g>
+            <g fill="#c0392b">
+              <circle cx="603" cy="122" r="3"/><circle cx="604" cy="134" r="3"/><circle cx="605" cy="146" r="3"/>
+              <circle cx="513" cy="122" r="3"/><circle cx="512" cy="134" r="3"/>
+            </g>
+          </g>
+        </g>
+
+        <!-- saddle plate + bolt on the bear's back -->
+        <g>
+          <rect x="596" y="226" width="104" height="38" rx="11" fill="#5d6f7e" stroke="#33434e" stroke-width="2.6"/>
+          <rect x="602" y="232" width="92" height="26" rx="8" fill="#8194a3"/>
+          <g fill="#33434e"><circle cx="612" cy="245" r="3.4"/><circle cx="684" cy="245" r="3.4"/></g>
+          <!-- screw head -->
+          <g transform="translate(652 245)">
+            <g id="bolt">
+              <path d="M -17 -7 L 0 -16 L 17 -7 L 17 7 L 0 16 L -17 7 Z" fill="url(#metal)" stroke="#5c6b78" stroke-width="2.4"/>
+              <path d="M -6 -10 H 6 V 10 H -6 Z" fill="#4b5a67"/>
+            </g>
+          </g>
+        </g>
+
+        <!-- screw gun -->
+        <g transform="translate(614 214) rotate(38)">
+          <rect x="-32" y="-11" width="54" height="22" rx="7" fill="#d94a4a" stroke="#8f2f2f" stroke-width="2.6"/>
+          <rect x="-24" y="9" width="15" height="24" rx="5" fill="#26343d"/>
+          <rect x="-30" y="-6" width="16" height="12" rx="3" fill="#8f2f2f" opacity=".55"/>
+          <circle cx="24" cy="0" r="8.5" fill="#8b9aa8" stroke="#5c6b78" stroke-width="2.4"/>
+          <g transform="translate(24 0)"><g id="bit">
+            <rect x="0" y="-4" width="24" height="8" rx="2" fill="url(#metal)" stroke="#7b8b99" stroke-width="1.6"/>
+            <path d="M 8 -4 L 14 4 M 14 -4 L 20 4" stroke="#8b9aa8" stroke-width="1.4"/>
+          </g></g>
+        </g>
+
+        <!-- sparks -->
+        <g transform="translate(652 245)">
+          <g class="spark" stroke="#ffe07a" stroke-width="3.4" stroke-linecap="round">
+            <path d="M -22 -18 L -34 -27"/><path d="M 24 -12 L 38 -18"/>
+          </g>
+          <g class="spark2" stroke="#ffb347" stroke-width="3" stroke-linecap="round">
+            <path d="M 22 14 L 34 24"/><path d="M -20 14 L -32 22"/>
+          </g>
+          <g class="spark3" stroke="#fff3c4" stroke-width="2.6" stroke-linecap="round">
+            <path d="M 2 -26 L 4 -38"/><path d="M 30 2 L 42 4"/><path d="M -28 2 L -40 0"/>
+          </g>
+          <circle r="16" fill="#ffd24a" opacity=".28" class="spark"/>
+        </g>
+
+      </g>
+      </g>
+
+      <!-- ================= WIND STREAKS ================= -->
+      <g stroke="#ffffff" stroke-linecap="round" opacity=".5">
+        <path class="streak" d="M 0 300 H 170" stroke-width="3"/>
+        <path class="streak" d="M 0 372 H 120" stroke-width="2.4" style="animation-delay:-.7s"/>
+        <path class="streak" d="M 0 470 H 210" stroke-width="3.4" style="animation-delay:-1.4s"/>
+        <path class="streak" d="M 0 556 H 140" stroke-width="2.2" style="animation-delay:-2s"/>
+      </g>
+
+      <!-- ================= NEAR CLOUD DECK (depth) ================= -->
+      <g fill="#ffffff" opacity=".42" class="drift2">
+        <use href="#cloud" transform="translate(240 918) scale(2.1)"/>
+        <use href="#cloud" transform="translate(980 936) scale(2.5)"/>
+        <use href="#cloud" transform="translate(1620 918) scale(2.1)"/>
+        <use href="#cloud" transform="translate(1840 918) scale(2.1)"/>
+        <use href="#cloud" transform="translate(2580 936) scale(2.5)"/>
+        <use href="#cloud" transform="translate(3220 918) scale(2.1)"/>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var byId = function (id) { return document.getElementById(id); };
+
+  var el = {
+    wheelR: byId("wheelR"), wheelF: byId("wheelF"),
+    fanA: byId("fanA"), fanB: byId("fanB"),
+    bolt: byId("bolt"), bit: byId("bit"),
+    crankFar: byId("crankFar"), crankNear: byId("crankNear"),
+    pedalFar: byId("pedalFar"), pedalNear: byId("pedalNear"),
+    legFar: byId("legFar"), legNear: byId("legNear"),
+    footFar: byId("footFar"), footNear: byId("footNear")
+  };
+
+  /* --- drivetrain geometry --- */
+  var BB = { x: 644, y: 566 };      // bottom bracket
+  var R = 26;                       // crank radius
+  var HIP_F = { x: 578, y: 456 };   // far hip
+  var HIP_N = { x: 594, y: 462 };   // near hip
+  var L1 = 80, L2 = 78;             // thigh / shin
+
+  function knee(hip, foot) {
+    var dx = foot.x - hip.x, dy = foot.y - hip.y;
+    var raw = Math.sqrt(dx * dx + dy * dy) || 1;
+    var d = raw;
+    var hi = L1 + L2 - 0.5, lo = Math.abs(L1 - L2) + 0.5;
+    if (d > hi) d = hi;
+    if (d < lo) d = lo;
+    var ux = dx / raw, uy = dy / raw;
+    var a = (L1 * L1 - L2 * L2 + d * d) / (2 * d);
+    var h = Math.sqrt(Math.max(0, L1 * L1 - a * a));
+    var mx = hip.x + a * ux, my = hip.y + a * uy;
+    var k1 = { x: mx - h * uy, y: my + h * ux };
+    var k2 = { x: mx + h * uy, y: my - h * ux };
+    return k1.x > k2.x ? k1 : k2;   // knee bends forward
+  }
+
+  function put(node, t) { if (node) node.setAttribute("transform", t); }
+  function r2(n) { return Math.round(n * 100) / 100; }
+
+  function render(t) {
+    var rev = t * 0.9;                      // crank revolutions per second
+    var th = rev * Math.PI * 2;
+
+    var wa = rev * 1.85 * 360;              // wheel angle (gear ratio)
+    put(el.wheelR, "rotate(" + r2(wa) + ")");
+    put(el.wheelF, "rotate(" + r2(wa) + ")");
+    put(el.fanA, "rotate(" + r2(t * 1250) + ")");
+    put(el.fanB, "rotate(" + r2(t * 1250) + ")");
+    put(el.bolt, "rotate(" + r2(-t * 720) + ")");
+    put(el.bit, "rotate(" + r2(t * 1680) + ")");
+
+    var pF = { x: BB.x + R * Math.cos(th), y: BB.y + R * Math.sin(th) };
+    var pN = { x: BB.x + R * Math.cos(th + Math.PI), y: BB.y + R * Math.sin(th + Math.PI) };
+
+    if (el.crankFar) { el.crankFar.setAttribute("x2", r2(pF.x)); el.crankFar.setAttribute("y2", r2(pF.y)); }
+    if (el.crankNear) { el.crankNear.setAttribute("x2", r2(pN.x)); el.crankNear.setAttribute("y2", r2(pN.y)); }
+    put(el.pedalFar, "translate(" + r2(pF.x) + " " + r2(pF.y) + ")");
+    put(el.pedalNear, "translate(" + r2(pN.x) + " " + r2(pN.y) + ")");
+    put(el.footFar, "translate(" + r2(pF.x) + " " + r2(pF.y) + ")");
+    put(el.footNear, "translate(" + r2(pN.x) + " " + r2(pN.y) + ")");
+
+    var kF = knee(HIP_F, pF), kN = knee(HIP_N, pN);
+    if (el.legFar) el.legFar.setAttribute("d",
+      "M" + HIP_F.x + " " + HIP_F.y + "L" + r2(kF.x) + " " + r2(kF.y) + "L" + r2(pF.x) + " " + r2(pF.y));
+    if (el.legNear) el.legNear.setAttribute("d",
+      "M" + HIP_N.x + " " + HIP_N.y + "L" + r2(kN.x) + " " + r2(kN.y) + "L" + r2(pN.x) + " " + r2(pN.y));
+  }
+
+  if (reduced) {
+    render(0.35);                            // a single, still-but-posed frame
+  } else {
+    var start = null;
+    var loop = function (now) {
+      if (start === null) start = now;
+      render((now - start) / 1000);
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }
+})();
+</script>
+</body>
+</html>
