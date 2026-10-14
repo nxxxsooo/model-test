@@ -1,6 +1,8 @@
 // 静态封面来自对应原始作品的 1200×800 浏览器截图；不是重新绘制的示意图。
 // 没有封面的新样例仍可直接运行。题库、样例与原始作品的数据契约不变。
 window.SAMPLE_PREVIEWS = {
+  "s-tri-gemini-4-argon-high": "assets/previews/s-tri-gemini-4-argon-high.webp",
+  "s-pb-gemini-4-argon-high": "assets/previews/s-pb-gemini-4-argon-high.webp",
   "s-pb-muse-spark": "assets/previews/muse-spark-pelican.webp",
   "s-pb-mimo-2-5": "assets/previews/mimo-pelican.webp",
   "s-pb-qwen-3-7": "assets/previews/qwen-3-7-pelican.webp",
@@ -19,5 +21,6 @@ window.SAMPLE_PREVIEWS = {
   "s-tri-codem-flight": "assets/previews/codem-flight-trilogy.webp",
   "s-tri-muse-spark-1-3": "assets/previews/muse-spark-trilogy.webp",
   "s-tri-gemini-3-8-flash": "assets/previews/gemini-trilogy.webp",
-  "s-tri-sol-medium": "assets/previews/sol-medium-trilogy.webp"
+  "s-tri-sol-medium": "assets/previews/sol-medium-trilogy.webp",
+  "s-tri-cat-jam": "assets/previews/s-tri-cat-jam.webp",
 };
