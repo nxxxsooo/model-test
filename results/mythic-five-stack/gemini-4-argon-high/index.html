@@ -1,0 +1,2181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>高空五层神话叠罗汉：狂暴打螺丝 — 2D物理平衡与横版飞行游戏</title>
+  <style>
+    :root {
+      --bg-deep: #060913;
+      --panel-bg: rgba(12, 18, 34, 0.86);
+      --panel-border: rgba(245, 158, 11, 0.42);
+      --gold: #facc15;
+      --gold-bright: #fef08a;
+      --amber: #f59e0b;
+      --crimson: #ef4444;
+      --cyan: #38bdf8;
+      --jade: #10b981;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body, html {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--bg-deep);
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .hud-header {
+      position: relative;
+      z-index: 30;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 14px;
+      pointer-events: none;
+    }
+
+    .hud-card {
+      background: var(--panel-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 6px 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .badge-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tag-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 5px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .tag-gold {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--gold-bright);
+      border: 1px solid rgba(250, 204, 21, 0.45);
+    }
+
+    .tag-cyan {
+      background: rgba(56, 189, 248, 0.18);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+
+    .tag-berserk {
+      background: linear-gradient(90deg, #dc2626, #d97706);
+      color: #fff;
+      border: 1px solid #fef08a;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.8);
+      animation: pulseBadge 0.4s infinite alternate;
+    }
+
+    @keyframes pulseBadge {
+      from { transform: scale(1); }
+      to { transform: scale(1.06); }
+    }
+
+    .main-h1 {
+      font-size: 14px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 0.5px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    }
+
+    .metrics-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .metric-box {
+      display: flex;
+      flex-direction: column;
+      padding-right: 10px;
+      border-right: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .metric-box:last-child {
+      border-right: none;
+      padding-right: 0;
+    }
+
+    .metric-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .metric-val {
+      font-family: "JetBrains Mono", "Consolas", monospace;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .val-cyan { color: var(--cyan); }
+    .val-gold { color: var(--gold); }
+    .val-jade { color: #34d399; }
+    .val-crimson { color: #f87171; }
+
+    /* Center-of-Mass Semicircle Tilt Gauge */
+    .gauge-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .wind-bar-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 115px;
+    }
+
+    .wind-track {
+      width: 100%;
+      height: 8px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 99px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wind-center-mark {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #fff;
+      z-index: 2;
+    }
+
+    .wind-fill {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #facc15);
+      transition: width 0.1s, left 0.1s;
+    }
+
+    .stage-Container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      overflow: hidden;
+    }
+
+    #gameSvg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    #cameraViewport {
+      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Bottom Control Deck */
+    .hud-footer {
+      position: relative;
+      z-index: 30;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 14px 10px;
+      pointer-events: none;
+    }
+
+    .ctrl-cluster {
+      background: var(--panel-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      border-radius: 14px;
+      padding: 6px 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      pointer-events: auto;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    .btn {
+      appearance: none;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(30, 41, 59, 0.85);
+      color: var(--text-main);
+      font-size: 12px;
+      font-weight: 800;
+      padding: 6px 11px;
+      border-radius: 9px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.14s ease;
+    }
+
+    .btn:hover {
+      background: rgba(51, 65, 85, 0.95);
+      border-color: rgba(250, 204, 21, 0.6);
+      transform: translateY(-1px);
+    }
+
+    .btn:active, .btn.active-press {
+      transform: translateY(1px) scale(0.96);
+      background: var(--amber);
+      color: #09090b;
+    }
+
+    .btn-berserk {
+      background: linear-gradient(135deg, #b91c1c, #d97706);
+      border: 1px solid #fde047;
+      color: #fef08a;
+      font-size: 13px;
+      padding: 7px 14px;
+      box-shadow: 0 0 15px rgba(220, 38, 38, 0.45);
+    }
+
+    .btn-berserk:hover {
+      background: linear-gradient(135deg, #dc2626, #f59e0b);
+      color: #fff;
+      box-shadow: 0 0 22px rgba(250, 204, 21, 0.75);
+    }
+
+    .btn-berserk.active-press {
+      background: linear-gradient(135deg, #fef08a, #f97316);
+      color: #450a0a;
+      box-shadow: 0 0 30px #facc15;
+    }
+
+    .btn-assist-on {
+      background: rgba(16, 185, 129, 0.25);
+      border-color: #34d399;
+      color: #6ee7b7;
+    }
+
+    .btn-cam-active {
+      background: var(--cyan);
+      color: #09090b;
+      border-color: #bae6fd;
+    }
+
+    .btn-reset {
+      background: rgba(239, 68, 68, 0.22);
+      border-color: rgba(248, 113, 113, 0.55);
+      color: #fca5a5;
+    }
+
+    .btn-reset:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    .slider-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 6px;
+      border-right: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .slider-group:last-of-type {
+      border-right: none;
+    }
+
+    .slider-label {
+      font-size: 11px;
+      color: #cbd5e1;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 68px;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(6, 9, 19, 0.78);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+
+    .modal-backdrop.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-box {
+      width: min(92vw, 480px);
+      background: linear-gradient(160deg, #0f172a 0%, #1e1b4b 100%);
+      border: 2px solid var(--gold);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 40px rgba(245, 158, 11, 0.3);
+      text-align: center;
+      transform: translateY(20px) scale(0.95);
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .modal-backdrop.visible .modal-box {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--gold-bright);
+      margin-bottom: 6px;
+      text-shadow: 0 2px 10px rgba(250, 204, 21, 0.5);
+    }
+
+    .modal-reason {
+      font-size: 13px;
+      color: #fca5a5;
+      font-weight: 700;
+      margin-bottom: 16px;
+      padding: 4px 12px;
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 99px;
+      display: inline-block;
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .report-item {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .report-item .r-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .report-item .r-val {
+      font-size: 18px;
+      font-weight: 900;
+      font-family: monospace;
+      margin-top: 2px;
+    }
+
+    .btn-restart-big {
+      width: 100%;
+      justify-content: center;
+      padding: 12px;
+      font-size: 16px;
+      background: linear-gradient(90deg, #f59e0b, #eab308);
+      color: #09090b;
+      border: none;
+      border-radius: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+    }
+
+    .btn-restart-big:hover {
+      filter: brightness(1.1);
+    }
+
+    @media (max-width: 900px) {
+      .hide-mobile { display: none !important; }
+      .main-h1 { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="hud-header">
+    <!-- Left Brand & Status Card -->
+    <div class="hud-card">
+      <div class="brand-title">
+        <div class="badge-row">
+          <span class="tag-badge tag-gold">筋斗云重工 × 大秦螺丝 × 蜀汉光刻</span>
+          <span id="hudModeBadge" class="tag-badge tag-cyan">1x 稳态巡航</span>
+        </div>
+        <h1 class="main-h1">五层神话叠罗汉：悟空开飞机 · 鹈鹕踩单车 · 翅托北极熊 · 始皇打螺丝 · 孔明搓芯片</h1>
+      </div>
+    </div>
+
+    <!-- Center Semicircle Tilt Gauge & Wind Warning -->
+    <div class="hud-card gauge-container">
+      <svg width="110" height="58" viewBox="0 0 110 58">
+        <!-- Green / Yellow / Red Danger Zones Arc -->
+        <path d="M 10 50 A 45 45 0 0 1 100 50" fill="none" stroke="#1e293b" stroke-width="10" stroke-linecap="round" />
+        <!-- Red Left & Right Danger Zones (>42 deg) -->
+        <path d="M 10 50 A 45 45 0 0 1 23 18" fill="none" stroke="#ef4444" stroke-width="8" />
+        <path d="M 87 18 A 45 45 0 0 1 100 50" fill="none" stroke="#ef4444" stroke-width="8" />
+        <!-- Yellow Caution Zones (20 to 42 deg) -->
+        <path d="M 23 18 A 45 45 0 0 1 40 7" fill="none" stroke="#f59e0b" stroke-width="8" />
+        <path d="M 70 7 A 45 45 0 0 1 87 18" fill="none" stroke="#f59e0b" stroke-width="8" />
+        <!-- Green Safe Zone (-20 to +20 deg) -->
+        <path d="M 40 7 A 45 45 0 0 1 70 7" fill="none" stroke="#10b981" stroke-width="8" />
+        <!-- Needle Pivot & Dynamic Pointer -->
+        <g id="gaugeNeedle" transform="translate(55, 50) rotate(0)">
+          <polygon points="-2.5,0 0,-42 2.5,0" fill="#fef08a" stroke="#09090b" stroke-width="0.8" />
+          <circle cx="0" cy="0" r="5" fill="#facc15" stroke="#09090b" stroke-width="1.5" />
+        </g>
+        <text id="gaugeAngleText" x="55" y="46" text-anchor="middle" fill="#ffffff" font-size="11" font-family="monospace" font-weight="900">0.0°</text>
+      </svg>
+
+      <div class="wind-bar-wrap">
+        <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:700;">
+          <span style="color:#94a3b8;">高空乱流风力</span>
+          <span id="hudWindText" style="color:#38bdf8; font-family:monospace;">微风 0.0</span>
+        </div>
+        <div class="wind-track">
+          <div class="wind-center-mark"></div>
+          <div id="hudWindFill" class="wind-fill"></div>
+        </div>
+        <div style="font-size:9px; color:#cbd5e1;">极限崩塌角: <strong style="color:#f87171;">±65°</strong> | 劫云撞击即散架</div>
+      </div>
+    </div>
+
+    <!-- Right Production & Telemetry Counters -->
+    <div class="hud-card metrics-group">
+      <div class="metric-box">
+        <span class="metric-label">海拔 / 空速</span>
+        <span class="metric-val val-cyan"><span id="hudAltitude">12,500</span>m · <span id="hudAirspeed">920</span>km/h</span>
+      </div>
+      <div class="metric-box">
+        <span class="metric-label">⚡大秦螺丝产能</span>
+        <span class="metric-val val-gold"><span id="hudBolts">1,024</span> 颗</span>
+      </div>
+      <div class="metric-box">
+        <span class="metric-label">☯️蜀汉1nm芯片</span>
+        <span class="metric-val val-jade"><span id="hudChips">512</span> 枚</span>
+      </div>
+      <div class="metric-box">
+        <span class="metric-label">🏆神话总工业分</span>
+        <span class="metric-val val-crimson" id="hudScore">25,600</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="stage-Container">
+    <svg id="gameSvg" viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <!-- Sky Background Gradient -->
+        <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#050b1a" />
+          <stop offset="30%" stop-color="#0f2952" />
+          <stop offset="65%" stop-color="#1e4e79" />
+          <stop offset="100%" stop-color="#487eb0" />
+        </linearGradient>
+
+        <!-- Berserk Neon Gold/Crimson Aura Overlay -->
+        <linearGradient id="berserkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#7f1d1d" stop-opacity="0.58" />
+          <stop offset="50%" stop-color="#78350f" stop-opacity="0.38" />
+          <stop offset="100%" stop-color="#064e3b" stop-opacity="0.45" />
+        </linearGradient>
+
+        <!-- Heavy Aircraft Silver-Grey & Xuan-Gold Gradients -->
+        <linearGradient id="fuselageGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#f8fafc" />
+          <stop offset="45%" stop-color="#e2e8f0" />
+          <stop offset="78%" stop-color="#94a3b8" />
+          <stop offset="100%" stop-color="#334155" />
+        </linearGradient>
+
+        <linearGradient id="wingSurfaceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f1f5f9" />
+          <stop offset="50%" stop-color="#cbd5e1" />
+          <stop offset="100%" stop-color="#475569" />
+        </linearGradient>
+
+        <!-- Imperial Gold Trim -->
+        <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#fef08a" />
+          <stop offset="40%" stop-color="#facc15" />
+          <stop offset="75%" stop-color="#ca8a04" />
+          <stop offset="100%" stop-color="#713f12" />
+        </linearGradient>
+
+        <!-- Transparent Bubble Canopy Gradient -->
+        <linearGradient id="canopyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.72" />
+          <stop offset="35%" stop-color="#38bdf8" stop-opacity="0.2" />
+          <stop offset="85%" stop-color="#0284c7" stop-opacity="0.38" />
+          <stop offset="100%" stop-color="#0f172a" stop-opacity="0.65" />
+        </linearGradient>
+
+        <!-- Samadhi True Fire Jet Afterburner Gradient -->
+        <linearGradient id="jetFlameGrad" x1="0%" y1="50%" x2="100%" y2="50%">
+          <stop offset="0%" stop-color="#ffffff" />
+          <stop offset="18%" stop-color="#38bdf8" />
+          <stop offset="45%" stop-color="#facc15" />
+          <stop offset="78%" stop-color="#ef4444" stop-opacity="0.85" />
+          <stop offset="100%" stop-color="#7f1d1d" stop-opacity="0" />
+        </linearGradient>
+
+        <!-- Pelican Elastic Yellow Throat Pouch Gradient -->
+        <linearGradient id="pouchGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#fef08a" />
+          <stop offset="50%" stop-color="#fb923c" />
+          <stop offset="100%" stop-color="#c2410c" />
+        </linearGradient>
+
+        <!-- Polar Bear Fur Shading -->
+        <linearGradient id="bearFurGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" />
+          <stop offset="65%" stop-color="#f1f5f9" />
+          <stop offset="100%" stop-color="#cbd5e1" />
+        </linearGradient>
+
+        <!-- Qin Imperial Dragon Robe Gradient -->
+        <linearGradient id="qinRobeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#27272a" />
+          <stop offset="55%" stop-color="#18181b" />
+          <stop offset="100%" stop-color="#09090b" />
+        </linearGradient>
+
+        <!-- Zhuge Liang EUV Lithography Laser Beam Gradient -->
+        <linearGradient id="euvLaserGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" />
+          <stop offset="30%" stop-color="#34d399" />
+          <stop offset="70%" stop-color="#38bdf8" />
+          <stop offset="100%" stop-color="#a855f7" stop-opacity="0.2" />
+        </linearGradient>
+
+        <!-- Wooden Ox Bronze-Wood Mechanism Gradient -->
+        <linearGradient id="woodOxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#b45309" />
+          <stop offset="50%" stop-color="#78350f" />
+          <stop offset="100%" stop-color="#451a03" />
+        </linearGradient>
+
+        <!-- Glow & Shadow Filters -->
+        <filter id="glowFilter" x="-35%" y="-35%" width="170%" height="170%">
+          <feGaussianBlur stdDeviation="4.5" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+
+        <filter id="softShadow" x="-15%" y="-15%" width="130%" height="130%">
+          <feDropShadow dx="0" dy="6" stdDeviation="4.5" flood-color="#020617" flood-opacity="0.45" />
+        </filter>
+
+        <!-- Reusable Cloud Symbol -->
+        <g id="cloudSymbol">
+          <path d="M 35 60 Q 10 60 10 42 Q 10 22 32 22 Q 45 -5 78 6 Q 108 -10 132 16 Q 162 12 172 36 Q 194 36 190 55 Q 188 64 164 64 Z" fill="#ffffff" opacity="0.82" />
+          <path d="M 42 60 Q 25 60 25 46 Q 52 32 96 42 Q 142 32 175 50 Q 180 62 160 63 Z" fill="#cbd5e1" opacity="0.55" />
+        </g>
+      </defs>
+
+      <g id="cameraViewport">
+        <!-- 1. Sky Background & Berserk Aura -->
+        <rect x="0" y="0" width="1400" height="900" fill="url(#skyGrad)" />
+        <rect id="berserkOverlay" x="0" y="0" width="1400" height="900" fill="url(#berserkGrad)" opacity="0" />
+
+        <!-- Celestial Sun & Halo -->
+        <g transform="translate(220, 140)">
+          <circle cx="0" cy="0" r="150" fill="#fef08a" opacity="0.08" />
+          <circle cx="0" cy="0" r="90" fill="#fde047" opacity="0.16" />
+          <circle cx="0" cy="0" r="46" fill="#fffbeb" opacity="0.88" filter="url(#glowFilter)" />
+        </g>
+
+        <!-- Parallax Layer 1: Distant Immortal Mountain Silhouettes (远古仙山剪影) -->
+        <g id="bgMountains" opacity="0.35">
+          <path d="M 0 900 L 0 690 L 140 560 L 260 650 L 420 490 L 590 640 L 760 520 L 940 660 L 1120 510 L 1290 630 L 1400 550 L 1400 900 Z" fill="#1e293b" />
+          <path d="M 1400 900 L 1400 690 L 1540 560 L 1660 650 L 1820 490 L 1990 640 L 2160 520 L 2340 660 L 2520 510 L 2690 630 L 2800 550 L 2800 900 Z" fill="#1e293b" />
+        </g>
+
+        <!-- Parallax Layer 2: Mid-Altitude Cloud Sea -->
+        <g id="bgCloudsFar" opacity="0.45"></g>
+        <g id="bgCloudsMid" opacity="0.72"></g>
+
+        <!-- Parallax Layer 3: High-Speed Wind Streaks -->
+        <g id="bgSpeedLines"></g>
+
+        <!-- Dynamic Tribulation Thundercloud Obstacles Layer (高空劫云/闪电障碍物) -->
+        <g id="obstaclesLayer"></g>
+
+        <!-- ==================================================================== -->
+        <!-- MASTER FIVE-TIER STACKED ACROBATIC ASSEMBLY                          -->
+        <!-- ==================================================================== -->
+        <g id="masterAssembly">
+
+          <!-- ================================================================== -->
+          <!-- TIER 1: SUN WUKONG PILOTING THE HEAVY TURBOFAN JUMBO AIRCRAFT      -->
+          <!-- Pivot of Aircraft at (680, 700)                                    -->
+          <!-- ================================================================== -->
+          <g id="tier1Aircraft" filter="url(#softShadow)">
+            <!-- Starboard Far Wing & Winglet -->
+            <path d="M 480 680 L 780 575 L 835 575 L 615 690 Z" fill="#64748b" stroke="#1e293b" stroke-width="2.5" />
+            <path d="M 780 575 L 815 530 L 840 530 L 835 575 Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="2" />
+
+            <!-- Tail Vertical Stabilizer with Golden Jindouyun Emblem -->
+            <path d="M 1030 645 L 1245 465 L 1315 465 L 1230 665 Z" fill="url(#goldGrad)" stroke="#78350f" stroke-width="3" />
+            <path d="M 1075 640 L 1250 490 L 1285 490 L 1210 655 Z" fill="#18181b" />
+            <path d="M 1188 568 Q 1172 568 1176 552 Q 1184 536 1202 544 Q 1218 530 1230 548 Q 1245 552 1235 568 Z" fill="url(#goldGrad)" stroke="#fef08a" stroke-width="1.5" />
+
+            <!-- Rear Horizontal Stabilizer -->
+            <path d="M 1130 675 L 1335 645 L 1355 660 L 1180 695 Z" fill="#cbd5e1" stroke="#1e293b" stroke-width="2.5" />
+
+            <!-- Wide-Body Fuselage (Silver-Grey & Xuan-Gold Livery) -->
+            <path d="M 95 725
+                     C 95 670, 175 625, 290 612
+                     L 485 612
+                     C 560 612, 620 625, 700 628
+                     L 1150 628
+                     C 1235 628, 1295 650, 1320 672
+                     C 1295 715, 1200 755, 1080 762
+                     L 270 762
+                     C 160 762, 95 748, 95 725 Z"
+                  fill="url(#fuselageGrad)" stroke="#1e293b" stroke-width="3.5" />
+
+            <!-- Xuan-Gold & Crimson Imperial Cheatline Stripes -->
+            <path d="M 105 715 Q 190 705 320 705 L 1265 685 L 1250 702 L 320 722 Q 185 722 102 728 Z" fill="#18181b" />
+            <path d="M 118 728 Q 195 720 320 720 L 1245 702 L 1235 712 L 320 730 Q 190 730 115 735 Z" fill="url(#goldGrad)" />
+
+            <!-- Nose Radome Cone -->
+            <path d="M 95 725 C 95 692, 130 662, 175 644 C 182 682, 182 725, 172 756 C 125 752, 95 740, 95 725 Z" fill="#0f172a" stroke="#facc15" stroke-width="2" />
+
+            <!-- Airline Title & Cabin Windows -->
+            <g transform="translate(555, 658)">
+              <text x="0" y="0" fill="#0f172a" font-size="20" font-weight="900" letter-spacing="3">齐天大圣号 · 玄金重工专机</text>
+              <g transform="translate(0, 10)">
+                <rect x="0" y="0" width="15" height="20" rx="7" fill="#38bdf8" stroke="#1e293b" stroke-width="2" />
+                <rect x="34" y="0" width="15" height="20" rx="7" fill="#38bdf8" stroke="#1e293b" stroke-width="2" />
+                <rect x="68" y="0" width="15" height="20" rx="7" fill="#38bdf8" stroke="#1e293b" stroke-width="2" />
+                <rect x="102" y="0" width="15" height="20" rx="7" fill="#38bdf8" stroke="#1e293b" stroke-width="2" />
+                <rect x="136" y="0" width="15" height="20" rx="7" fill="#38bdf8" stroke="#1e293b" stroke-width="2" />
+                <rect x="170" y="0" width="15" height="20" rx="7" fill="#38bdf8" stroke="#1e293b" stroke-width="2" />
+                <rect x="204" y="0" width="15" height="20" rx="7" fill="#38bdf8" stroke="#1e293b" stroke-width="2" />
+                <rect x="238" y="0" width="15" height="20" rx="7" fill="#38bdf8" stroke="#1e293b" stroke-width="2" />
+                <rect x="272" y="0" width="15" height="20" rx="7" fill="#38bdf8" stroke="#1e293b" stroke-width="2" />
+                <rect x="306" y="0" width="15" height="20" rx="7" fill="#38bdf8" stroke="#1e293b" stroke-width="2" />
+              </g>
+            </g>
+
+            <g id="cockpitAndWukong">
+              <!-- Cockpit Interior & Avionics -->
+              <path d="M 210 635 C 235 540, 445 535, 495 625 Z" fill="#090d16" stroke="#334155" stroke-width="3" />
+              <rect x="225" y="596" width="42" height="28" rx="4" fill="#064e3b" stroke="#10b981" stroke-width="1.5" />
+              <circle cx="246" cy="610" r="9" fill="none" stroke="#34d399" stroke-width="1.2" />
+              <path d="M 385 568 L 405 568 L 395 632 L 365 632 Z" fill="#991b1b" stroke="#450a0a" stroke-width="2" />
+
+              <!-- Glowing Ruyi Jingu Bang (如意金箍棒) -->
+              <g transform="translate(432, 588) rotate(20)" filter="url(#glowFilter)">
+                <rect x="-7" y="-56" width="14" height="112" rx="5" fill="#dc2626" stroke="#fef08a" stroke-width="1.5" />
+                <rect x="-8.5" y="-56" width="17" height="25" rx="3" fill="url(#goldGrad)" stroke="#78350f" stroke-width="1.5" />
+                <rect x="-8.5" y="30" width="17" height="25" rx="3" fill="url(#goldGrad)" stroke="#78350f" stroke-width="1.5" />
+              </g>
+
+              <!-- SUN WUKONG PILOT -->
+              <g id="wukongPilot" transform="translate(335, 590)">
+                <!-- Red Scarf -->
+                <path id="wukongScarf" d="M 25 10 Q 75 2 98 16 Q 75 30 30 26 Z" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.8" />
+                <!-- Golden Armor & Tiger Skin Suit -->
+                <path d="M -18 42 L -8 5 L 32 5 L 40 42 Z" fill="url(#goldGrad)" stroke="#78350f" stroke-width="2" />
+                <path d="M -6 12 L 28 12 L 32 38 L -10 38 Z" fill="#d97706" />
+
+                <!-- Dynamic Sine-Wave Pheasant Tail Feathers (雉鸡翎) -->
+                <g id="wukongFeathers" transform="translate(12, -32)">
+                  <path id="wukongFeather1" d="M 0 0 Q 65 -38 135 -18" fill="none" stroke="#facc15" stroke-width="4.5" stroke-linecap="round" />
+                  <path id="wukongFeather2" d="M 0 2 Q 72 -18 142 4" fill="none" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round" />
+                </g>
+
+                <!-- Monkey Head & Peach Face -->
+                <circle cx="8" cy="-12" r="22" fill="#d97706" stroke="#78350f" stroke-width="2" />
+                <ellipse cx="26" cy="-10" rx="6" ry="9" fill="#f59e0b" stroke="#78350f" stroke-width="1.8" />
+                <path d="M -13 -14 C -13 -26, 2 -28, 6 -18 C 10 -28, 20 -22, 16 -10 C 19 -2, 8 7, -4 5 C -14 3, -15 -6, -13 -14 Z"
+                      fill="#fed7aa" stroke="#9a3412" stroke-width="1.5" />
+
+                <!-- Fiery Golden Eyes (火眼金睛) -->
+                <g id="wukongEyes">
+                  <ellipse cx="-3" cy="-14" rx="7.5" ry="6" fill="#dc2626" />
+                  <ellipse cx="-4" cy="-14" rx="5.5" ry="4.5" fill="#fef08a" stroke="#ca8a04" stroke-width="1" />
+                  <circle cx="-6" cy="-14" r="2.2" fill="#7f1d1d" />
+                  <circle cx="-7" cy="-15.5" r="1" fill="#ffffff" />
+                </g>
+
+                <!-- Monkey Grin & Headset -->
+                <path d="M -9 -2 Q -1 3 8 -3" fill="none" stroke="#7c2d12" stroke-width="2.2" stroke-linecap="round" />
+                <circle cx="24" cy="-10" r="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+
+                <!-- Phoenix-Wing Purple Gold Crown & Tight Golden Fillet (紧箍) -->
+                <path d="M -14 -24 L 8 -46 L 26 -24 Z" fill="#9333ea" stroke="url(#goldGrad)" stroke-width="2.5" />
+                <path d="M -15 -23 Q 6 -19 28 -23" fill="none" stroke="url(#goldGrad)" stroke-width="5.5" stroke-linecap="round" />
+                <path d="M -10 -23 C -14 -31, -2 -31, -5 -23" fill="none" stroke="#fef08a" stroke-width="2.5" />
+
+                <!-- Control Yoke & Arm Linked to Player Pitch Controls -->
+                <g id="wukongYoke">
+                  <line x1="-42" y1="42" x2="-34" y2="12" stroke="#64748b" stroke-width="6" stroke-linecap="round" />
+                  <path d="M -42 6 C -42 0, -26 0, -26 6 L -26 16 L -42 16 Z" fill="#0f172a" stroke="#38bdf8" stroke-width="2" />
+                  <path d="M 4 18 L -16 24 L -32 13" fill="none" stroke="#dc2626" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+                  <circle cx="-33" cy="12" r="5.5" fill="#fed7aa" stroke="#9a3412" stroke-width="1.5" />
+                </g>
+              </g>
+
+              <!-- Transparent Bubble Canopy Glass -->
+              <path d="M 192 636 C 222 522, 462 518, 512 626 C 420 634, 280 636, 192 636 Z"
+                    fill="url(#canopyGrad)" stroke="#e2e8f0" stroke-width="4" />
+              <path d="M 225 610 C 255 542, 395 536, 465 575" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.6" />
+            </g>
+
+            <g id="wingAndEngines">
+              <!-- Broad Swept Wing (Supports the Pelican's Linear Cruise Track) -->
+              <path d="M 430 680 L 960 680 L 1120 762 L 540 762 Z"
+                    fill="url(#wingSurfaceGrad)" stroke="#1e293b" stroke-width="3.5" stroke-linejoin="round" />
+              <!-- Wing Cruise Slide Rail Track (滑轨巡航车道: x=520 to x=910, y=690) -->
+              <rect x="495" y="684" width="440" height="10" rx="5" fill="#1e293b" stroke="#facc15" stroke-width="2" />
+              <line x1="510" y1="689" x2="920" y2="689" stroke="#38bdf8" stroke-width="2" stroke-dasharray="14 8" />
+              <text x="640" y="715" fill="#1e293b" font-size="11" font-weight="900">◀ 鹈鹕动量平衡滑轨 (A/D 加速修正重心) ▶</text>
+
+              <!-- Port Winglet -->
+              <path d="M 1075 762 L 1120 762 L 1162 702 L 1128 702 Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="2.5" />
+
+              <!-- Turbofan Engine #1 (Inboard) -->
+              <g id="turbofan1" transform="translate(600, 775)">
+                <path d="M 20 -35 L 75 -35 L 60 0 L 5 0 Z" fill="#475569" stroke="#0f172a" stroke-width="2.5" />
+                <!-- Dynamic Mach-Ring Samadhi True Fire Plume -->
+                <g id="jetFlame1" transform="translate(95, 18)">
+                  <path d="M 0 -24 Q 150 -38 310 0 Q 150 38 0 24 Z" fill="url(#jetFlameGrad)" filter="url(#glowFilter)" />
+                  <polygon points="35,0 58,-10 80,0 58,10" fill="#ffffff" opacity="0.9" />
+                  <polygon points="95,0 118,-8 140,0 118,8" fill="#fef08a" opacity="0.8" />
+                  <polygon points="155,0 175,-6 195,0 175,6" fill="#38bdf8" opacity="0.75" />
+                </g>
+                <path d="M 75 -12 L 112 -4 L 112 40 L 75 48 Z" fill="#1e293b" stroke="#09090b" stroke-width="2.5" />
+                <path d="M -25 -22 C 15 -26, 65 -24, 85 -16 L 85 52 C 65 60, 15 62, -25 58 Z"
+                      fill="url(#fuselageGrad)" stroke="#0f172a" stroke-width="3" />
+                <path d="M -10 10 L 82 10 L 82 22 L -10 22 Z" fill="#dc2626" />
+                <text x="6" y="42" fill="#0f172a" font-size="10" font-weight="900">三昧真火涡扇-IX</text>
+                <ellipse cx="-25" cy="18" rx="18" ry="40" fill="#cbd5e1" stroke="#0f172a" stroke-width="3" />
+                <ellipse cx="-27" cy="18" rx="14" ry="34" fill="#09090b" />
+                <g transform="translate(-27, 18) scale(0.42, 1)">
+                  <g class="js-fan-blades">
+                    <line x1="-32" y1="0" x2="32" y2="0" stroke="#94a3b8" stroke-width="5" />
+                    <line x1="0" y1="-32" x2="0" y2="32" stroke="#94a3b8" stroke-width="5" />
+                    <line x1="-23" y1="-23" x2="23" y2="23" stroke="#e2e8f0" stroke-width="5" />
+                    <line x1="-23" y1="23" x2="23" y2="-23" stroke="#e2e8f0" stroke-width="5" />
+                    <circle cx="0" cy="0" r="10" fill="#facc15" stroke="#fff" stroke-width="2" />
+                  </g>
+                </g>
+              </g>
+
+              <!-- Turbofan Engine #2 (Outboard) -->
+              <g id="turbofan2" transform="translate(840, 790) scale(0.84)">
+                <path d="M 20 -35 L 75 -35 L 60 0 L 5 0 Z" fill="#475569" stroke="#0f172a" stroke-width="2.5" />
+                <g id="jetFlame2" transform="translate(95, 18)">
+                  <path d="M 0 -24 Q 140 -36 290 0 Q 140 36 0 24 Z" fill="url(#jetFlameGrad)" filter="url(#glowFilter)" />
+                  <polygon points="40,0 62,-8 84,0 62,8" fill="#ffffff" opacity="0.9" />
+                  <polygon points="100,0 120,-6 140,0 120,6" fill="#fef08a" opacity="0.8" />
+                </g>
+                <path d="M 75 -12 L 112 -4 L 112 40 L 75 48 Z" fill="#1e293b" stroke="#09090b" stroke-width="2.5" />
+                <path d="M -25 -22 C 15 -26, 65 -24, 85 -16 L 85 52 C 65 60, 15 62, -25 58 Z"
+                      fill="url(#fuselageGrad)" stroke="#0f172a" stroke-width="3" />
+                <ellipse cx="-25" cy="18" rx="18" ry="40" fill="#cbd5e1" stroke="#0f172a" stroke-width="3" />
+                <ellipse cx="-27" cy="18" rx="14" ry="34" fill="#09090b" />
+                <g transform="translate(-27, 18) scale(0.42, 1)">
+                  <g class="js-fan-blades">
+                    <line x1="-32" y1="0" x2="32" y2="0" stroke="#94a3b8" stroke-width="5" />
+                    <line x1="0" y1="-32" x2="0" y2="32" stroke="#94a3b8" stroke-width="5" />
+                    <line x1="-23" y1="-23" x2="23" y2="23" stroke="#e2e8f0" stroke-width="5" />
+                    <line x1="-23" y1="23" x2="23" y2="-23" stroke="#e2e8f0" stroke-width="5" />
+                    <circle cx="0" cy="0" r="10" fill="#facc15" stroke="#fff" stroke-width="2" />
+                  </g>
+                </g>
+              </g>
+
+              <!-- ============================================================== -->
+              <!-- TIER 2: PELICAN RIDING ROAD BICYCLE ON THE WING TRACK          -->
+              <!-- Local Origin (0,0) = Bottom Center of Bike on Wing (715, 688)  -->
+              <!-- ============================================================== -->
+              <g id="tier2PelicanBike" transform="translate(715, 688)">
+                <!-- Shadow on Wing Track -->
+                <ellipse cx="0" cy="2" rx="125" ry="7" fill="#020617" opacity="0.45" />
+
+                <!-- Front Wheel (Center: -80, -38, R=38) -->
+                <g transform="translate(-80, -38)">
+                  <g class="js-wheel">
+                    <circle cx="0" cy="0" r="38" fill="none" stroke="#0f172a" stroke-width="8" />
+                    <circle cx="0" cy="0" r="32" fill="none" stroke="#e2e8f0" stroke-width="3" />
+                    <line x1="-32" y1="0" x2="32" y2="0" stroke="#cbd5e1" stroke-width="1.8" />
+                    <line x1="0" y1="-32" x2="0" y2="32" stroke="#cbd5e1" stroke-width="1.8" />
+                    <line x1="-23" y1="-23" x2="23" y2="23" stroke="#cbd5e1" stroke-width="1.8" />
+                    <line x1="-23" y1="23" x2="23" y2="-23" stroke="#cbd5e1" stroke-width="1.8" />
+                    <rect x="16" y="-4" width="8" height="5" rx="2" fill="#facc15" />
+                    <circle cx="0" cy="0" r="6.5" fill="#475569" stroke="#fff" stroke-width="2" />
+                  </g>
+                </g>
+
+                <!-- Rear Wheel (Center: +80, -38, R=38) -->
+                <g transform="translate(80, -38)">
+                  <g class="js-wheel">
+                    <circle cx="0" cy="0" r="38" fill="none" stroke="#0f172a" stroke-width="8" />
+                    <circle cx="0" cy="0" r="32" fill="none" stroke="#e2e8f0" stroke-width="3" />
+                    <line x1="-32" y1="0" x2="32" y2="0" stroke="#cbd5e1" stroke-width="1.8" />
+                    <line x1="0" y1="-32" x2="0" y2="32" stroke="#cbd5e1" stroke-width="1.8" />
+                    <line x1="-23" y1="-23" x2="23" y2="23" stroke="#cbd5e1" stroke-width="1.8" />
+                    <line x1="-23" y1="23" x2="23" y2="-23" stroke="#cbd5e1" stroke-width="1.8" />
+                    <rect x="-24" y="2" width="8" height="5" rx="2" fill="#facc15" />
+                    <circle cx="0" cy="0" r="10" fill="#64748b" stroke="#0f172a" stroke-width="2" />
+                  </g>
+                </g>
+
+                <!-- Pelican Far Leg (Right Leg - 2-Bone IK Solved in JS) -->
+                <g id="pelicanFarLeg">
+                  <polyline id="ikRightLeg" points="27,-138 -15,-85 0,-38" fill="none" stroke="#ea580c" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+                  <path id="ikRightFoot" d="M -15 -38 L 10 -38 L 3 -46 Z" fill="#ea580c" stroke="#7c2d12" stroke-width="1.5" />
+                  <line id="crankRightArm" x1="0" y1="-38" x2="0" y2="-60" stroke="#64748b" stroke-width="5" stroke-linecap="round" />
+                  <rect id="pedalRight" x="-11" y="-64" width="22" height="7" rx="3" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5" />
+                </g>
+
+                <!-- Drive Chain & Diamond Road Bike Frame (Crank Center at 0, -38) -->
+                <path id="bikeChainPath" d="M 0 -55 L 80 -48 A 10 10 0 0 1 80 -28 L 0 -21 A 17 17 0 0 1 0 -55 Z"
+                      fill="none" stroke="#1e293b" stroke-width="3.5" stroke-dasharray="6 4" />
+
+                <g stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="0" y1="-38" x2="80" y2="-38" stroke="#dc2626" stroke-width="6" />
+                  <line x1="31" y1="-116" x2="80" y2="-38" stroke="#dc2626" stroke-width="5.5" />
+                  <line x1="0" y1="-38" x2="37" y2="-130" stroke="#ef4444" stroke-width="7" />
+                  <line x1="0" y1="-38" x2="-55" y2="-105" stroke="#ef4444" stroke-width="7.5" />
+                  <line x1="-53" y1="-112" x2="33" y2="-116" stroke="#ef4444" stroke-width="6.5" />
+                  <line x1="-80" y1="-38" x2="-53" y2="-118" stroke="#e2e8f0" stroke-width="6.5" />
+                  <line x1="-53" y1="-118" x2="-59" y2="-142" stroke="#94a3b8" stroke-width="6" />
+                  <path d="M -59 -142 Q -65 -158 -43 -156" fill="none" stroke="#e2e8f0" stroke-width="5.5" />
+                  <path d="M 13 -132 Q 35 -136 53 -130 Q 47 -120 20 -124 Z" fill="#451a03" stroke="#0f172a" stroke-width="2" />
+                </g>
+
+                <!-- Crankset Sprocket -->
+                <g transform="translate(0, -38)">
+                  <g class="js-wheel">
+                    <circle cx="0" cy="0" r="17" fill="#cbd5e1" stroke="#1e293b" stroke-width="3" stroke-dasharray="5 3" />
+                    <line x1="-14" y1="0" x2="14" y2="0" stroke="#475569" stroke-width="3" />
+                    <line x1="0" y1="-14" x2="0" y2="14" stroke="#475569" stroke-width="3" />
+                  </g>
+                </g>
+
+                <g id="pelicanBodyGroup">
+                  <!-- Tail & Plump White Torso -->
+                  <path d="M 50 -150 L 92 -160 L 84 -146 L 95 -140 L 53 -136 Z" fill="#f8fafc" stroke="#475569" stroke-width="2" />
+                  <ellipse cx="27" cy="-165" rx="36" ry="42" transform="rotate(-10 27 -165)" fill="#ffffff" stroke="#334155" stroke-width="2.5" />
+
+                  <!-- Pelican Curved Neck, Head, Aviator Goggles & Elastic Yellow Pouch -->
+                  <path d="M -3 -182 C -20 -202, -23 -235, -13 -258 C 1 -260, 11 -246, 9 -224 C 7 -204, 13 -191, 20 -180 Z"
+                        fill="#ffffff" stroke="#334155" stroke-width="2.5" />
+                  <circle cx="-13" cy="-260" r="18" fill="#ffffff" stroke="#334155" stroke-width="2.5" />
+                  <!-- Aviator Goggles -->
+                  <path d="M -30 -270 Q -13 -276 5 -268" fill="none" stroke="#451a03" stroke-width="4" />
+                  <ellipse cx="-21" cy="-272" rx="7" ry="5" fill="#38bdf8" stroke="#facc15" stroke-width="2" />
+                  <circle cx="-21" cy="-260" r="4.5" fill="#fef08a" stroke="#0f172a" stroke-width="1.5" />
+                  <circle cx="-22.5" cy="-260" r="2" fill="#0f172a" />
+
+                  <!-- Elastic Throat Pouch (喉囊) -->
+                  <path id="pelicanPouch"
+                        d="M -132 -252 C -122 -200, -60 -188, -19 -230 L -27 -254 Z"
+                        fill="url(#pouchGrad)" stroke="#9a3412" stroke-width="2.5" />
+                  <path d="M -27 -264 L -136 -258 C -144 -257, -146 -248, -138 -246 L -132 -251 L -23 -251 Z"
+                        fill="#fde047" stroke="#b45309" stroke-width="2" />
+                </g>
+
+                <!-- Pelican Near Leg (Left Leg - In Front of Frame, 2-Bone IK Solved in JS) -->
+                <g id="pelicanNearLeg">
+                  <line id="crankLeftArm" x1="0" y1="-38" x2="0" y2="-16" stroke="#e2e8f0" stroke-width="5.5" stroke-linecap="round" />
+                  <polyline id="ikLeftLeg" points="27,-138 -10,-82 0,-16" fill="none" stroke="#f97316" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" />
+                  <ellipse id="pelicanHipCuff" cx="27" cy="-138" rx="13" ry="11" fill="#ffffff" stroke="#475569" stroke-width="2" />
+                  <path id="ikLeftFoot" d="M -16 -16 L 11 -16 L 3 -25 Z" fill="#fb923c" stroke="#7c2d12" stroke-width="1.8" />
+                  <rect id="pedalLeft" x="-11" y="-19" width="22" height="7" rx="3" fill="#0f172a" stroke="#facc15" stroke-width="1.5" />
+                </g>
+
+                <!-- ============================================================ -->
+                <!-- PELICAN OUTSTRETCHED WINGS & NON-SLIP TRAY PIVOT (0, -195)   -->
+                <!-- First stage of the Inverted Pendulum rotation!               -->
+                <!-- ============================================================ -->
+                <g id="pelicanWingsTray" transform="translate(20, -195)">
+                  <!-- Left Wing -->
+                  <path d="M -10 0 C -70 -10, -155 -14, -220 -8 C -223 6, -210 16, -193 14 C -187 24, -170 28, -155 22 C -120 32, -50 28, -5 20 Z"
+                        fill="#f8fafc" stroke="#1e293b" stroke-width="2.8" />
+                  <path d="M -220 -8 C -223 6, -210 16, -193 14 C -187 24, -170 28, -155 22 L -160 0 Z" fill="#0f172a" />
+
+                  <!-- Right Wing -->
+                  <path d="M 10 0 C 70 -10, 155 -14, 220 -8 C 223 6, 210 16, 193 14 C 187 24, 170 28, 155 22 C 120 32, 50 28, 5 20 Z"
+                        fill="#f8fafc" stroke="#1e293b" stroke-width="2.8" />
+                  <path d="M 220 -8 C 223 6, 210 16, 193 14 C 187 24, 170 28, 155 22 L 160 0 Z" fill="#0f172a" />
+
+                  <!-- Non-Slip Golden Load-Bearing Tray (防滑承重托盘) -->
+                  <rect x="-155" y="-12" width="310" height="12" rx="5" fill="url(#goldGrad)" stroke="#451a03" stroke-width="2.2" />
+                  <line x1="-140" y1="-6" x2="140" y2="-6" stroke="#18181b" stroke-width="3" stroke-dasharray="10 6" />
+
+                  <!-- ========================================================== -->
+                  <!-- TIER 3: QIN SHI HUANG'S ROYAL POLAR BEAR                   -->
+                  <!-- Local Origin (0, -12) on top of Pelican's Wing Tray        -->
+                  <!-- ========================================================== -->
+                  <g id="tier3PolarBear" transform="translate(0, -12)">
+                    <!-- Far Legs -->
+                    <path d="M -85 -48 C -92 -26, -94 -8, -88 0 L -60 0 C -58 -16, -58 -36, -62 -48 Z" fill="#cbd5e1" stroke="#334155" stroke-width="2.5" />
+                    <path d="M 55 -52 C 52 -28, 52 -8, 58 0 L 88 0 C 92 -18, 86 -38, 80 -52 Z" fill="#cbd5e1" stroke="#334155" stroke-width="2.5" />
+
+                    <!-- Muscular Polar Bear Torso -->
+                    <path d="M -108 -85 C -108 -132, -52 -148, 25 -144 C 92 -140, 132 -112, 128 -68 C 126 -30, 92 -18, 45 -20 L -70 -20 C -100 -22, -108 -48, -108 -85 Z"
+                          fill="url(#bearFurGrad)" stroke="#334155" stroke-width="3" />
+                    <circle cx="130" cy="-86" r="13" fill="#ffffff" stroke="#334155" stroke-width="2.5" />
+
+                    <!-- Qin Royal Battle Saddle with Fretwork & Seal-Script "秦" -->
+                    <g id="qinSaddle">
+                      <path d="M -42 -144 Q 18 -151 75 -140 L 88 -54 Q 20 -38 -52 -56 Z" fill="#18181b" stroke="url(#goldGrad)" stroke-width="3.2" />
+                      <path d="M -34 -136 Q 18 -142 68 -132 L 78 -64 Q 20 -50 -42 -66 Z" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-dasharray="7 4" />
+                      <rect x="0" y="-102" width="34" height="34" rx="4" fill="#7f1d1d" stroke="url(#goldGrad)" stroke-width="2" />
+                      <text x="17" y="-78" text-anchor="middle" fill="#fef08a" font-size="21" font-weight="900">秦</text>
+                    </g>
+
+                    <!-- Foreground Legs & Claws -->
+                    <path d="M -72 -64 C -80 -38, -82 -14, -77 0 L -42 0 C -38 -18, -38 -42, -42 -64 Z" fill="#ffffff" stroke="#334155" stroke-width="2.8" />
+                    <path d="M 72 -68 C 66 -40, 65 -14, 70 0 L 106 0 C 112 -20, 108 -48, 100 -68 Z" fill="#ffffff" stroke="#334155" stroke-width="2.8" />
+
+                    <!-- Polar Bear Head & Roaring Jaw (Animated with Turbulence/Vibration) -->
+                    <g id="bearHeadGroup" transform="translate(-105, -112)">
+                      <circle cx="-2" cy="-26" r="11" fill="#e2e8f0" stroke="#334155" stroke-width="2.5" />
+                      <circle cx="26" cy="-28" r="12" fill="#ffffff" stroke="#334155" stroke-width="2.5" />
+                      <!-- Lower Roaring Jaw -->
+                      <path id="bearJaw" d="M -44 6 C -42 18, -20 22, 4 14 L 4 2 Z" fill="#e2e8f0" stroke="#334155" stroke-width="2.2" />
+                      <path id="bearTongue" d="M -34 8 Q -22 14 -12 8" fill="none" stroke="#f43f5e" stroke-width="4" stroke-linecap="round" />
+                      <!-- Upper Head & Snout -->
+                      <path d="M -48 -4 C -50 -20, -30 -35, 2 -38 C 30 -42, 46 -25, 44 2 C 42 20, 20 26, -8 22 C -32 20, -46 10, -48 -4 Z"
+                            fill="#ffffff" stroke="#334155" stroke-width="2.8" />
+                      <ellipse cx="-41" cy="-8" rx="7.5" ry="5.5" fill="#0f172a" />
+                      <circle cx="-8" cy="-14" r="4.2" fill="#0f172a" />
+                      <circle cx="-9.5" cy="-15.5" r="1.5" fill="#ffffff" />
+                      <!-- Fangs -->
+                      <polygon points="-36,6 -33,13 -30,6" fill="#ffffff" stroke="#334155" stroke-width="1" />
+                    </g>
+
+                    <!-- ======================================================== -->
+                    <!-- TIER 4: QIN SHI HUANG RIDING THE BEAR & SCREWING BOLTS   -->
+                    <!-- Local Origin (12, -142) at Bear's Saddle                 -->
+                    <!-- ======================================================== -->
+                    <g id="tier4QinShiHuang" transform="translate(12, -142)">
+                      <!-- Assembly Line Workbench Bracket Mounted in Front of Saddle -->
+                      <path d="M -82 -2 L -115 -65 L -98 -65 L -70 -2 Z" fill="#475569" stroke="#0f172a" stroke-width="2.5" />
+
+                      <!-- Fluttering Imperial Crimson Cloak -->
+                      <path id="qinCloak" d="M 32 -125 Q 118 -135 155 -95 Q 112 -58 42 -65 Z"
+                            fill="#991b1b" stroke="url(#goldGrad)" stroke-width="2.5" />
+
+                      <!-- Xuan-Duan Black-Gold Imperial Dragon Robe Torso -->
+                      <path d="M -30 -132 L 38 -132 L 55 -35 L -38 -35 Z"
+                            fill="url(#qinRobeGrad)" stroke="url(#goldGrad)" stroke-width="3" stroke-linejoin="round" />
+                      <path d="M -18 -132 L 14 -84 L 34 -132" fill="none" stroke="#dc2626" stroke-width="8" stroke-linejoin="round" />
+                      <path d="M -18 -132 L 14 -84 L 34 -132" fill="none" stroke="url(#goldGrad)" stroke-width="2.5" stroke-linejoin="round" />
+                      <rect x="-35" y="-65" width="85" height="11" rx="4" fill="url(#goldGrad)" stroke="#451a03" stroke-width="1.5" />
+
+                      <!-- Left Arm Holding Down the Metal Workpiece -->
+                      <path d="M -18 -118 L -65 -84 L -98 -82" fill="none" stroke="#18181b" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" />
+                      <circle cx="-105" cy="-81" r="6.5" fill="#fde68a" stroke="#92400e" stroke-width="1.8" />
+
+                      <!-- Metal Workpiece & Hex Bolts on Assembly Line -->
+                      <g id="qinWorkbench" transform="translate(-175, -76)">
+                        <rect x="0" y="0" width="122" height="20" rx="4" fill="#94a3b8" stroke="#0f172a" stroke-width="2.5" />
+                        <line x1="8" y1="14" x2="114" y2="14" stroke="#facc15" stroke-width="4" stroke-dasharray="8 6" />
+                        <!-- Driven Bolts -->
+                        <polygon points="15,0 19,-5 25,-5 29,0" fill="#e2e8f0" stroke="#0f172a" stroke-width="1.2" />
+                        <polygon points="39,0 43,-5 49,-5 53,0" fill="#e2e8f0" stroke="#0f172a" stroke-width="1.2" />
+                        <!-- Active Bolt Being Driven -->
+                        <g id="activeHexBolt" transform="translate(70, -12)">
+                          <rect x="-3.5" y="4" width="7" height="11" fill="#64748b" stroke="#0f172a" stroke-width="1.2" />
+                          <polygon points="-8,4 -4,-2 4,-2 8,4" fill="#ffffff" stroke="#0f172a" stroke-width="1.5" />
+                        </g>
+                        <!-- Queued Bolt -->
+                        <g transform="translate(98, -13)">
+                          <rect x="-3" y="4" width="6" height="11" fill="#64748b" stroke="#0f172a" stroke-width="1.2" />
+                          <polygon points="-7,4 -3,-1 3,-1 7,4" fill="#e2e8f0" stroke="#0f172a" stroke-width="1.2" />
+                        </g>
+                      </g>
+
+                      <!-- Right Arm & High-Frequency Industrial Electric Screwdriver -->
+                      <g id="qinScrewdriverArm">
+                        <path d="M 16 -116 Q -35 -128 -78 -138 L -82 -108 Q -35 -95 14 -92 Z"
+                              fill="#18181b" stroke="url(#goldGrad)" stroke-width="2.5" />
+                        <g id="electricDriverTool" transform="translate(-105, -126)">
+                          <rect x="-15" y="-22" width="34" height="20" rx="5" fill="#facc15" stroke="#0f172a" stroke-width="2" />
+                          <rect x="-9" y="-18" width="16" height="12" rx="2" fill="#1e293b" />
+                          <path d="M 5 -2 L 15 -2 L 20 16 L 9 16 Z" fill="#ef4444" stroke="#0f172a" stroke-width="2" />
+                          <circle cx="14" cy="6" r="7" fill="#fde68a" stroke="#92400e" stroke-width="1.8" />
+                          <rect x="-4" y="0" width="8" height="26" fill="#cbd5e1" stroke="#0f172a" stroke-width="1.8" />
+                          <ellipse id="driverSpinAura" cx="0" cy="18" rx="14" ry="4" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="7 5" />
+                        </g>
+                      </g>
+
+                      <!-- Electric Spark Burst at Bolt Contact Point (-105, -88) -->
+                      <g id="boltSparksGroup" transform="translate(-105, -88)" filter="url(#glowFilter)">
+                        <polygon points="0,0 -26,-15 -10,-4 -32,6 -8,4 -20,20 -2,7" fill="#fef08a" stroke="#f59e0b" stroke-width="1" />
+                        <polygon points="0,0 24,-16 9,-4 32,4 10,5 22,18 3,6" fill="#fde047" stroke="#ea580c" stroke-width="1" />
+                        <circle cx="-22" cy="-8" r="3" fill="#ffffff" />
+                        <circle cx="24" cy="-6" r="3" fill="#fef08a" />
+                      </g>
+
+                      <g id="qinHeadAndCrown" transform="translate(0, -160)">
+                        <!-- Emperor Head & Focused Sword Eyebrows -->
+                        <path d="M -21 -12 C -23 12, -13 26, 4 26 C 21 26, 25 12, 23 -12 Z"
+                              fill="#fde68a" stroke="#92400e" stroke-width="2" />
+                        <path d="M -17 -4 L -2 -1" stroke="#09090b" stroke-width="3.5" stroke-linecap="round" />
+                        <ellipse cx="-9" cy="3" rx="4.2" ry="2.4" fill="#ffffff" stroke="#09090b" stroke-width="1.5" />
+                        <circle cx="-11" cy="3.5" r="2" fill="#09090b" />
+                        <path d="M -13 22 Q -4 42 12 45 Q 4 32 -4 23 Z" fill="#18181b" />
+
+                        <!-- 12-Strand Imperial Mian Crown Cap (十二旒冕冠) -->
+                        <path d="M -22 -11 L -18 -30 L 20 -30 L 24 -11 Z" fill="#18181b" stroke="url(#goldGrad)" stroke-width="2.5" />
+                        <rect x="-23" y="-16" width="47" height="5.5" rx="2" fill="url(#goldGrad)" />
+
+                        <!-- Flat Mortarboard Top (延板 - Supports Tier 5!) -->
+                        <polygon points="-48,-30 48,-34 54,-28 -42,-24" fill="#09090b" stroke="url(#goldGrad)" stroke-width="2.5" />
+
+                        <!-- Independently Swinging Jade Bead Tassels (冕旒玉珠物理摆动) -->
+                        <g id="mianTasselsFront" transform="translate(-40, -27)">
+                          <line x1="0" y1="0" x2="0" y2="23" stroke="#facc15" stroke-width="1.2" />
+                          <circle cx="0" cy="7" r="2.2" fill="#ef4444" />
+                          <circle cx="0" cy="14" r="2.2" fill="#10b981" />
+                          <circle cx="0" cy="21" r="2.4" fill="#fef08a" />
+                          <line x1="6" y1="0" x2="6" y2="23" stroke="#facc15" stroke-width="1.2" />
+                          <circle cx="6" cy="7" r="2.2" fill="#38bdf8" />
+                          <circle cx="6" cy="14" r="2.2" fill="#ef4444" />
+                          <circle cx="6" cy="21" r="2.4" fill="#fef08a" />
+                          <line x1="12" y1="0" x2="12" y2="23" stroke="#facc15" stroke-width="1.2" />
+                          <circle cx="12" cy="7" r="2.2" fill="#10b981" />
+                          <circle cx="12" cy="14" r="2.2" fill="#f8fafc" />
+                          <circle cx="12" cy="21" r="2.4" fill="#ef4444" />
+                        </g>
+                        <g id="mianTasselsBack" transform="translate(34, -30)">
+                          <line x1="0" y1="0" x2="0" y2="22" stroke="#facc15" stroke-width="1.2" />
+                          <circle cx="0" cy="7" r="2.2" fill="#ef4444" />
+                          <circle cx="0" cy="14" r="2.2" fill="#10b981" />
+                          <circle cx="0" cy="21" r="2.4" fill="#fef08a" />
+                          <line x1="6" y1="0" x2="6" y2="22" stroke="#facc15" stroke-width="1.2" />
+                          <circle cx="6" cy="7" r="2.2" fill="#f8fafc" />
+                          <circle cx="6" cy="14" r="2.2" fill="#ef4444" />
+                          <circle cx="6" cy="21" r="2.4" fill="#10b981" />
+                        </g>
+
+                        <!-- ====================================================== -->
+                        <!-- TIER 5: APEX OF THE CROWN — ZHUGE LIANG ON WOODEN OX   -->
+                        <!-- HAND-CRAFTING 1NM EUV LITHOGRAPHY CHIPS                -->
+                        <!-- Local Origin (2, -31) on top of Mian Crown Board       -->
+                        <!-- ====================================================== -->
+                        <g id="tier5ZhugeLiang" transform="translate(2, -31)">
+
+                          <!-- Wooden Ox & Flowing Horse Automaton (木牛流马精密齿轮机关车) -->
+                          <g id="woodenOxCart">
+                            <!-- Articulated Mechanical Legs & Bronze Wheels -->
+                            <g transform="translate(-26, -12)">
+                              <g class="js-ox-gear">
+                                <circle cx="0" cy="0" r="12" fill="#451a03" stroke="url(#goldGrad)" stroke-width="2.5" stroke-dasharray="4 2" />
+                                <line x1="-10" y1="0" x2="10" y2="0" stroke="#facc15" stroke-width="2" />
+                                <line x1="0" y1="-10" x2="0" y2="10" stroke="#facc15" stroke-width="2" />
+                              </g>
+                            </g>
+                            <g transform="translate(26, -12)">
+                              <g class="js-ox-gear">
+                                <circle cx="0" cy="0" r="12" fill="#451a03" stroke="url(#goldGrad)" stroke-width="2.5" stroke-dasharray="4 2" />
+                                <line x1="-10" y1="0" x2="10" y2="0" stroke="#facc15" stroke-width="2" />
+                                <line x1="0" y1="-10" x2="0" y2="10" stroke="#facc15" stroke-width="2" />
+                              </g>
+                            </g>
+
+                            <!-- Wooden Ox Chariot Body & Carved Ox Head -->
+                            <path d="M -38 -36 L 38 -36 L 44 -12 L -44 -12 Z" fill="url(#woodOxGrad)" stroke="url(#goldGrad)" stroke-width="2.2" />
+                            <!-- Exposed Interlocking Bronze Gears on Side of Wooden Ox -->
+                            <g transform="translate(0, -24)">
+                              <g class="js-ox-gear">
+                                <circle cx="0" cy="0" r="9" fill="#ca8a04" stroke="#fef08a" stroke-width="2" stroke-dasharray="3 2" />
+                                <circle cx="0" cy="0" r="3.5" fill="#451a03" />
+                              </g>
+                            </g>
+                            <!-- Mechanical Ox Head with Glowing Cyan Eyes & Golden Horns -->
+                            <g transform="translate(-46, -32)">
+                              <path d="M -14 6 L -4 -10 L 8 -8 L 6 12 Z" fill="url(#woodOxGrad)" stroke="url(#goldGrad)" stroke-width="2" />
+                              <path d="M -2 -10 Q -8 -22 4 -20" fill="none" stroke="url(#goldGrad)" stroke-width="3" stroke-linecap="round" />
+                              <circle cx="-6" cy="-2" r="2.5" fill="#38bdf8" filter="url(#glowFilter)" />
+                            </g>
+
+                            <!-- 1nm Silicon Wafer Lithography Stage Mounted on Ox Head -->
+                            <g id="waferStage" transform="translate(-62, -42)">
+                              <ellipse cx="0" cy="0" rx="18" ry="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.8" />
+                              <!-- Rainbow Iridescent Silicon Die Grid -->
+                              <ellipse cx="0" cy="-1.5" rx="14" ry="4" fill="#0284c7" stroke="#6ee7b7" stroke-width="1" />
+                              <line x1="-10" y1="-1.5" x2="10" y2="-1.5" stroke="#fef08a" stroke-width="0.8" />
+                              <line x1="-4" y1="-4.5" x2="-4" y2="1.5" stroke="#fef08a" stroke-width="0.8" />
+                              <line x1="4" y1="-4.5" x2="4" y2="1.5" stroke="#fef08a" stroke-width="0.8" />
+                            </g>
+                          </g>
+
+                          <!-- ZHUGE LIANG (诸葛亮孔明：头戴纶巾、身披鹤氅、摇羽扇、手搓EUV光刻机) -->
+                          <g id="zhugeLiangCharacter" transform="translate(6, -36)">
+                            <!-- Flowing White & Cyan Crane Cloak (鹤氅) -->
+                            <path d="M -22 -48 L 22 -48 L 30 0 L -26 0 Z" fill="#f8fafc" stroke="#0284c7" stroke-width="2.5" />
+                            <path d="M -14 -48 L 4 -18 L 18 -48" fill="none" stroke="#0f172a" stroke-width="5" />
+                            <path d="M -22 -48 L -16 0 M 22 -48 L 26 0" stroke="#0f172a" stroke-width="3" />
+
+                            <!-- Zhuge Liang Head, Gentle Beard & Iconic Blue Silk Guan-Jin (纶巾) -->
+                            <g transform="translate(0, -64)">
+                              <path d="M -14 -8 C -15 8, -8 18, 2 18 C 12 18, 15 8, 14 -8 Z" fill="#fde68a" stroke="#92400e" stroke-width="1.6" />
+                              <!-- Calm Wise Eyes & Long Flowing Goatee -->
+                              <path d="M -10 -1 Q -6 -3 -3 -1" fill="none" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" />
+                              <circle cx="-6" cy="2" r="1.6" fill="#0f172a" />
+                              <path d="M -9 14 Q -4 30 4 32 Q 1 20 -3 14 Z" fill="#1e293b" />
+                              <!-- Tall Blue Silk Headscarf (纶巾) -->
+                              <path d="M -15 -7 L -12 -28 Q 0 -33 13 -28 L 15 -7 Z" fill="#0284c7" stroke="#bae6fd" stroke-width="1.8" />
+                              <rect x="-15" y="-11" width="30" height="4" rx="1.5" fill="#e0f2fe" />
+                              <circle cx="-2" cy="-18" r="3" fill="#34d399" stroke="#fef08a" stroke-width="1" />
+                            </g>
+
+                            <!-- Left Arm Waving the Iconic White Feather Fan (羽扇) -->
+                            <g id="zhugeFeatherFan" transform="translate(18, -34)">
+                              <path d="M 0 0 L 18 -8" stroke="#f8fafc" stroke-width="8" stroke-linecap="round" />
+                              <!-- White Plume Feather Fan -->
+                              <g transform="translate(22, -12) rotate(20)">
+                                <line x1="0" y1="8" x2="0" y2="-18" stroke="#78350f" stroke-width="2.5" />
+                                <path d="M 0 2 C -14 -4, -16 -24, 0 -28 C 16 -24, 14 -4, 0 2 Z" fill="#ffffff" stroke="#38bdf8" stroke-width="1.5" />
+                                <path d="M 0 -4 L -6 -16 M 0 -8 L 6 -18" stroke="#bae6fd" stroke-width="1.2" />
+                              </g>
+                            </g>
+
+                            <!-- Right Arm Projecting Bagua EUV Laser Beam onto 1nm Wafer -->
+                            <g id="zhugeLaserArm">
+                              <path d="M -14 -38 L -38 -32" stroke="#f8fafc" stroke-width="8" stroke-linecap="round" />
+                              <circle cx="-41" cy="-31" r="4.5" fill="#fde68a" stroke="#92400e" stroke-width="1.4" />
+                              <!-- Extreme Ultraviolet (EUV) Bagua Lithography Laser Beam -->
+                              <g id="euvLaserBeam" filter="url(#glowFilter)">
+                                <polygon points="-41,-31 -72,-8 -64,-5" fill="url(#euvLaserGrad)" opacity="0.88" />
+                                <line id="euvCoreRay" x1="-41" y1="-31" x2="-68" y2="-7" stroke="#ffffff" stroke-width="2.2" stroke-dasharray="4 3" />
+                                <!-- Nano-Lithography Spark on Wafer -->
+                                <circle cx="-68" cy="-7" r="5" fill="#34d399" />
+                                <circle cx="-68" cy="-7" r="2.5" fill="#ffffff" />
+                              </g>
+                            </g>
+
+                            <!-- Floating Holographic Yin-Yang Bagua Array Above Zhuge Liang (阴阳八卦全息阵图) -->
+                            <g transform="translate(0, -125)" filter="url(#glowFilter)">
+                              <g id="baguaHoloWheel">
+                                <!-- Outer Octagon Bagua Ring -->
+                                <polygon points="-28,-12 -12,-28 12,-28 28,-12 28,12 12,28 -12,28 -28,12"
+                                         fill="rgba(6, 78, 59, 0.35)" stroke="#34d399" stroke-width="2" />
+                                <circle cx="0" cy="0" r="22" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="6 4" />
+                                <!-- Trigram Ticks -->
+                                <line x1="-6" y1="-25" x2="6" y2="-25" stroke="#fef08a" stroke-width="2" />
+                                <line x1="-6" y1="25" x2="6" y2="25" stroke="#fef08a" stroke-width="2" />
+                                <line x1="-25" y1="-6" x2="-25" y2="6" stroke="#fef08a" stroke-width="2" />
+                                <line x1="25" y1="-6" x2="25" y2="6" stroke="#fef08a" stroke-width="2" />
+                                <!-- Central Taiji Yin-Yang Symbol -->
+                                <circle cx="0" cy="0" r="12" fill="#0f172a" stroke="#34d399" stroke-width="1.5" />
+                                <path d="M 0 -12 A 12 12 0 0 1 0 12 A 6 6 0 0 1 0 0 A 6 6 0 0 0 0 -12 Z" fill="#f8fafc" />
+                                <circle cx="0" cy="-6" r="2.5" fill="#0f172a" />
+                                <circle cx="0" cy="6" r="2.5" fill="#f8fafc" />
+                              </g>
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+
+        <!-- Dynamic Floating Text & Particle Layer ("大秦重工+1⚡", "手搓芯片+1☯️") -->
+        <g id="floatingParticlesLayer" pointer-events="none"></g>
+      </g>
+    </svg>
+  </main>
+
+  <footer class="hud-footer">
+    <!-- Left Cluster: Virtual Flight & Balance Keys + Berserk Button -->
+    <div class="ctrl-cluster">
+      <button id="btnClimb" class="btn" title="快捷键: W 或 ↑">🔼 拉升 (W)</button>
+      <button id="btnDive" class="btn" title="快捷键: S 或 ↓">🔽 俯冲 (S)</button>
+      <button id="btnLeft" class="btn" title="快捷键: A 或 ← (前蹬救左倾)">⏪ 前蹬救左倾 (A)</button>
+      <button id="btnRight" class="btn" title="快捷键: D 或 → (后刹救右倾)">⏩ 后刹救右倾 (D)</button>
+      <button id="btnBerserk" class="btn btn-berserk" title="长按 Space 开启大秦×蜀汉 3倍产能狂暴加班">
+        🔥 狂暴加班 (长按Space)
+      </button>
+    </div>
+
+    <!-- Center Cluster: Physics Sliders & Gyro Assist Toggle -->
+    <div class="ctrl-cluster">
+      <button id="btnAssist" class="btn btn-assist-on" title="开启后陀螺仪自动帮鹈鹕微调重心，关闭则进入纯手动硬核平衡模式">
+        🛡️ 陀螺仪护体: 开启
+      </button>
+
+      <div class="slider-group hide-mobile">
+        <span class="slider-label">🌪️乱流: <span id="valTurbulence">1.0</span></span>
+        <input id="sliderTurbulence" type="range" min="0" max="2.5" step="0.1" value="1.0" />
+      </div>
+
+      <div class="slider-group hide-mobile">
+        <span class="slider-label">⚖️重力: <span id="valGravity">1.0</span></span>
+        <input id="sliderGravity" type="range" min="0.4" max="2.2" step="0.1" value="1.0" />
+      </div>
+
+      <div class="slider-group hide-mobile">
+        <span class="slider-label">🤖辅助力: <span id="valAssist">0.7</span></span>
+        <input id="sliderAssist" type="range" min="0" max="1.2" step="0.1" value="0.7" />
+      </div>
+    </div>
+
+    <!-- Right Cluster: Camera Zoom Presets, Sound Toggle & Reset -->
+    <div class="ctrl-cluster">
+      <button data-cam="full" class="btn cam-btn btn-cam-active">全景五层</button>
+      <button data-cam="top" class="btn cam-btn">👑 秦皇×孔明特写</button>
+      <button data-cam="mid" class="btn cam-btn hide-mobile">🦩 鹈鹕×北极熊</button>
+      <button id="btnSound" class="btn">🔇 音效: 关</button>
+      <button id="btnReset" class="btn btn-reset">🔄 重整旗鼓</button>
+    </div>
+  </footer>
+
+  <div id="collapseModal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-title">💥 五层神话高空解体战报 💥</div>
+      <div id="modalReasonText" class="modal-reason">重心倾角突破 ±65° 物理极限！</div>
+
+      <div class="report-grid">
+        <div class="report-item">
+          <div class="r-label">⚡ 始皇累计打螺丝</div>
+          <div id="repBolts" class="r-val val-gold">1,024 颗</div>
+        </div>
+        <div class="report-item">
+          <div class="r-label">☯️ 孔明手搓1nm芯片</div>
+          <div id="repChips" class="r-val val-jade">512 枚</div>
+        </div>
+        <div class="report-item">
+          <div class="r-label">✈️ 最高巡航里程</div>
+          <div id="repDist" class="r-val val-cyan">142 km</div>
+        </div>
+        <div class="report-item">
+          <div class="r-label">🏆 最终神话总工业分</div>
+          <div id="repScore" class="r-val val-crimson">28,900</div>
+        </div>
+      </div>
+
+      <button id="btnModalRestart" class="btn-restart-big">
+        ⚡ 扶朕与丞相起来！继续打螺丝搓芯片 (Enter)
+      </button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // =========================================================================
+      // 1. STATE & PHYSICS PARAMETERS
+      // =========================================================================
+      const state = {
+        phase: 0,
+        distanceKm: 0,
+        bolts: 1024,
+        chips: 512,
+        score: 25600,
+        boltCycle: 0,
+        chipCycle: 0,
+
+        // Tier 1: Aircraft Flight State
+        planeY: 0,           // Vertical offset (-140 to +110)
+        planeVy: 0,          // Vertical velocity
+        planePitch: 0,       // Pitch angle in degrees (-18 to +18)
+
+        // Tier 2: Pelican Bicycle Linear Track State
+        bikeX: 0,            // Offset along wing track (-175 to +175)
+        bikeVx: 0,           // Horizontal velocity relative to wing
+        bikeAx: 0,           // Horizontal acceleration (restoring torque source!)
+        crankAngle: 0,       // Bicycle pedal crank angle in radians
+        wheelAngle: 0,       // Bicycle wheel rotation in degrees
+
+        // Tiers 2->5: Second-Order Inverted Pendulum State
+        theta: 1.8,          // Tilt angle in degrees (0 = upright, >65 or <-65 = collapse!)
+        omega: 0,            // Angular velocity (deg/s)
+        alpha: 0,            // Angular acceleration (deg/s^2)
+
+        // Wind & Turbulence State
+        windForce: 0,
+        windTarget: 0,
+        windTimer: 0,
+
+        // User Multipliers & Toggles
+        turbulenceMult: 1.0,
+        gravityMult: 1.0,
+        assistStrength: 0.7,
+        assistEnabled: true,
+        isBerserk: false,
+        soundEnabled: false,
+
+        // Collapse / Scatter Mode
+        isCollapsed: false,
+        collapseReason: '',
+        detachedPieces: []
+      };
+
+      // Keyboard & Touch Input Flags
+      const keys = {
+        up: false,
+        down: false,
+        left: false,
+        right: false,
+        space: false
+      };
+
+      // DOM References
+      const hudModeBadge = document.getElementById('hudModeBadge');
+      const gaugeNeedle = document.getElementById('gaugeNeedle');
+      const gaugeAngleText = document.getElementById('gaugeAngleText');
+      const hudWindText = document.getElementById('hudWindText');
+      const hudWindFill = document.getElementById('hudWindFill');
+      const hudAltitude = document.getElementById('hudAltitude');
+      const hudAirspeed = document.getElementById('hudAirspeed');
+      const hudBolts = document.getElementById('hudBolts');
+      const hudChips = document.getElementById('hudChips');
+      const hudScore = document.getElementById('hudScore');
+
+      const cameraViewport = document.getElementById('cameraViewport');
+      const berserkOverlay = document.getElementById('berserkOverlay');
+      const bgMountains = document.getElementById('bgMountains');
+      const bgCloudsFar = document.getElementById('bgCloudsFar');
+      const bgCloudsMid = document.getElementById('bgCloudsMid');
+      const bgSpeedLines = document.getElementById('bgSpeedLines');
+      const obstaclesLayer = document.getElementById('obstaclesLayer');
+      const floatingParticlesLayer = document.getElementById('floatingParticlesLayer');
+
+      // Tiered SVG Groups
+      const tier1Aircraft = document.getElementById('tier1Aircraft');
+      const tier2PelicanBike = document.getElementById('tier2PelicanBike');
+      const pelicanWingsTray = document.getElementById('pelicanWingsTray');
+      const tier3PolarBear = document.getElementById('tier3PolarBear');
+      const tier4QinShiHuang = document.getElementById('tier4QinShiHuang');
+      const tier5ZhugeLiang = document.getElementById('tier5ZhugeLiang');
+
+      // Sub-animated SVG Parts
+      const fanBlades = document.querySelectorAll('.js-fan-blades');
+      const bikeWheels = document.querySelectorAll('.js-wheel');
+      const oxGears = document.querySelectorAll('.js-ox-gear');
+      const jetFlame1 = document.getElementById('jetFlame1');
+      const jetFlame2 = document.getElementById('jetFlame2');
+      const wukongFeather1 = document.getElementById('wukongFeather1');
+      const wukongFeather2 = document.getElementById('wukongFeather2');
+      const wukongYoke = document.getElementById('wukongYoke');
+
+      // Pelican IK Elements
+      const pelicanBodyGroup = document.getElementById('pelicanBodyGroup');
+      const pelicanPouch = document.getElementById('pelicanPouch');
+      const pelicanHipCuff = document.getElementById('pelicanHipCuff');
+      const crankLeftArm = document.getElementById('crankLeftArm');
+      const crankRightArm = document.getElementById('crankRightArm');
+      const pedalLeft = document.getElementById('pedalLeft');
+      const pedalRight = document.getElementById('pedalRight');
+      const ikLeftLeg = document.getElementById('ikLeftLeg');
+      const ikRightLeg = document.getElementById('ikRightLeg');
+      const ikLeftFoot = document.getElementById('ikLeftFoot');
+      const ikRightFoot = document.getElementById('ikRightFoot');
+      const bikeChainPath = document.getElementById('bikeChainPath');
+
+      // Bear, Qin & Zhuge Animated Elements
+      const bearJaw = document.getElementById('bearJaw');
+      const activeHexBolt = document.getElementById('activeHexBolt');
+      const qinScrewdriverArm = document.getElementById('qinScrewdriverArm');
+      const boltSparksGroup = document.getElementById('boltSparksGroup');
+      const mianTasselsFront = document.getElementById('mianTasselsFront');
+      const mianTasselsBack = document.getElementById('mianTasselsBack');
+      const zhugeFeatherFan = document.getElementById('zhugeFeatherFan');
+      const euvLaserBeam = document.getElementById('euvLaserBeam');
+      const baguaHoloWheel = document.getElementById('baguaHoloWheel');
+
+      const cloudsFarData = [];
+      const cloudsMidData = [];
+      const speedLinesData = [];
+      const obstaclesData = [];
+      const floatingTextsData = [];
+
+      function initBackgroundElements() {
+        const svgNS = 'http://www.w3.org/2000/svg';
+
+        // Far Clouds
+        for (let i = 0; i < 5; i++) {
+          const g = document.createElementNS(svgNS, 'use');
+          g.setAttribute('href', '#cloudSymbol');
+          const c = { el: g, x: i * 320, y: 70 + (i % 3) * 85, scale: 0.9 + (i % 2) * 0.4, speed: 35 };
+          bgCloudsFar.appendChild(g);
+          cloudsFarData.push(c);
+        }
+
+        // Mid Clouds
+        for (let i = 0; i < 4; i++) {
+          const g = document.createElementNS(svgNS, 'use');
+          g.setAttribute('href', '#cloudSymbol');
+          const c = { el: g, x: i * 400 + 100, y: 240 + (i % 3) * 140, scale: 1.2 + (i % 2) * 0.35, speed: 95 };
+          bgCloudsMid.appendChild(g);
+          cloudsMidData.push(c);
+        }
+
+        // High-Speed Wind Lines
+        for (let i = 0; i < 8; i++) {
+          const rect = document.createElementNS(svgNS, 'rect');
+          rect.setAttribute('height', '2.5');
+          rect.setAttribute('rx', '1.2');
+          rect.setAttribute('fill', i % 2 === 0 ? '#ffffff' : '#bae6fd');
+          rect.setAttribute('opacity', '0.55');
+          const w = 180 + Math.random() * 240;
+          rect.setAttribute('width', w.toFixed(0));
+          const s = { el: rect, x: Math.random() * 1400, y: 80 + i * 100, speed: 680 + Math.random() * 250 };
+          bgSpeedLines.appendChild(rect);
+          speedLinesData.push(s);
+        }
+      }
+
+      let audioCtx = null;
+      let lastSoundTick = 0;
+
+      function ensureAudio() {
+        if (!state.soundEnabled) return false;
+        if (!audioCtx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) audioCtx = new AudioCtx();
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        return !!audioCtx;
+      }
+
+      function playSynthSound(type) {
+        if (!ensureAudio()) return;
+        try {
+          const now = audioCtx.currentTime;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+
+          if (type === 'bolt') {
+            osc.type = 'sawtooth';
+            const f = state.isBerserk ? 310 : 210;
+            osc.frequency.setValueAtTime(f, now);
+            osc.frequency.exponentialRampToValueAtTime(f * 1.5, now + 0.045);
+            gain.gain.setValueAtTime(0.035, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            osc.start(now);
+            osc.stop(now + 0.055);
+          } else if (type === 'chip') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, now);
+            osc.frequency.exponentialRampToValueAtTime(1320, now + 0.07);
+            gain.gain.setValueAtTime(0.03, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.075);
+            osc.start(now);
+            osc.stop(now + 0.08);
+          } else if (type === 'shock') {
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(140, now);
+            osc.frequency.exponentialRampToValueAtTime(55, now + 0.22);
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+            osc.start(now);
+            osc.stop(now + 0.25);
+          } else if (type === 'collapse') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(220, now);
+            osc.frequency.exponentialRampToValueAtTime(38, now + 0.65);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+            osc.start(now);
+            osc.stop(now + 0.72);
+          }
+        } catch (e) {
+          // Ignore audio context restrictions
+        }
+      }
+
+      /**
+       * Exact 2-Segment Inverse Kinematics using the Law of Cosines:
+       * Given Hip (hx, hy), Foot locked on Pedal (fx, fy), Thigh Length L1, Shin Length L2,
+       * computes exact Knee joint coordinates (kx, ky) bending naturally forward toward the handlebars.
+       */
+      function solvePelicanLegIK(hx, hy, fx, fy, L1, L2) {
+        const dx = fx - hx;
+        const dy = fy - hy;
+        let dist = Math.hypot(dx, dy);
+
+        // Clamp reach to prevent NaN while maintaining exact foot lock on pedal
+        const maxReach = L1 + L2 - 0.1;
+        const minReach = Math.abs(L1 - L2) + 0.1;
+        const clampedDist = Math.max(minReach, Math.min(maxReach, dist));
+
+        const baseAngle = Math.atan2(dy, dx);
+        const cosAngle = (L1 * L1 + clampedDist * clampedDist - L2 * L2) / (2 * L1 * clampedDist);
+        const safeCos = Math.max(-1, Math.min(1, cosAngle));
+        const thighOffset = Math.acos(safeCos);
+
+        // Bend knee forward (leftward in screen space = baseAngle + thighOffset)
+        const kneeAngle = baseAngle + thighOffset;
+        const kx = hx + L1 * Math.cos(kneeAngle);
+        const ky = hy + L1 * Math.sin(kneeAngle);
+
+        return { kx, ky };
+      }
+
+      function spawnFloatingText(x, y, text, color) {
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const t = document.createElementNS(svgNS, 'text');
+        t.setAttribute('x', x.toFixed(1));
+        t.setAttribute('y', y.toFixed(1));
+        t.setAttribute('text-anchor', 'middle');
+        t.setAttribute('fill', color);
+        t.setAttribute('stroke', '#09090b');
+        t.setAttribute('stroke-width', '3');
+        t.setAttribute('paint-order', 'stroke');
+        t.setAttribute('font-size', state.isBerserk ? '19' : '15');
+        t.setAttribute('font-weight', '900');
+        t.textContent = text;
+        floatingParticlesLayer.appendChild(t);
+
+        floatingTextsData.push({
+          el: t,
+          x,
+          y,
+          vy: -55 - Math.random() * 25,
+          vx: 25 + Math.random() * 20,
+          life: 1.0
+        });
+      }
+
+      let obstacleSpawnTimer = 2.2;
+
+      function spawnThundercloudObstacle() {
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const g = document.createElementNS(svgNS, 'g');
+        const yPos = 180 + Math.random() * 540;
+
+        g.innerHTML = `
+          <ellipse cx="0" cy="0" rx="68" ry="36" fill="#1e1b4b" stroke="#a855f7" stroke-width="2.5" />
+          <ellipse cx="-25" cy="-14" rx="42" ry="26" fill="#312e81" />
+          <ellipse cx="28" cy="-10" rx="45" ry="25" fill="#1e293b" />
+          <polygon points="-8,18 -22,48 -4,44 -16,74 14,36 -2,38 12,18" fill="#fef08a" stroke="#f59e0b" stroke-width="1.2" />
+          <text x="0" y="4" text-anchor="middle" fill="#e9d5ff" font-size="12" font-weight="900">⚡九天劫云⚡</text>
+        `;
+        obstaclesLayer.appendChild(g);
+
+        obstaclesData.push({
+          el: g,
+          x: -120,      // Spawns from left (since aircraft flies left!)
+          y: yPos,
+          speed: 320 + Math.random() * 120 + (state.isBerserk ? 140 : 0),
+          passed: false
+        });
+      }
+
+      function triggerPhysicalCollapse(reason) {
+        if (state.isCollapsed) return;
+        state.isCollapsed = true;
+        state.collapseReason = reason;
+        playSynthSound('collapse');
+
+        const dir = state.theta >= 0 ? 1 : -1;
+        // Initialize independent parabolic physics vectors for each of the 5 tiers
+        state.detachedPieces = [
+          { el: tier5ZhugeLiang, x: 0, y: 0, vx: dir * 280 + (Math.random() - 0.5) * 90, vy: -360, rot: 0, vRot: dir * 240 },
+          { el: tier4QinShiHuang, x: 0, y: 0, vx: dir * 210 + (Math.random() - 0.5) * 80, vy: -290, rot: 0, vRot: dir * 180 },
+          { el: tier3PolarBear, x: 0, y: 0, vx: dir * 140 + (Math.random() - 0.5) * 70, vy: -220, rot: 0, vRot: -dir * 130 },
+          { el: pelicanWingsTray, x: 20, y: -195, vx: -dir * 110, vy: -180, rot: 0, vRot: dir * 150 },
+          { el: tier2PelicanBike, x: 715 + state.bikeX, y: 688, vx: -dir * 160, vy: -240, rot: 0, vRot: -dir * 190 }
+        ];
+
+        // Show Collapse Report Modal after a short dramatic delay allowing pieces to fly apart
+        setTimeout(() => {
+          document.getElementById('modalReasonText').textContent = reason;
+          document.getElementById('repBolts').textContent = state.bolts.toLocaleString() + ' 颗';
+          document.getElementById('repChips').textContent = state.chips.toLocaleString() + ' 枚';
+          document.getElementById('repDist').textContent = state.distanceKm.toFixed(1) + ' km';
+          document.getElementById('repScore').textContent = Math.floor(state.score).toLocaleString();
+          document.getElementById('collapseModal').classList.add('visible');
+        }, 850);
+      }
+
+      function resetGame() {
+        state.isCollapsed = false;
+        state.planeY = 0;
+        state.planeVy = 0;
+        state.planePitch = 0;
+        state.bikeX = 0;
+        state.bikeVx = 0;
+        state.bikeAx = 0;
+        state.theta = (Math.random() - 0.5) * 4;
+        state.omega = 0;
+        state.alpha = 0;
+        state.windForce = 0;
+        state.detachedPieces = [];
+
+        // Clear obstacles
+        obstaclesData.forEach((o) => o.el.remove());
+        obstaclesData.length = 0;
+
+        // Restore nested transforms cleanly
+        tier5ZhugeLiang.setAttribute('transform', 'translate(2, -31) rotate(0)');
+        tier4QinShiHuang.setAttribute('transform', 'translate(12, -142) rotate(0)');
+        tier3PolarBear.setAttribute('transform', 'translate(0, -12) rotate(0)');
+        pelicanWingsTray.setAttribute('transform', 'translate(20, -195) rotate(0)');
+        tier2PelicanBike.setAttribute('transform', 'translate(715, 688) rotate(0)');
+
+        document.getElementById('collapseModal').classList.remove('visible');
+      }
+
+      let lastFrameTime = performance.now();
+
+      function updateGameLoop(now) {
+        const dt = Math.min((now - lastFrameTime) / 1000, 0.05);
+        lastFrameTime = now;
+
+        const speedFactor = state.isBerserk ? 2.2 : 1.0;
+        state.phase += dt * speedFactor;
+
+        // 1. Update Parallax Scenery & Wind Lines (Aircraft flies Left, so world scrolls Right!)
+        const mountOffset = -(state.phase * 45) % 1400;
+        bgMountains.setAttribute('transform', `translate(${-mountOffset.toFixed(1)}, 0)`);
+
+        cloudsFarData.forEach((c) => {
+          c.x += c.speed * speedFactor * dt;
+          if (c.x > 1500) c.x = -250;
+          c.el.setAttribute('transform', `translate(${c.x.toFixed(1)}, ${c.y}) scale(${c.scale})`);
+        });
+
+        cloudsMidData.forEach((c) => {
+          c.x += c.speed * speedFactor * dt;
+          if (c.x > 1550) c.x = -300;
+          c.el.setAttribute('transform', `translate(${c.x.toFixed(1)}, ${c.y}) scale(${c.scale})`);
+        });
+
+        speedLinesData.forEach((s) => {
+          s.x += s.speed * speedFactor * dt;
+          if (s.x > 1500) {
+            s.x = -400;
+            s.y = 60 + Math.random() * 780;
+          }
+          s.el.setAttribute('x', s.x.toFixed(1));
+          s.el.setAttribute('y', s.y.toFixed(1));
+        });
+
+        // Update Floating Production Particles
+        for (let i = floatingTextsData.length - 1; i >= 0; i--) {
+          const ft = floatingTextsData[i];
+          ft.x += ft.vx * dt;
+          ft.y += ft.vy * dt;
+          ft.life -= dt * 1.25;
+          if (ft.life <= 0) {
+            ft.el.remove();
+            floatingTextsData.splice(i, 1);
+          } else {
+            ft.el.setAttribute('x', ft.x.toFixed(1));
+            ft.el.setAttribute('y', ft.y.toFixed(1));
+            ft.el.setAttribute('opacity', ft.life.toFixed(2));
+          }
+        }
+
+        // If Collapsed, run Parabolic Scatter Physics on Detached Pieces
+        if (state.isCollapsed) {
+          state.detachedPieces.forEach((p) => {
+            p.vy += 680 * dt; // Gravity pull
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.rot += p.vRot * dt;
+            p.el.setAttribute('transform', `translate(${p.x.toFixed(1)}, ${p.y.toFixed(1)}) rotate(${p.rot.toFixed(1)})`);
+          });
+          requestAnimationFrame(updateGameLoop);
+          return;
+        }
+
+        // =====================================================================
+        // 2. TIER 1: SUN WUKONG AIRCRAFT ALTITUDE & PITCH CONTROL
+        // =====================================================================
+        const climbInput = (keys.up ? -1 : 0) + (keys.down ? 1 : 0);
+        const targetVy = climbInput * 210;
+        const prevVy = state.planeVy;
+        state.planeVy += (targetVy - state.planeVy) * 8 * dt;
+        const planeAy = (state.planeVy - prevVy) / Math.max(dt, 0.001);
+
+        state.planeY = Math.max(-135, Math.min(115, state.planeY + state.planeVy * dt));
+        // Aircraft nose points left: climbing (planeVy < 0) tilts nose up (+clockwise deg)
+        const targetPitch = -state.planeVy * 0.055;
+        state.planePitch += (targetPitch - state.planePitch) * 10 * dt;
+
+        tier1Aircraft.setAttribute(
+          'transform',
+          `translate(0, ${state.planeY.toFixed(2)}) translate(680, 700) rotate(${state.planePitch.toFixed(2)}) translate(-680, -700)`
+        );
+
+        // Animate Wukong's Yoke & Sine-Wave Pheasant Feathers
+        const yokeAngle = climbInput * 14 + Math.sin(state.phase * 4) * 3;
+        wukongYoke.setAttribute('transform', `translate(-34, 18) rotate(${yokeAngle.toFixed(1)}) translate(34, -18)`);
+
+        const fw1 = Math.sin(state.phase * 11) * 12;
+        const fw2 = Math.cos(state.phase * 13) * 13;
+        wukongFeather1.setAttribute('d', `M 0 0 Q 65 ${(-38 + fw1 * 0.5).toFixed(1)} 135 ${(-18 + fw1).toFixed(1)}`);
+        wukongFeather2.setAttribute('d', `M 0 2 Q 72 ${(-18 + fw2 * 0.5).toFixed(1)} 142 ${(4 + fw2).toFixed(1)}`);
+
+        // Spin Turbofan Blades & Pulse Samadhi True Fire Plumes
+        const fanDeg = -(state.phase * 960) % 360;
+        fanBlades.forEach((f) => f.setAttribute('transform', `rotate(${fanDeg.toFixed(1)})`));
+        const flameScaleX = (state.isBerserk ? 1.38 : 1.0) + Math.sin(state.phase * 45) * 0.16;
+        jetFlame1.setAttribute('transform', `translate(95, 18) scale(${flameScaleX.toFixed(2)}, 1)`);
+        jetFlame2.setAttribute('transform', `translate(95, 18) scale(${(flameScaleX * 0.95).toFixed(2)}, 1)`);
+
+        // =====================================================================
+        // 3. TIER 2: PELICAN BICYCLE ACCELERATION & 2-BONE IK PEDALING
+        // =====================================================================
+        const moveInput = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);
+
+        // Optional Gyroscope Auto-Assist helps accelerate the pelican toward the falling side
+        let assistAccel = 0;
+        if (state.assistEnabled) {
+          assistAccel = (state.theta * 9.5 + state.omega * 2.4) * state.assistStrength;
+        }
+
+        const prevBikeVx = state.bikeVx;
+        const desiredAx = moveInput * 460 + assistAccel;
+        state.bikeVx = (state.bikeVx + desiredAx * dt) * Math.pow(0.86, dt * 60);
+
+        // Soft boundary springs on the wing rail track (-175 to +175)
+        if (state.bikeX < -170 && state.bikeVx < 0) state.bikeVx *= 0.2;
+        if (state.bikeX > 170 && state.bikeVx > 0) state.bikeVx *= 0.2;
+        state.bikeX = Math.max(-175, Math.min(175, state.bikeX + state.bikeVx * dt));
+        state.bikeAx = (state.bikeVx - prevBikeVx) / Math.max(dt, 0.001);
+
+        tier2PelicanBike.setAttribute('transform', `translate(${(715 + state.bikeX).toFixed(2)}, 688)`);
+
+        // Synchronize Wheel Rotation & Crank Angular Velocity with Airspeed + Bike Velocity
+        const effectiveRideSpeed = 240 * speedFactor - state.bikeVx * 1.45;
+        state.wheelAngle = (state.wheelAngle - effectiveRideSpeed * dt * 1.5) % 360;
+        state.crankAngle -= effectiveRideSpeed * dt * 0.026;
+
+        bikeWheels.forEach((w) => w.setAttribute('transform', `rotate(${state.wheelAngle.toFixed(1)})`));
+        bikeChainPath.setAttribute('stroke-dashoffset', ((state.phase * 90) % 20).toFixed(1));
+
+        // 2-BONE INVERSE KINEMATICS FOR PELICAN LEGS
+        const crankR = 22;
+        const cX = 0;
+        const cY = -38;
+        const lPedalX = cX + crankR * Math.cos(state.crankAngle);
+        const lPedalY = cY + crankR * Math.sin(state.crankAngle);
+        const rPedalX = cX + crankR * Math.cos(state.crankAngle + Math.PI);
+        const rPedalY = cY + crankR * Math.sin(state.crankAngle + Math.PI);
+
+        crankLeftArm.setAttribute('x2', lPedalX.toFixed(1));
+        crankLeftArm.setAttribute('y2', lPedalY.toFixed(1));
+        pedalLeft.setAttribute('x', (lPedalX - 11).toFixed(1));
+        pedalLeft.setAttribute('y', (lPedalY - 3.5).toFixed(1));
+
+        crankRightArm.setAttribute('x2', rPedalX.toFixed(1));
+        crankRightArm.setAttribute('y2', rPedalY.toFixed(1));
+        pedalRight.setAttribute('x', (rPedalX - 11).toFixed(1));
+        pedalRight.setAttribute('y', (rPedalY - 3.5).toFixed(1));
+
+        // Pelican torso bobs slightly with pedaling
+        const pelicanBob = Math.sin(state.crankAngle * 2) * 3;
+        pelicanBodyGroup.setAttribute('transform', `translate(0, ${pelicanBob.toFixed(2)})`);
+        const pouchBounce = Math.sin(state.phase * 15) * 6;
+        pelicanPouch.setAttribute(
+          'd',
+          `M -132 -252 C -122 ${(-200 + pouchBounce).toFixed(1)}, -60 ${(-188 + pouchBounce).toFixed(1)}, -19 -230 L -27 -254 Z`
+        );
+
+        const hipX = 27;
+        const hipY = -138 + pelicanBob;
+        pelicanHipCuff.setAttribute('cy', hipY.toFixed(1));
+
+        const leftKnee = solvePelicanLegIK(hipX, hipY, lPedalX, lPedalY, 62, 62);
+        const rightKnee = solvePelicanLegIK(hipX, hipY, rPedalX, rPedalY, 62, 62);
+
+        ikLeftLeg.setAttribute(
+          'points',
+          `${hipX},${hipY.toFixed(1)} ${leftKnee.kx.toFixed(1)},${leftKnee.ky.toFixed(1)} ${lPedalX.toFixed(1)},${lPedalY.toFixed(1)}`
+        );
+        ikRightLeg.setAttribute(
+          'points',
+          `${hipX},${hipY.toFixed(1)} ${rightKnee.kx.toFixed(1)},${rightKnee.ky.toFixed(1)} ${rPedalX.toFixed(1)},${rPedalY.toFixed(1)}`
+        );
+
+        ikLeftFoot.setAttribute(
+          'd',
+          `M ${(lPedalX - 15).toFixed(1)} ${lPedalY.toFixed(1)} L ${(lPedalX + 10).toFixed(1)} ${lPedalY.toFixed(1)} L ${(lPedalX + 2).toFixed(1)} ${(lPedalY - 8).toFixed(1)} Z`
+        );
+        ikRightFoot.setAttribute(
+          'd',
+          `M ${(rPedalX - 15).toFixed(1)} ${rPedalY.toFixed(1)} L ${(rPedalX + 10).toFixed(1)} ${rPedalY.toFixed(1)} L ${(rPedalX + 2).toFixed(1)} ${(rPedalY - 8).toFixed(1)} Z`
+        );
+
+        // =====================================================================
+        // 4. MULTI-STAGE INVERTED PENDULUM PHYSICS (TIERS 2 -> 5)
+        // =====================================================================
+        state.windTimer -= dt;
+        if (state.windTimer <= 0) {
+          state.windTimer = 1.4 + Math.random() * 2.0;
+          state.windTarget = (Math.random() - 0.5) * 42 * state.turbulenceMult;
+        }
+        state.windForce += (state.windTarget - state.windForce) * 2.5 * dt;
+
+        const thetaRad = (state.theta * Math.PI) / 180;
+        // Gravity destabilizing torque: g * sin(theta)
+        const gravityTorque = 58 * state.gravityMult * Math.sin(thetaRad);
+        // Pelican horizontal acceleration restoring torque: +a * cos(theta)
+        // Moving Left (bikeAx < 0) creates positive clockwise torque to save a Leftward (-theta) lean!
+        const pelicanRestoreTorque = -state.bikeAx * 0.22 * Math.cos(thetaRad);
+        // Aircraft pitch & climb inertial torque
+        const aircraftInertiaTorque = state.planePitch * 0.9 - planeAy * 0.03;
+        // Berserk bolt-screwing high-frequency vibration torque
+        const berserkTorque = state.isBerserk ? (Math.random() - 0.5) * 115 : (Math.random() - 0.5) * 16;
+
+        // Manual player direct stabilization torque so A/D feels crisp even near rail ends
+        const directPlayerTorque = moveInput * 52;
+
+        // Auto-Assist stabilizing PD controller when enabled
+        const pdAssistTorque = state.assistEnabled
+          ? (-state.theta * 1.45 - state.omega * 0.55) * state.assistStrength * 30
+          : 0;
+
+        state.alpha =
+          gravityTorque +
+          pelicanRestoreTorque +
+          directPlayerTorque +
+          aircraftInertiaTorque +
+          state.windForce +
+          berserkTorque +
+          pdAssistTorque -
+          state.omega * 0.65;
+
+        state.omega += state.alpha * dt;
+        state.theta += state.omega * dt;
+
+        // Check Collapse Threshold (|theta| > 65 deg)
+        if (Math.abs(state.theta) > 65) {
+          triggerPhysicalCollapse(`重心倾角达到 ${state.theta.toFixed(1)}°，突破 ±65° 物理极限！`);
+          requestAnimationFrame(updateGameLoop);
+          return;
+        }
+
+        // Apply Cascading Whip-Lag Rotations Across Tiers 2 -> 3 -> 4 -> 5
+        const t2Rot = state.theta * 0.25 + state.omega * 0.015;
+        const t3Rot = state.theta * 0.26 + state.omega * 0.025;
+        const t4Rot = state.theta * 0.26 + state.omega * 0.035;
+        const t5Rot = state.theta * 0.28 + state.omega * 0.045;
+
+        pelicanWingsTray.setAttribute('transform', `translate(20, -195) rotate(${t2Rot.toFixed(2)})`);
+        tier3PolarBear.setAttribute('transform', `translate(0, -12) rotate(${t3Rot.toFixed(2)})`);
+        tier4QinShiHuang.setAttribute('transform', `translate(12, -142) rotate(${t4Rot.toFixed(2)})`);
+        tier5ZhugeLiang.setAttribute('transform', `translate(2, -31) rotate(${t5Rot.toFixed(2)})`);
+
+        // Polar Bear Roaring Jaw reacts to tilt angle & berserk mode
+        const jawOpen = Math.min(12, Math.abs(state.theta) * 0.18 + (state.isBerserk ? 5 : 1) * Math.abs(Math.sin(state.phase * 12)));
+        bearJaw.setAttribute('transform', `translate(0, ${jawOpen.toFixed(1)}) rotate(${(-jawOpen * 1.2).toFixed(1)})`);
+
+        // =====================================================================
+        // 5. TIER 4 & TIER 5: QIN SHI HUANG BOLTS & ZHUGE LIANG 1NM LITHOGRAPHY
+        // =====================================================================
+        // Qin Shi Huang's 12-Strand Mian Crown Tassels Swing with Physical Inertia
+        const tasselAngle = -state.theta * 0.85 - state.omega * 0.12 + Math.sin(state.phase * 16) * 8;
+        const clampedTassel = Math.max(-50, Math.min(50, tasselAngle));
+        mianTasselsFront.setAttribute('transform', `translate(-40, -27) rotate(${clampedTassel.toFixed(1)})`);
+        mianTasselsBack.setAttribute('transform', `translate(34, -30) rotate(${clampedTassel.toFixed(1)})`);
+
+        // High-Frequency Electric Screwdriver & Bolt Sinking
+        state.boltCycle += dt * 3.2 * speedFactor;
+        const boltFrac = state.boltCycle % 1;
+        const boltY = -13 + boltFrac * 9;
+        activeHexBolt.setAttribute('transform', `translate(70, ${boltY.toFixed(2)})`);
+
+        const jitterY = Math.sin(state.phase * 60) * 2.2 + boltFrac * 7;
+        const jitterX = Math.cos(state.phase * 75) * 1.2;
+        qinScrewdriverArm.setAttribute('transform', `translate(${jitterX.toFixed(1)}, ${jitterY.toFixed(1)})`);
+
+        const sparkScale = 0.7 + Math.abs(Math.sin(state.phase * 48)) * (state.isBerserk ? 1.15 : 0.65);
+        boltSparksGroup.setAttribute('transform', `translate(-105, -88) scale(${sparkScale.toFixed(2)}) rotate(${((state.phase * 520) % 360).toFixed(0)})`);
+
+        // Zhuge Liang Wooden Ox Gears, Feather Fan & Bagua EUV Laser
+        const oxGearAngle = -(state.phase * 220) % 360;
+        oxGears.forEach((g) => g.setAttribute('transform', `rotate(${oxGearAngle.toFixed(1)})`));
+
+        const fanWave = Math.sin(state.phase * 9) * 18;
+        zhugeFeatherFan.setAttribute('transform', `translate(18, -34) rotate(${fanWave.toFixed(1)})`);
+
+        const holoAngle = (state.phase * 140) % 360;
+        baguaHoloWheel.setAttribute('transform', `rotate(${holoAngle.toFixed(1)})`);
+
+        const laserPulse = 0.65 + Math.abs(Math.cos(state.phase * 35)) * 0.45;
+        euvLaserBeam.setAttribute('opacity', laserPulse.toFixed(2));
+
+        // Increment Production Counters & Spawn Floating Texts
+        if (now - lastSoundTick > (state.isBerserk ? 160 : 340)) {
+          lastSoundTick = now;
+          const mult = state.isBerserk ? 3 : 1;
+          state.bolts += mult;
+          state.chips += Math.ceil(mult * 0.5);
+          state.score += 35 * mult;
+          playSynthSound(Math.random() > 0.4 ? 'bolt' : 'chip');
+
+          const worldX = 680 + state.bikeX + state.theta * 3.5;
+          const worldY = 230 + state.planeY;
+          if (Math.random() > 0.45) {
+            spawnFloatingText(worldX - 85, worldY + 55, state.isBerserk ? '🔥大秦狂暴+3⚡' : '大秦重工+1⚡', '#fef08a');
+          } else {
+            spawnFloatingText(worldX + 20, worldY - 85, state.isBerserk ? '☯️1nm光刻暴击+2' : '手搓芯片+1☯️', '#6ee7b7');
+          }
+        }
+
+        // =====================================================================
+        // 6. HIGH-ALTITUDE TRIBULATION THUNDERCLOUD OBSTACLES
+        // =====================================================================
+        obstacleSpawnTimer -= dt;
+        if (obstacleSpawnTimer <= 0) {
+          obstacleSpawnTimer = Math.max(1.4, 3.2 - state.turbulenceMult * 0.6);
+          spawnThundercloudObstacle();
+        }
+
+        for (let i = obstaclesData.length - 1; i >= 0; i--) {
+          const ob = obstaclesData[i];
+          ob.x += ob.speed * dt;
+          ob.el.setAttribute('transform', `translate(${ob.x.toFixed(1)}, ${ob.y.toFixed(1)})`);
+
+          // Check Collision with Aircraft Nose/Cockpit or Upper Stack
+          const planeCenterX = 360;
+          const planeCenterY = 640 + state.planeY;
+          const stackCenterX = 715 + state.bikeX;
+          const stackCenterY = 440 + state.planeY;
+
+          const distNose = Math.hypot(ob.x - planeCenterX, ob.y - planeCenterY);
+          const distStack = Math.hypot(ob.x - stackCenterX, ob.y - stackCenterY);
+
+          if (distNose < 62 || distStack < 68) {
+            triggerPhysicalCollapse('直撞九天劫云雷暴中心，五层神话当场散架！');
+            return;
+          } else if (!ob.passed && (distNose < 135 || distStack < 145)) {
+            // Grazing near a thundercloud imparts a strong turbulence shock!
+            ob.passed = true;
+            const shockDir = ob.y < stackCenterY ? 1 : -1;
+            state.omega += shockDir * 42 * state.turbulenceMult;
+            playSynthSound('shock');
+            spawnFloatingText(ob.x, ob.y - 45, '⚡擦过劫云！强乱流冲击！', '#f87171');
+          }
+
+          if (ob.x > 1520) {
+            ob.el.remove();
+            obstaclesData.splice(i, 1);
+          }
+        }
+
+        // =====================================================================
+        // 7. UPDATE TOP HUD GAUGES & TELEMETRY COUNTERS
+        // =====================================================================
+        state.distanceKm += dt * 0.26 * speedFactor;
+        gaugeNeedle.setAttribute('transform', `translate(55, 50) rotate(${state.theta.toFixed(1)})`);
+        gaugeAngleText.textContent = `${state.theta >= 0 ? '+' : ''}${state.theta.toFixed(1)}°`;
+        gaugeAngleText.setAttribute(
+          'fill',
+          Math.abs(state.theta) > 42 ? '#f87171' : Math.abs(state.theta) > 20 ? '#facc15' : '#34d399'
+        );
+
+        // Wind Warning Bar
+        const windPct = Math.min(50, Math.abs(state.windForce) * 1.1);
+        hudWindFill.style.width = `${windPct.toFixed(1)}%`;
+        hudWindFill.style.left = state.windForce >= 0 ? '50%' : `${(50 - windPct).toFixed(1)}%`;
+        hudWindText.textContent = `${state.windForce >= 0 ? '右风 ▶' : '◀ 左风'} ${Math.abs(state.windForce).toFixed(1)}`;
+
+        hudAltitude.textContent = Math.round(12500 - state.planeY * 18).toLocaleString();
+        hudAirspeed.textContent = Math.round(920 * speedFactor - state.bikeVx * 0.4).toLocaleString();
+        hudBolts.textContent = state.bolts.toLocaleString();
+        hudChips.textContent = state.chips.toLocaleString();
+        hudScore.textContent = Math.floor(state.score).toLocaleString();
+
+        requestAnimationFrame(updateGameLoop);
+      }
+
+      function setBerserkMode(active) {
+        state.isBerserk = active;
+        const btnBerserk = document.getElementById('btnBerserk');
+        if (active) {
+          btnBerserk.classList.add('active-press');
+          hudModeBadge.textContent = '🔥 3x 狂暴加班模式';
+          hudModeBadge.className = 'tag-badge tag-berserk';
+          berserkOverlay.setAttribute('opacity', '1');
+        } else {
+          btnBerserk.classList.remove('active-press');
+          hudModeBadge.textContent = '1x 稳态巡航';
+          hudModeBadge.className = 'tag-badge tag-cyan';
+          berserkOverlay.setAttribute('opacity', '0');
+        }
+      }
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') keys.up = true;
+        if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') keys.down = true;
+        if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') keys.left = true;
+        if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') keys.right = true;
+        if (e.code === 'Space') {
+          e.preventDefault();
+          keys.space = true;
+          setBerserkMode(true);
+        }
+        if (e.key === 'Enter' && state.isCollapsed) {
+          resetGame();
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') keys.up = false;
+        if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') keys.down = false;
+        if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') keys.left = false;
+        if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') keys.right = false;
+        if (e.code === 'Space') {
+          keys.space = false;
+          setBerserkMode(false);
+        }
+      });
+
+      // Bind Virtual Hold Buttons for Mouse & Touch
+      function bindHoldButton(btnId, keyName, onToggle) {
+        const btn = document.getElementById(btnId);
+        const start = (e) => {
+          e.preventDefault();
+          keys[keyName] = true;
+          btn.classList.add('active-press');
+          if (onToggle) onToggle(true);
+        };
+        const end = (e) => {
+          e.preventDefault();
+          keys[keyName] = false;
+          btn.classList.remove('active-press');
+          if (onToggle) onToggle(false);
+        };
+        btn.addEventListener('mousedown', start);
+        btn.addEventListener('touchstart', start, { passive: false });
+        window.addEventListener('mouseup', end);
+        window.addEventListener('touchend', end);
+      }
+
+      bindHoldButton('btnClimb', 'up');
+      bindHoldButton('btnDive', 'down');
+      bindHoldButton('btnLeft', 'left');
+      bindHoldButton('btnRight', 'right');
+      bindHoldButton('btnBerserk', 'space', setBerserkMode);
+
+      // Gyroscope Assist Toggle
+      const btnAssist = document.getElementById('btnAssist');
+      btnAssist.addEventListener('click', () => {
+        state.assistEnabled = !state.assistEnabled;
+        if (state.assistEnabled) {
+          btnAssist.textContent = '🛡️ 陀螺仪护体: 开启';
+          btnAssist.classList.add('btn-assist-on');
+        } else {
+          btnAssist.textContent = '⚠️ 纯手动硬核平衡';
+          btnAssist.classList.remove('btn-assist-on');
+        }
+      });
+
+      // Physics Sliders
+      document.getElementById('sliderTurbulence').addEventListener('input', (e) => {
+        state.turbulenceMult = parseFloat(e.target.value);
+        document.getElementById('valTurbulence').textContent = state.turbulenceMult.toFixed(1);
+      });
+      document.getElementById('sliderGravity').addEventListener('input', (e) => {
+        state.gravityMult = parseFloat(e.target.value);
+        document.getElementById('valGravity').textContent = state.gravityMult.toFixed(1);
+      });
+      document.getElementById('sliderAssist').addEventListener('input', (e) => {
+        state.assistStrength = parseFloat(e.target.value);
+        document.getElementById('valAssist').textContent = state.assistStrength.toFixed(1);
+      });
+
+      // Camera Zoom Presets
+      const camTransforms = {
+        full: 'translate(0px, 0px) scale(1)',
+        top: 'translate(-560px, -45px) scale(1.78)',
+        mid: 'translate(-550px, -290px) scale(1.65)'
+      };
+      const camBtns = document.querySelectorAll('.cam-btn');
+      camBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const cam = btn.getAttribute('data-cam');
+          cameraViewport.style.transform = camTransforms[cam] || camTransforms.full;
+          camBtns.forEach((b) => b.classList.remove('btn-cam-active'));
+          btn.classList.add('btn-cam-active');
+        });
+      });
+
+      // Sound & Reset Buttons
+      const btnSound = document.getElementById('btnSound');
+      btnSound.addEventListener('click', () => {
+        state.soundEnabled = !state.soundEnabled;
+        btnSound.textContent = state.soundEnabled ? '🔊 音效: 开' : '🔇 音效: 关';
+        if (state.soundEnabled) playSynthSound('chip');
+      });
+
+      document.getElementById('btnReset').addEventListener('click', resetGame);
+      document.getElementById('btnModalRestart').addEventListener('click', resetGame);
+
+      // Initialize & Start 60fps Loop
+      window.onload = function () {
+        initBackgroundElements();
+        lastFrameTime = performance.now();
+        requestAnimationFrame(updateGameLoop);
+      };
+    })();
+  </script>
+</body>
+</html>
