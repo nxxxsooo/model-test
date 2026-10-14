@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>高空五层神话叠罗汉：狂暴打螺丝</title>
+<style>
+:root{color-scheme:dark;--gold:#f5ce7b;--ink:#081321;--muted:#8ca7bb;--line:#ffffff19}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07111d;font-family:system-ui,-apple-system,"Microsoft YaHei",sans-serif;color:#eaf4ff}
+button,input{font:inherit}
+#app{height:100%;display:grid;grid-template-rows:auto 1fr auto}
+header{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:15px 28px;background:#091522;border-bottom:1px solid var(--line)}
+.brand small{font-size:10px;letter-spacing:4px;color:var(--gold)}
+h1{font-size:19px;margin:5px 0 0;font-weight:800;letter-spacing:1px}
+h1 span{color:var(--gold)}
+.stats{display:flex;align-items:center;gap:30px}
+.stat small{display:block;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:5px}
+.stat strong{font-size:25px;font-variant-numeric:tabular-nums}
+.stat em{font-size:11px;color:var(--muted);font-style:normal;margin-left:5px}
+#production{color:var(--gold)}
+.gauge{display:flex;gap:12px;align-items:center}
+.gauge svg{width:114px;height:66px}
+.gauge b{font-size:21px;font-variant-numeric:tabular-nums}
+.gauge small{display:block;font-size:10px;color:var(--muted)}
+#weather{min-width:112px;font-size:12px}
+#warning{margin-top:6px;color:#87d9c0;font-size:11px}
+main{min-height:0;position:relative;background:#09192c}
+#scene{width:100%;height:100%;display:block}
+#mode{position:absolute;top:18px;left:26px;font-size:11px;letter-spacing:2px;color:#a7c6d5;border-left:2px solid #64cdb3;padding:7px 12px;background:#071724aa}
+#mode.rage{color:#ffe19b;border-color:#ff704c;background:#532514cc;box-shadow:0 0 35px #ff6d2820}
+#help{position:absolute;right:24px;top:18px;font-size:11px;color:#adc4d4;text-align:right;line-height:1.9}
+#help b{color:#f2d395;font-weight:500}
+#overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#03101a66;backdrop-filter:blur(3px);z-index:3}
+#overlay.visible{display:flex}
+.result{width:min(420px,90%);padding:35px;background:#0b1929ed;border:1px solid #e4b66566;box-shadow:0 25px 90px #0008;text-align:center}
+.result small{letter-spacing:5px;color:var(--gold)}
+.result h2{font-size:30px;margin:16px 0 9px}
+.result p{font-size:13px;color:#a6bdcd;line-height:1.8}
+.result strong{font-size:49px;color:var(--gold);font-variant-numeric:tabular-nums}
+button{border:1px solid #f4ce7b70;background:#f4ce7b;color:#182030;border-radius:5px;padding:10px 18px;cursor:pointer;font-weight:750;transition:filter .15s}
+button:hover{filter:brightness(1.12)}
+button:active{transform:translateY(1px)}
+.result button{display:block;margin:22px auto 0}
+footer{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:13px 27px;background:#091522;border-top:1px solid var(--line);z-index:2}
+.keys{font-size:11px;color:#92aebe;line-height:2}
+kbd{font:11px system-ui;display:inline-block;color:#e5eff8;padding:1px 5px;border:1px solid #b4d4e02e;border-bottom-width:2px;border-radius:3px;background:#ffffff09}
+.controls{display:flex;align-items:center;gap:21px}
+label{font-size:11px;color:#b1c6d3;display:grid;grid-template-columns:auto auto;gap:6px 13px}
+label output{color:var(--gold);text-align:right;font-variant-numeric:tabular-nums}
+input[type=range]{grid-column:1/3;width:135px;accent-color:var(--gold);height:13px;cursor:pointer}
+#reset{font-size:12px;background:transparent;color:var(--gold)}
+.touch{display:none;position:absolute;bottom:14px;gap:6px;z-index:2}
+.touch.left{left:14px}.touch.right{right:14px}
+.touch button{background:#0b2335dd;color:#f0d598;touch-action:none;padding:13px;border-color:#e8ce8b55;user-select:none}
+@media(pointer:coarse){.touch{display:flex}}
+@media(max-width:900px){header{padding:10px 13px;gap:10px}.brand small{letter-spacing:2px;font-size:8px}h1{font-size:14px}.stats{gap:13px}.stat strong{font-size:19px}.stat small{letter-spacing:0}.gauge svg{width:83px}.gauge{gap:3px}#weather{display:none}footer{padding:10px 12px;gap:8px}.controls{gap:12px}input[type=range]{width:100px}.keys{font-size:9px}#help{display:none}}
+@media(max-width:600px){.brand{max-width:145px}.stat em{display:none}.gauge b{font-size:15px}.gauge svg{width:65px}.stats{gap:8px}.stat strong{font-size:17px}.stat small{font-size:8px}.keys{display:none}.controls{width:100%;justify-content:space-between}h1{font-size:12px}#mode{left:12px;top:9px;font-size:9px}}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="brand">
+    <small>CELESTIAL INDUSTRIES / 天工重载</small>
+    <h1>高空五层神话叠罗汉：<span>狂暴打螺丝</span></h1>
+  </div>
+  <div class="stats">
+    <div class="stat"><small>实时海拔</small><strong id="altitude">8600</strong><em>米</em></div>
+    <div class="stat"><small>打螺丝 / 芯片 · 总得分</small><strong id="production">0</strong><em id="counts">0 / 0</em></div>
+    <div class="gauge">
+      <svg viewBox="-65 -65 130 76" aria-label="重心倾角仪表">
+        <g id="gaugeArcs" fill="none" stroke-width="7"></g>
+        <path d="M-52 3H52" stroke="#8ba5b044"/>
+        <g id="needle"><path d="M-2 2L0-49L2 2Z" fill="#fff4d4"/><circle r="4" fill="#f5ce7b"/></g>
+        <text x="-59" y="10" font-size="8" fill="#8ca7bb">−65°</text>
+        <text x="36" y="10" font-size="8" fill="#8ca7bb">+65°</text>
+      </svg>
+      <div><b id="angle">+0.0°</b><small>整体重心倾角</small></div>
+    </div>
+    <div id="weather"><span id="wind">风速 0.0 m/s</span><div id="warning">轻度乱流</div></div>
+  </div>
+</header>
+
+<main>
+<svg id="scene" viewBox="0 0 1440 840" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="sky" x2="0" y2="1">
+    <stop stop-color="#081327"/><stop offset=".48" stop-color="#183b56"/><stop offset="1" stop-color="#427480"/>
+  </linearGradient>
+  <linearGradient id="metal" x1="0" y1="0" x2=".25" y2="1">
+    <stop stop-color="#f1f4dd"/><stop offset=".3" stop-color="#9ab6b7"/><stop offset=".54" stop-color="#47616e"/><stop offset=".8" stop-color="#263c4d"/><stop offset="1" stop-color="#759aa3"/>
+  </linearGradient>
+  <linearGradient id="gold" x2=".4" y2="1">
+    <stop stop-color="#fff0ad"/><stop offset=".4" stop-color="#e0b858"/><stop offset=".72" stop-color="#9b661e"/><stop offset="1" stop-color="#f7d47d"/>
+  </linearGradient>
+  <linearGradient id="white" x2=".5" y2="1">
+    <stop stop-color="#fffdf0"/><stop offset=".48" stop-color="#dce8df"/><stop offset="1" stop-color="#7fabb1"/>
+  </linearGradient>
+  <linearGradient id="robe" x2="1" y2="1">
+    <stop stop-color="#343a42"/><stop offset=".4" stop-color="#111723"/><stop offset="1" stop-color="#020911"/>
+  </linearGradient>
+  <linearGradient id="glass" x2=".7" y2="1">
+    <stop stop-color="#cffbff" stop-opacity=".56"/><stop offset=".55" stop-color="#40adc7" stop-opacity=".1"/><stop offset="1" stop-color="#64d0de" stop-opacity=".35"/>
+  </linearGradient>
+  <linearGradient id="fire">
+    <stop stop-color="#ff472c" stop-opacity="0"/><stop offset=".4" stop-color="#ff5a28"/><stop offset=".75" stop-color="#ffc14f"/><stop offset="1" stop-color="#fff9cd"/>
+  </linearGradient>
+  <linearGradient id="storm" x2=".4" y2="1">
+    <stop stop-color="#617286"/><stop offset=".42" stop-color="#334354"/><stop offset="1" stop-color="#121c33"/>
+  </linearGradient>
+  <radialGradient id="halo">
+    <stop stop-color="#e5d6a4" stop-opacity=".2"/><stop offset="1" stop-color="#d8d1a9" stop-opacity="0"/>
+  </radialGradient>
+  <pattern id="rivet" width="22" height="14" patternUnits="userSpaceOnUse">
+    <circle cx="3" cy="4" r="1.1" fill="#d5e4d6" opacity=".65"/>
+  </pattern>
+  <pattern id="meander" width="20" height="14" patternUnits="userSpaceOnUse">
+    <path d="M0 12V2H17V10H6V6H12" fill="none" stroke="#d8b15e" stroke-width="1.5"/>
+  </pattern>
+  <pattern id="waferGrid" width="6" height="6" patternUnits="userSpaceOnUse">
+    <rect width="6" height="6" fill="#174e63"/><rect x="1" y="1" width="4" height="4" fill="#5fd6be" stroke="#ccefc2" stroke-width=".3"/>
+  </pattern>
+  <filter id="glow" x="-70%" y="-70%" width="240%" height="240%">
+    <feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <g id="cloud">
+    <path d="M-140 25C-157-2-120-29-94-19C-97-66-21-79 6-37C37-62 77-40 75-12C125-24 152 9 125 32C76 51-90 51-140 25Z" fill="#d6e8dc"/>
+    <path d="M-126 30Q-32 54 123 28Q70 69-96 47Z" fill="#789ead" opacity=".4"/>
+  </g>
+  <g id="gear" fill="url(#gold)" stroke="#664717" stroke-width="1">
+    <path d="M-3-17H3L4-12L8-10L13-12L17-7L13-3V3L17 7L13 12L8 10L4 12L3 17H-3L-4 12L-8 10L-13 12L-17 7L-13 3V-3L-17-7L-13-12L-8-10L-4-12Z"/>
+    <circle r="8" fill="#142630"/><path d="M-8 0H8M0-8V8" stroke="#d5ac59" stroke-width="3"/><circle r="3" fill="#efd79e"/>
+  </g>
+  <g id="fan">
+    <circle r="20" fill="#142432" stroke="#90a6a9" stroke-width="4"/>
+    <g fill="#8ca8ae" stroke="#132c3a" stroke-width=".6">
+      <path d="M0 0Q-14-3-12-14Q-3-17 0 0"/>
+      <path d="M0 0Q-14-3-12-14Q-3-17 0 0" transform="rotate(45)"/>
+      <path d="M0 0Q-14-3-12-14Q-3-17 0 0" transform="rotate(90)"/>
+      <path d="M0 0Q-14-3-12-14Q-3-17 0 0" transform="rotate(135)"/>
+      <path d="M0 0Q-14-3-12-14Q-3-17 0 0" transform="rotate(180)"/>
+      <path d="M0 0Q-14-3-12-14Q-3-17 0 0" transform="rotate(225)"/>
+      <path d="M0 0Q-14-3-12-14Q-3-17 0 0" transform="rotate(270)"/>
+      <path d="M0 0Q-14-3-12-14Q-3-17 0 0" transform="rotate(315)"/>
+    </g><circle r="4" fill="url(#gold)"/>
+  </g>
+</defs>
+<rect width="1440" height="840" fill="url(#sky)"/>
+<circle cx="1110" cy="170" r="260" fill="url(#halo)"/>
+<circle cx="1110" cy="170" r="49" fill="#e5d7af" opacity=".13"/>
+<g id="streams"></g>
+<g id="mountains"></g>
+<g id="cloudSea"></g>
+<path d="M0 788H1440" stroke="#d3efdb" opacity=".1"/>
+<g id="obstacles"></g>
+<g id="vehicle"></g>
+<g id="tier0"></g>
+<g id="tier1"></g>
+<g id="tier2"></g>
+<g id="tier3"></g>
+<g id="balanceGuide" pointer-events="none">
+  <path id="comLine" fill="none" stroke="#e9d58c" stroke-width="1.2" stroke-dasharray="4 6" opacity=".62"/>
+  <circle id="comDot" r="5" fill="#112332" stroke="#f7d688" stroke-width="1.5"/>
+  <path id="verticalLine" stroke="#ffffff30" stroke-dasharray="2 6"/>
+</g>
+<g id="tierLabels" pointer-events="none"></g>
+<g id="particles" pointer-events="none"></g>
+<g id="debris"></g>
+<g id="floaters" pointer-events="none"></g>
+<text x="29" y="814" fill="#c9e0e0" opacity=".32" font-size="10" letter-spacing="3">天工纪元 / STRATOSPHERE ASSEMBLY LINE</text>
+<text x="1410" y="814" text-anchor="end" fill="#c9e0e0" opacity=".32" font-size="10" letter-spacing="2">五层承重 · 一念平衡</text>
+</svg>
+<div id="mode">正常生产 · 将支点移向倾倒方向</div>
+<div id="help">朝倾斜方向蹬行，<b>让支点追上重心</b><br>接近竖直时反向轻刹，避免救过头<br>雷云仅与飞机碰撞判定 · 超过 <b>65°</b> 倾覆</div>
+<div class="touch left">
+  <button data-key="KeyA">◀</button><button data-key="KeyD">▶</button>
+</div>
+<div class="touch right">
+  <button data-key="KeyW">升</button><button data-key="KeyS">降</button><button data-key="Space">狂暴</button>
+</div>
+<div id="overlay">
+  <div class="result">
+    <small>天工事故调查局</small>
+    <h2>五层神话，暂时落幕</h2>
+    <p id="reason"></p>
+    <strong id="finalScore">0</strong>
+    <p id="finalDetail"></p>
+    <button id="restart">重整旗鼓，再开一局</button>
+  </div>
+</div>
+</main>
+
+<footer>
+  <div class="keys">
+    <kbd>W</kbd> <kbd>S</kbd> / <kbd>↑</kbd> <kbd>↓</kbd> 拉升俯冲　
+    <kbd>A</kbd> <kbd>D</kbd> / <kbd>←</kbd> <kbd>→</kbd> 蹬行救平衡<br>
+    长按 <kbd>Space</kbd> 狂暴加班：加工速度 ×2 · 单次得分 ×3 · 震动加强
+  </div>
+  <div class="controls">
+    <label>乱流强度 <output id="turbOut">25%</output><input id="turbulence" type="range" min="0" max="100" value="25" aria-label="乱流强度"></label>
+    <label>重力系数 <output id="gravOut">1.00×</output><input id="gravity" type="range" min="30" max="180" value="100" aria-label="重力系数"></label>
+    <button id="reset">重整旗鼓（Reset）</button>
+  </div>
+</footer>
+</div>
+
+<script>
+"use strict";
+(() => {
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+const svg = $("scene");
+const TAU = Math.PI * 2;
+const DEG = 180 / Math.PI;
+const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+const mix = (a,b,t) => a+(b-a)*t;
+const el = (name,attrs={},parent=null) => {
+  const n=document.createElementNS(NS,name);
+  for(const [k,v] of Object.entries(attrs)) n.setAttribute(k,v);
+  if(parent) parent.appendChild(n);
+  return n;
+};
+const transform = (node,x,y,a=0) => node.setAttribute("transform",`translate(${x} ${y}) rotate(${a})`);
+const keys = new Set();
+let state, clouds=[], sparks=[], texts=[], fragments=[], pieceHistory=new Map();
+let accumulator=0, lastTime=performance.now(), renderTime=lastTime;
+const H=1/120;
+const lengths=[123,92,105,82], masses=[9,15,10,6], fractions=[.57,.50,.50,.48];
+const totalMass=masses.reduce((a,b)=>a+b,0);
+const tierNodes=Array.from({length:4},(_,i)=>$("tier"+i));
+const turb=$("turbulence"), gravity=$("gravity");
+
+function makeGauge(){
+  const p=a=>[Math.sin(a/DEG)*52,-Math.cos(a/DEG)*52];
+  [[-90,-45,"#ff6c63"],[-45,-20,"#ecc26a"],[-20,20,"#78d5ad"],[20,45,"#ecc26a"],[45,90,"#ff6c63"]].forEach(([a,b,color])=>{
+    const s=p(a),e=p(b);
+    el("path",{d:`M${s}A52 52 0 0 1 ${e}`,stroke:color},$("gaugeArcs"));
+  });
+}
+makeGauge();
+
+function buildPlane(){
+$("vehicle").innerHTML=`
+<g data-piece>
+ <path d="M-26-6L-197-80L-230-74L-147-4L-215 36L-180 44L36 18Z" fill="url(#metal)" stroke="#102636" stroke-width="2"/>
+ <path d="M-197-77L-139-14M-187 35L-15 2" fill="none" stroke="#e4e5cb" opacity=".5"/>
+ <path d="M-170-61L-122-44M-153-51L-132-32" stroke="#cda449" stroke-width="5"/>
+</g>
+<g data-piece>
+ <path d="M-146 9L-216-23L-241-19L-213 23Z" fill="#476472" stroke="#173342" stroke-width="2"/>
+ <path d="M-174 5L-211-56L-240-60L-224 13Z" fill="url(#metal)" stroke="#18303f" stroke-width="2"/>
+ <path d="M-217-49L-208-18" stroke="#d5b05e" stroke-width="6"/>
+</g>
+<g data-piece>
+ <path d="M-226 13Q-194-17-102-22L111-15Q194-13 239 16Q221 37 151 39L-151 33Q-213 30-226 13Z" fill="url(#metal)" stroke="#142c3a" stroke-width="2.5"/>
+ <path d="M-192 12Q-34 2 177 10L215 18" fill="none" stroke="#f5e9bd" stroke-width="3"/>
+ <path d="M-184 24L169 30" stroke="#1b3748" stroke-width="3"/>
+ <path d="M-97-18L-92 31M27-17L30 36M132-11L130 36" fill="none" stroke="#182f3f" opacity=".5"/>
+ <path d="M-191 2H152V27H-191Z" fill="url(#rivet)" opacity=".55"/>
+ <path d="M197 1Q221 7 236 16L197 21Z" fill="#293f4c"/>
+ <text x="-112" y="20" font-size="12" fill="#fce7ac" font-weight="900" letter-spacing="4">筋斗云 · 9000</text>
+ <path d="M-11 31L-119 79L-159 76L-78 30Z" fill="url(#metal)" stroke="#203b49" stroke-width="2"/>
+ <path d="M-142 72L-82 43" stroke="#cfab64" stroke-width="4"/>
+</g>
+<g data-piece>
+ <path d="M85-19L66-69" stroke="url(#gold)" stroke-width="5"/>
+ <path d="M83-24L71-56" stroke="#a6332b" stroke-width="3"/>
+ <path d="M88-19L93-46" stroke="#0e2632" stroke-width="4"/>
+ <path d="M37-19Q33-40 53-44Q77-46 86-20Z" fill="#a94030" stroke="#4a291f" stroke-width="1.5"/>
+ <path d="M45-25L66-25M53-39L56-19" stroke="url(#gold)" stroke-width="4"/>
+ <path d="M68-37L83-29L93-42" fill="none" stroke="#b97d45" stroke-width="7" stroke-linecap="round"/>
+ <circle cx="54" cy="-58" r="16" fill="#8c542e" stroke="#382921" stroke-width="1.5"/>
+ <path d="M43-64Q49-71 54-61Q62-73 68-62L65-49Q53-40 43-53Z" fill="#edba78"/>
+ <path d="M46-60L51-59M59-59L64-61" stroke="#222431" stroke-width="2"/>
+ <path d="M51-49Q57-47 61-51" stroke="#792f28" stroke-width="1.3" fill="none"/>
+ <path d="M39-67Q52-72 69-66" fill="none" stroke="#ffe078" stroke-width="4"/>
+ <path d="M43-70L41-82L50-76L56-86L61-75L70-81L66-68Z" fill="url(#gold)" stroke="#9e622c"/>
+ <circle cx="55" cy="-75" r="3" fill="#f56338"/>
+ <path id="featherA" fill="none" stroke="#bb8950" stroke-width="2.4"/>
+ <path id="featherB" fill="none" stroke="#e8c77d" stroke-width="2"/>
+</g>
+<g data-piece>
+ <path d="M21-21Q20-87 77-84Q125-79 136-17Z" fill="url(#glass)" stroke="#b9dada" stroke-width="1.8"/>
+ <path d="M33-39Q30-69 58-75" fill="none" stroke="#edffff" stroke-width="3" opacity=".55"/>
+ <path d="M79-83Q96-58 97-18" fill="none" stroke="#5e8e9a" stroke-width="2"/>
+ <path d="M20-19H137" stroke="#c8b775" stroke-width="5"/>
+</g>
+<g data-piece>
+ <path d="M-177-26H177V-34H-177Z" fill="#243f4c" stroke="#bdd4d0" stroke-width="1.5"/>
+ <path d="M-166-29H166" stroke="#e8bc67" stroke-width="2"/>
+ <path d="M-177-43V-23M177-43V-23" stroke="#e0b662" stroke-width="6" stroke-linecap="round"/>
+ <path d="M-174-23L-143-6M169-24L148-4" stroke="#66818b" stroke-width="5"/>
+ <path d="M-144-34V-29M-96-34V-29M-48-34V-29M0-34V-29M48-34V-29M96-34V-29M144-34V-29" stroke="#122a38" stroke-width="2"/>
+</g>
+<g data-piece>
+ <path d="M-89 32V53M-34 32V52" stroke="#263f4a" stroke-width="9"/>
+ <path d="M-119 40Q-66 31-20 47L-20 76Q-67 89-122 72Z" fill="url(#metal)" stroke="#142b3b" stroke-width="2"/>
+ <path d="M-116 46L-139 49V70L-117 73" fill="#243b49" stroke="#aaaf91"/>
+ <g id="flame1"><path d="M-138 50Q-179 33-243 59Q-194 77-138 69Z" fill="url(#fire)"/><path d="M-139 54L-215 60L-139 65" fill="#fff1a9" opacity=".8"/>
+ <path d="M-158 51Q-165 59-158 69M-180 50Q-189 60-180 70M-204 53Q-210 60-204 66" fill="none" stroke="#ffe4a2" stroke-width="2"/></g>
+ <g transform="translate(-22 61) scale(.62 1)"><g id="fan1"><use href="#fan"/></g></g>
+ <path d="M-107 44L-105 73M-90 42L-88 76" stroke="#243d4b" stroke-width="2"/>
+ <text x="-78" y="64" fill="#f7d58d" font-size="10">三昧真火</text>
+</g>
+<g data-piece>
+ <path d="M-134-5L-132 16M-89-4L-87 15" stroke="#273e49" stroke-width="6"/>
+ <path d="M-159 9Q-122 1-85 12V32Q-122 43-159 30Z" fill="url(#metal)" stroke="#193441" stroke-width="2"/>
+ <g id="flame2"><path d="M-160 13Q-207 1-244 23Q-196 42-160 29Z" fill="url(#fire)"/>
+ <path d="M-183 14Q-189 22-183 30M-204 17Q-209 22-204 27" fill="none" stroke="#ffe2a1" stroke-width="1.6"/></g>
+ <g transform="translate(-85 23) scale(.5 .7)"><g id="fan2"><use href="#fan"/></g></g>
+</g>`;
+}
+
+function wheelMarkup(x,id){
+let spokes="";
+for(let k=0;k<10;k++){
+  const a=k*TAU/10;
+  spokes+=`<path d="M0 0L${20*Math.cos(a)} ${20*Math.sin(a)}" stroke="#a9bfc0" stroke-width=".65"/>`;
+}
+return `<g data-piece transform="translate(${x} -22)">
+<circle r="22" fill="#142532" stroke="#071018" stroke-width="4"/>
+<circle r="19.6" fill="none" stroke="#c7d2cb" stroke-width="1.4"/>
+<g id="${id}">${spokes}<path d="M0-20L4-19" stroke="#f5d583" stroke-width="3"/></g><circle r="3.5" fill="url(#gold)"/></g>`;
+}
+
+function buildPelican(){
+tierNodes[0].innerHTML=`
+${wheelMarkup(-46,"wheelL")}${wheelMarkup(46,"wheelR")}
+<g data-piece>
+ <path d="M-46-22L-22-57L0-24L-46-22L21-59L46-22M0-24L21-59L-22-57" fill="none" stroke="#e8b95d" stroke-width="3.3" stroke-linejoin="round"/>
+ <path d="M-22-57L-25-66M20-58L25-70L36-69Q44-63 35-59" fill="none" stroke="#789ba7" stroke-width="3"/>
+ <path d="M-35-66H-16" stroke="#101b28" stroke-width="5" stroke-linecap="round"/>
+ <circle cx="0" cy="-24" r="8" fill="#203c4a" stroke="#bfc9bb" stroke-width="1.5"/>
+ <path id="chain" d="M-46-27L0-32Q13-25 1-16L-46-17Z" fill="none" stroke="#81958f" stroke-width="1.1"/>
+ <path id="crank" stroke="#eaf0cf" stroke-width="2.8"/>
+</g>
+<g data-piece>
+ <path id="legBack" fill="none" stroke="#b68033" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+ <path id="legFront" fill="none" stroke="#e6b551" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+ <circle id="kneeBack" r="3.4" fill="#c99540"/><circle id="kneeFront" r="3.4" fill="#e4bd65"/>
+ <path id="pedalBack" stroke="#122530" stroke-width="4" stroke-linecap="round"/>
+ <path id="pedalFront" stroke="#142936" stroke-width="4" stroke-linecap="round"/>
+ <path id="footBack" stroke="#c5933f" stroke-width="2.8" stroke-linecap="round"/>
+ <path id="footFront" stroke="#ffce68" stroke-width="2.8" stroke-linecap="round"/>
+</g>
+<g data-piece>
+ <path d="M-28-77Q-38-100-12-116Q3-123 18-108Q23-88 7-75Q-11-66-28-77Z" fill="url(#white)" stroke="#6b98a4" stroke-width="1.3"/>
+ <path d="M-23-77L-39-68L-30-87" fill="#b8cfd0" stroke="#7fa2a9"/>
+ <path d="M-11-103Q6-95-2-79M-16-99Q-3-91-9-80" fill="none" stroke="#97b7bc" stroke-width="1.5"/>
+ <path d="M7-107Q6-125 20-127Q33-128 36-115L29-96L14-96Z" fill="url(#white)" stroke="#7398a2" stroke-width="1.3"/>
+ <path id="pouch" fill="url(#gold)" stroke="#ad7b2b" stroke-width="1.2"/>
+ <path d="M29-114L78-108L29-104Z" fill="#ffe486" stroke="#b78935" stroke-width="1"/>
+ <path d="M32-110L74-108" stroke="#a97b2a"/>
+ <circle cx="26" cy="-118" r="3" fill="#102631"/><circle cx="27" cy="-119" r="1" fill="white"/>
+</g>
+<g data-piece>
+ <path d="M-9-111Q-40-130-86-123L-99-114L-83-113L-90-108L-68-110L-70-104L-49-111L-48-105L-28-112L-13-100Z" fill="url(#white)" stroke="#7297a3" stroke-width="1.3"/>
+ <path d="M2-111Q40-132 88-123L100-114L83-113L90-107L69-110L70-104L49-111L48-105L28-112L9-101Z" fill="url(#white)" stroke="#7297a3" stroke-width="1.3"/>
+ <path d="M-81-121L-67-113M-61-122L-49-113M-41-121L-30-114M81-121L67-113M61-122L49-113M41-121L30-114" fill="none" stroke="#91afb5"/>
+ <path d="M-65-123H65" stroke="#f0ead0" stroke-width="3"/>
+</g>`;
+}
+
+function buildBear(){
+tierNodes[1].innerHTML=`
+<g data-piece>
+ <path id="bearRearLegs" d="M-47-48L-54-20L-53-3M30-46L37-21L40-3" fill="none" stroke="#9dbdbd" stroke-width="19" stroke-linecap="round"/>
+ <path d="M-64-4Q-51-11-40-2L-41 0H-65ZM28-3Q42-11 51-2L50 0H28Z" fill="#bdd1cc"/>
+</g>
+<g data-piece>
+ <path d="M-52-37Q-76-58-52-77Q-23-96 28-79Q47-82 62-64L58-33Q37-21-5-27Q-34-23-52-37Z" fill="url(#white)" stroke="#789aa4" stroke-width="1.5"/>
+ <path d="M-54-58Q-59-38-47-30M-48-66L-51-57M-41-72L-44-65M-30-76L-33-70M18-72L24-68" fill="none" stroke="#afc6c6" stroke-width="1.4"/>
+ <path d="M-63-61Q-82-67-75-50L-64-49" fill="#dbe5d8" stroke="#8ca8ab"/>
+ <path d="M-40-79Q-3-89 30-77L36-37Q-1-21-40-39Z" fill="url(#robe)" stroke="#e0ba66" stroke-width="2"/>
+ <path d="M-37-75H29V-61H-37ZM-36-45H30V-32H-36Z" fill="url(#meander)"/>
+ <path d="M-30-83Q-3-100 26-82L28-76H-32Z" fill="#31271b" stroke="url(#gold)" stroke-width="3"/>
+ <path d="M-23-91H23" stroke="#e5c67d" stroke-width="4"/>
+ <rect x="-12" y="-61" width="27" height="25" rx="2" fill="#8b342c" stroke="#dfb765"/>
+ <text x="1.5" y="-42" text-anchor="middle" font-size="21" font-family="serif" fill="#ffe0a0">秦</text>
+</g>
+<g data-piece>
+ <path d="M41-70Q41-88 58-87Q72-90 78-78L85-65L98-57Q105-46 88-40L64-40L46-48Z" fill="url(#white)" stroke="#769aa4" stroke-width="1.5"/>
+ <circle cx="55" cy="-85" r="8" fill="#e5eade" stroke="#94b0b0"/>
+ <circle cx="55" cy="-84" r="4" fill="#a3b6b4"/>
+ <circle cx="77" cy="-68" r="2.3" fill="#1c2a31"/>
+ <path d="M94-58Q106-58 101-49L94-47L90-51Z" fill="#20333c"/>
+ <path d="M88-44L98-45" stroke="#506b71" stroke-width="1.3"/>
+ <path d="M48-69Q64-55 73-43" fill="none" stroke="#f2d185" stroke-width="5"/>
+</g>
+<g data-piece>
+ <path id="bearFrontLegs" d="M-37-42Q-46-23-42-6M33-42Q26-22 30-6" fill="none" stroke="url(#white)" stroke-width="22" stroke-linecap="round"/>
+ <path d="M-54-7Q-38-14-28-3V0H-54ZM18-7Q34-14 45-3V0H18Z" fill="#e0e6d6" stroke="#8aabaa"/>
+ <path d="M-47-4V0M-40-5V0M-33-4V0M25-4V0M32-5V0M39-4V0" stroke="#516b72" stroke-width="1.4"/>
+</g>`;
+}
+
+function buildEmperor(){
+tierNodes[2].innerHTML=`
+<g data-piece>
+ <path d="M-23-49Q-44-28-37-6L-46-2H-22L-8-33L15-31L24-4H43L37-13L30-51Z" fill="url(#robe)" stroke="#ac894c" stroke-width="1.8"/>
+ <path d="M-28-34L-29-10M24-34L31-11" stroke="#b49154" stroke-width="1.3"/>
+ <path d="M-42-6H-22M26-5H43" stroke="#e3bf79" stroke-width="3"/>
+ <path d="M-22-67Q0-79 25-65L35-30Q10-16-27-31Z" fill="url(#robe)" stroke="#d8b567" stroke-width="1.5"/>
+ <path d="M-20-66L2-44L22-66M-17-60L1-43L17-58" fill="none" stroke="url(#gold)" stroke-width="2"/>
+ <path d="M-21-36Q3-31 29-36" stroke="#d9b365" stroke-width="6" fill="none"/>
+ <path d="M-9-53Q-20-44-7-42Q14-51 15-39Q4-31-4-41Q2-51 11-47M-9-48L-16-52M9-43L20-47M-5-39L-11-34" fill="none" stroke="#d3ae5e" stroke-width="1.6"/>
+ <circle cx="3" cy="-35" r="4" fill="#8e3729" stroke="#ecd084"/>
+</g>
+<g data-piece>
+ <path d="M-11-86L-10-70Q0-62 12-74L13-87Z" fill="#d6a572" stroke="#76563f"/>
+ <path d="M-12-85Q-10-103 3-101Q18-100 16-85L11-78L-9-78Z" fill="#e0b17e" stroke="#795640"/>
+ <path d="M-10-88L-3-89M6-89L12-87" stroke="#22232a" stroke-width="2"/>
+ <path d="M-7-80Q1-75 10-81L8-65L2-60L-5-67Z" fill="#20212a"/>
+ <path d="M-1-79L-1-63M4-80L4-67" stroke="#63605a" stroke-width=".7"/>
+ <path d="M-13-96H16L17-102H-14Z" fill="#171f28" stroke="#e0bc73"/>
+</g>
+<g data-piece>
+ <path d="M-33-105H37L44-100H-37Z" fill="url(#gold)" stroke="#f5d890" stroke-width="1"/>
+ <path d="M-36-100H42V-96H-36Z" fill="#151c26" stroke="#c5a25a"/>
+ <g id="beads"></g>
+</g>
+<g data-piece>
+ <path d="M-18-61Q-28-54-25-42L-5-39" fill="none" stroke="#1c2531" stroke-width="14" stroke-linecap="round"/>
+ <path d="M-14-41L-4-39" stroke="#e3b17b" stroke-width="7" stroke-linecap="round"/>
+ <path d="M-22-44L-17-40" stroke="#dcb86e" stroke-width="3"/>
+ <path d="M-10-30V-10M62-30V-10" stroke="#859b9a" stroke-width="3"/>
+ <rect x="-15" y="-39" width="85" height="10" rx="4" fill="#223b47" stroke="#a1b9b8"/>
+ <path d="M-8-32H64" stroke="#ccbd86" stroke-width="2"/>
+ <g id="workpiece">
+  <path d="M-8-41L-1-49H55L63-41Z" fill="url(#metal)" stroke="#8bafb4"/>
+  <path d="M-1-48H54M1-45H48" stroke="#c4d8cf" stroke-width="1"/>
+  <circle cx="41" cy="-44" r="3" fill="#243843" stroke="#e6d6a6"/>
+ </g>
+ <path d="M-8-30L-3-34M5-30L10-34M18-30L23-34M31-30L36-34M44-30L49-34M57-30L62-34" stroke="#698790" stroke-width="2"/>
+</g>
+<g data-piece>
+ <path id="emperorArm" fill="none" stroke="#242932" stroke-width="12" stroke-linecap="round"/>
+ <g id="driver">
+  <path d="M35-70H47V-56H35Z" fill="#d7ad4a" stroke="#655026"/>
+  <path d="M36-69L30-75L31-81H48L52-77V-69Z" fill="#375967" stroke="#9bbab9"/>
+  <path d="M34-77H47M35-74H46" stroke="#152d3a" stroke-width="1.5"/>
+  <path d="M41-56V-44" stroke="#d3e2dc" stroke-width="2"/>
+  <path d="M39-51L43-49M39-48L43-46" stroke="#78969f"/>
+  <path d="M34-66L41-64" stroke="#e5b783" stroke-width="7" stroke-linecap="round"/>
+ </g>
+</g>`;
+const beads=$("beads");
+for(let i=0;i<12;i++){
+  const x=-32+i*6.3;
+  const g=el("g",{"data-bead":i},beads);
+  el("path",{d:`M${x}-97V-80`,stroke:"#bda775","stroke-width":".6"},g);
+  for(let j=0;j<4;j++) el("circle",{cx:x,cy:-93+j*4.4,r:1.35,fill:j%2?"#f2d89b":"#92beb4"},g);
+}
+}
+
+function buildZhuge(){
+tierNodes[3].innerHTML=`
+<g data-piece>
+ <path d="M-36-13L-28-28H28L39-13L32-4H-30Z" fill="#745439" stroke="#e0b877" stroke-width="1.5"/>
+ <path d="M-30-23H30M-33-13H35" stroke="#c6985f" stroke-width="2"/>
+ <path d="M-24-20L-17-9M-11-22L-3-9M6-22L14-9M22-22L29-12" stroke="#372d27" stroke-width="1.5"/>
+ <path d="M-34-18L-47-26L-53-22L-45-13L-41-7M32-19L44-29L49-27L47-18L38-10" fill="#97754d" stroke="#dfbd80" stroke-width="1.4"/>
+ <path d="M-48-23L-52-33M46-26L52-33" stroke="#d3b275" stroke-width="2"/>
+ <g transform="translate(-22 -9) scale(.55)"><g id="gearA"><use href="#gear"/></g></g>
+ <g transform="translate(19 -9) scale(.55)"><g id="gearB"><use href="#gear"/></g></g>
+ <path d="M-26 0H25" stroke="#e6c789" stroke-width="2"/>
+ <path d="M-16-9H13" stroke="#172a31" stroke-width="3"/>
+</g>
+<g data-piece>
+ <path d="M-15-50Q-28-37-28-23L-11-19L1-27L18-19L30-24L17-53Z" fill="#acbebb" stroke="#577f89" stroke-width="1.5"/>
+ <path d="M-9-49L2-32L12-48M-18-40L-14-25M18-40L22-25" fill="none" stroke="#eceddb" stroke-width="2"/>
+ <path d="M-20-24L-7-28L-2-23M10-26L21-23" fill="none" stroke="#334a52" stroke-width="3"/>
+ <path d="M-8-66Q0-74 10-66L10-53L1-46L-8-54Z" fill="#dfb58c" stroke="#8b6b51"/>
+ <path d="M-6-60L-2-61M4-61L8-60" stroke="#23333a" stroke-width="1.4"/>
+ <path d="M-6-54Q2-49 9-55L5-39L0-35L-5-45Z" fill="#35404a"/>
+ <path d="M-12-65L-13-80Q0-86 13-80L14-66Z" fill="#294554" stroke="#a7c3bc"/>
+ <path d="M-13-75Q1-69 13-76M0-82V-72" fill="none" stroke="#77979c" stroke-width="1.5"/>
+ <path d="M10-74L20-66L17-52" fill="none" stroke="#283e4c" stroke-width="4"/>
+</g>
+<g data-piece>
+ <path d="M-15-44L-28-39" stroke="#b7c9c2" stroke-width="9" stroke-linecap="round"/>
+ <g id="featherFan">
+  <path d="M-28-36L-38-60" stroke="#a98144" stroke-width="2.5"/>
+  <path d="M-31-45Q-58-46-52-65Q-44-66-34-48Q-54-67-43-76Q-35-73-31-49Q-42-77-31-80Q-25-72-28-49Q-27-78-18-74Q-14-62-26-45Z" fill="url(#white)" stroke="#8aabae" stroke-width="1"/>
+  <path d="M-48-61L-29-44M-39-71L-28-45M-30-74L-27-45M-20-69L-26-45" stroke="#b4c7bd" fill="none" stroke-width=".7"/>
+ </g>
+</g>
+<g data-piece>
+ <path d="M15-45L28-36L39-43" fill="none" stroke="#b1c5bd" stroke-width="8" stroke-linecap="round"/>
+ <path d="M35-42L40-43" stroke="#e4b588" stroke-width="5" stroke-linecap="round"/>
+ <path d="M34-41L39-51L48-49L50-40Z" fill="#324e5d" stroke="#d0be87"/>
+ <circle cx="42" cy="-47" r="3" fill="#8cf2dc"/>
+ <path d="M29-16L32-29H74L77-16Z" fill="#2a4857" stroke="#a8c5be"/>
+ <ellipse cx="53" cy="-29" rx="24" ry="9" fill="url(#waferGrid)" stroke="#b7eac9" stroke-width="1.3"/>
+ <path id="laser" d="M44-43L54-29" stroke="#91ffe2" stroke-width="1.7" filter="url(#glow)"/>
+ <circle id="laserSpot" cx="54" cy="-29" r="2" fill="#eaffcc" filter="url(#glow)"/>
+ <path d="M32-16V-7M73-16V-7" stroke="#a4bcbc" stroke-width="2"/>
+</g>
+<g data-piece>
+ <g transform="translate(0 -108) scale(1 .52)">
+  <g id="hologram" stroke="#a0f9d7">
+   <circle r="33" fill="#3fe8c5" fill-opacity=".04" stroke-width=".8"/>
+   <circle r="27" fill="none" stroke-width=".65"/>
+   <path d="M0-14A14 14 0 0 1 0 14A7 7 0 0 1 0 0A7 7 0 0 0 0-14Z" fill="#a7f4da" stroke="none"/>
+   <circle r="14" fill="none"/><circle cy="-7" r="2.5" fill="#a7f4da" stroke="none"/><circle cy="7" r="2.5" fill="#1b5c60" stroke="none"/>
+   <g id="trigrams" stroke-width="1.5"></g>
+  </g>
+ </g>
+ <path d="M-15-86L-27-106M15-86L27-106" stroke="#8fe8d4" stroke-width=".6" stroke-dasharray="2 4" opacity=".45"/>
+</g>`;
+for(let i=0;i<8;i++){
+  const g=el("g",{transform:`rotate(${45*i})`},$("trigrams"));
+  for(let j=0;j<3;j++){
+    const y=-20-j*3;
+    el("path",{d:(i>>j)&1?`M-5 ${y}H5`:`M-5 ${y}H-1.5M1.5 ${y}H5`},g);
+  }
+}
+}
+
+function buildBackground(){
+const stream=$("streams");
+for(let i=0;i<36;i++){
+  el("path",{d:`M0 0H${18+(i*31)%91}`,stroke:i%3?"#9bc5c4":"#ecd6a1","stroke-width":i%4===0?1.5:.7,opacity:.08+(i%4)*.035},stream);
+}
+for(let i=0;i<3;i++){
+  const group=el("g",{opacity:.16+i*.095},$("mountains"));
+  for(let j=0;j<3;j++){
+    el("path",{d:"M0 840V745L90 663L160 704L284 558L363 648L438 604L568 731L667 639L748 702L836 579L940 680L1051 611L1182 735L1270 674L1440 737V840Z",
+      fill:["#769498","#71999b","#93b5ac"][i],transform:`translate(${j*1440} ${i*53})`},group);
+  }
+}
+for(let i=0;i<13;i++){
+  el("use",{href:"#cloud",opacity:.12+(i%4)*.035},$("cloudSea"));
+}
+}
+buildBackground();
+
+function setupArt(){
+buildPlane();buildPelican();buildBear();buildEmperor();buildZhuge();
+$("tierLabels").innerHTML="";
+["02 / 鹈鹕 · 移动支点","03 / 北极熊 · 皇家承重","04 / 始皇帝 · 螺丝工位","05 / 诸葛亮 · 纳米芯片"].forEach((s,i)=>{
+ const g=el("g",{},$("tierLabels"));
+ el("path",{d:"M0 0H21",stroke:"#eddaa2","stroke-width":1,opacity:.5},g);
+ const t=el("text",{x:28,y:4,fill:"#cfddd2","font-size":10,"letter-spacing":1},g);t.textContent=s;
+});
+}
+
+function reset(){
+keys.clear();
+clouds=[];sparks=[];texts=[];fragments=[];pieceHistory.clear();
+["obstacles","particles","floaters","debris"].forEach(id=>$(id).replaceChildren());
+state={
+ t:0,dead:false,deathT:0,score:0,screws:0,chips:0,
+ y:628,vy:0,pitch:0,pitchV:0,rail:0,railV:0,
+ q:[.023,.026,.029,.032],qd:[0,0,0,0],
+ crank:0,screwPhase:0,chipPhase:0,screwMultiplier:1,chipMultiplier:1,
+ rage:false,wind:0,spawn:8.5,flash:0,basePrev:null,baseV:{x:0,y:0},
+ baseA:{x:0,y:0},poses:[],com:{x:0,y:0},angle:0
+};
+setupArt();
+tierNodes.forEach(n=>n.style.display="");
+$("vehicle").style.display="";
+$("balanceGuide").style.display="";
+$("tierLabels").style.display="";
+$("overlay").classList.remove("visible");
+$("mode").classList.remove("rage");
+accumulator=0;lastTime=performance.now();
+computeGeometry();draw(0);
+}
+
+function basePoint(){
+const c=Math.cos(state.pitch),s=Math.sin(state.pitch);
+return {x:537+c*state.rail+s*34,y:state.y+s*state.rail-c*34};
+}
+function computeGeometry(){
+let p=basePoint(),cx=0,cy=0;
+state.poses=[];
+for(let i=0;i<4;i++){
+ state.poses.push({x:p.x,y:p.y,a:state.q[i]});
+ const dx=Math.sin(state.q[i])*lengths[i],dy=-Math.cos(state.q[i])*lengths[i];
+ cx+=(p.x+dx*fractions[i])*masses[i];cy+=(p.y+dy*fractions[i])*masses[i];
+ p={x:p.x+dx,y:p.y+dy};
+}
+state.com={x:cx/totalMass,y:cy/totalMass};
+const b=state.poses[0];
+state.angle=Math.atan2(state.com.x-b.x,b.y-state.com.y)*DEG;
+}
+
+/* 四节绝对角多刚体系统。
+   每节的质心位置由前面所有关节累积确定。
+   M = Σ m JᵀJ；离心项、支点加速度、重力以及关节反作用共同求解。
+   关节弹性只约束相邻层，不向世界竖直方向施加自动扶正力。 */
+function solveDynamics(dt){
+const q=state.q,w=state.qd;
+const M=Array.from({length:4},()=>Array(4).fill(0));
+const F=Array(4).fill(0);
+const g=147*Number(gravity.value)/100;
+for(let body=0;body<4;body++){
+ const J=[],m=masses[body];
+ let bx=0,by=0;
+ for(let j=0;j<=body;j++){
+  const l=lengths[j]*(j===body?fractions[body]:1);
+  J[j]={x:l*Math.cos(q[j]),y:l*Math.sin(q[j])};
+  bx-=l*Math.sin(q[j])*w[j]*w[j];
+  by+=l*Math.cos(q[j])*w[j]*w[j];
+ }
+ for(let j=0;j<=body;j++){
+  F[j]+=m*(J[j].y*g-J[j].x*(state.baseA.x+bx)-J[j].y*(state.baseA.y+by));
+  for(let k=0;k<=body;k++) M[j][k]+=m*(J[j].x*J[k].x+J[j].y*J[k].y);
+ }
+ M[body][body]+=m*lengths[body]*lengths[body]*.065;
+}
+for(let i=1;i<4;i++){
+ const torque=-30000*(q[i]-q[i-1])-6000*(w[i]-w[i-1]);
+ F[i]+=torque;F[i-1]-=torque;
+}
+const wind=state.wind;
+for(let i=0;i<4;i++){
+ F[i]+=wind*(450+150*i)-w[i]*700;
+}
+const phase=state.screwPhase;
+const contact=Math.max(0,Math.sin(Math.PI*clamp((phase-.15)/.65,0,1)));
+const vibration=(state.rage?7800:950)*Math.sin(state.t*(state.rage?74:36))*contact;
+F[2]+=vibration;F[1]-=vibration*.7;F[3]-=vibration*.3;
+for(let i=0;i<4;i++) M[i].push(F[i]);
+for(let col=0;col<4;col++){
+ let pivot=col;
+ for(let row=col+1;row<4;row++) if(Math.abs(M[row][col])>Math.abs(M[pivot][col])) pivot=row;
+ [M[col],M[pivot]]=[M[pivot],M[col]];
+ const divisor=M[col][col];
+ for(let k=col;k<5;k++) M[col][k]/=divisor;
+ for(let row=0;row<4;row++){
+  if(row===col)continue;
+  const f=M[row][col];
+  for(let k=col;k<5;k++) M[row][k]-=f*M[col][k];
+ }
+}
+for(let i=0;i<4;i++){
+ w[i]+=M[i][4]*dt;
+ q[i]+=w[i]*dt;
+}
+}
+
+function worldPoint(layer,x,y){
+const p=state.poses[layer],c=Math.cos(p.a),s=Math.sin(p.a);
+return {x:p.x+x*c-y*s,y:p.y+x*s+y*c};
+}
+function makeSparks(x,y,color,count=8){
+for(let i=0;i<count;i++){
+ const a=Math.random()*TAU,v=25+Math.random()*120;
+ const node=el("path",{d:"M0 0L-4 0",stroke:color,"stroke-width":1.5,"stroke-linecap":"round"},$("particles"));
+ sparks.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-25,life:.25+Math.random()*.35,max:.6,node});
+}
+}
+function floatText(x,y,str,color){
+const node=el("text",{x:0,y:0,fill:color,"font-size":13,"font-weight":700,"text-anchor":"middle"},$("floaters"));
+node.textContent=str;texts.push({x,y,life:1.25,node});
+}
+function finishWork(kind,multiplier){
+const chip=kind==="chip",base=chip?4:1,points=base*multiplier;
+state.score+=points;
+if(chip)state.chips++;else state.screws++;
+const p=worldPoint(chip?3:2,chip?53:41,chip?-29:-44);
+makeSparks(p.x,p.y,chip?"#8ffff0":"#ffd281",chip?13:9);
+floatText(p.x+15,p.y-14,`${chip?"芯片":"产能"}+${points}`,chip?"#a6fff0":"#ffe3a1");
+}
+function work(dt){
+const rage=state.rage,rate=rage?2:1;
+state.screwMultiplier=Math.min(state.screwMultiplier,rage?3:1);
+state.chipMultiplier=Math.min(state.chipMultiplier,rage?3:1);
+state.screwPhase+=dt*.9*rate;
+state.chipPhase+=dt*.55*rate;
+if(state.screwPhase>=1){
+ state.screwPhase-=1;finishWork("screw",state.screwMultiplier);
+ state.screwMultiplier=rage?3:1;
+ state.qd[2]+=(rage?.009:.0018);state.qd[1]-=(rage?.004:.0008);
+}
+if(state.chipPhase>=1){
+ state.chipPhase-=1;finishWork("chip",state.chipMultiplier);
+ state.chipMultiplier=rage?3:1;
+}
+}
+
+function spawnCloud(){
+const y=390+Math.random()*335;
+const node=el("g",{},$("obstacles"));
+node.innerHTML=`
+<path d="M-67 27Q-95 1-68-24Q-59-40-34-33Q-36-69-5-70Q27-74 38-45Q69-52 77-26Q101-12 87 17Q75 45 40 36Q9 57-22 40Q-51 48-67 27Z" fill="url(#storm)" stroke="#8b9bad" stroke-opacity=".42" stroke-width="1.5"/>
+<path d="M-64-21Q-47-31-35-24M-17-59Q9-68 26-48M48-36Q70-32 72-16" fill="none" stroke="#c3c8c5" opacity=".18" stroke-width="3"/>
+<path class="lightning" d="M4-24L-13 6H7L-8 42L28-4H9L23-24Z" fill="#d4deff" filter="url(#glow)"/>
+<text x="0" y="70" text-anchor="middle" fill="#d8dcf1" font-size="10" letter-spacing="3">雷暴禁区</text>`;
+clouds.push({x:1570,y,r:68,speed:140+Math.random()*30,node});
+}
+function collision(c){
+const co=Math.cos(state.pitch),si=Math.sin(state.pitch);
+const dx=c.x-537,dy=c.y-state.y;
+const x=dx*co+dy*si,y=-dx*si+dy*co;
+const circles=[[-175,10,28],[-100,12,36],[-25,12,38],[55,10,40],[130,13,35],[195,17,25],[-96,56,24],[72,-43,34]];
+return circles.some(([px,py,r])=>(x-px)**2+(y-py)**2<(r+c.r*.78)**2);
+}
+
+function updateEffects(dt){
+for(let i=sparks.length-1;i>=0;i--){
+ const p=sparks[i];p.life-=dt;
+ if(p.life<=0){p.node.remove();sparks.splice(i,1);continue;}
+ p.vy+=130*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;
+ transform(p.node,p.x,p.y,Math.atan2(p.vy,p.vx)*DEG);
+ p.node.setAttribute("opacity",Math.min(1,p.life*3));
+}
+for(let i=texts.length-1;i>=0;i--){
+ const p=texts[i];p.life-=dt;
+ if(p.life<=0){p.node.remove();texts.splice(i,1);continue;}
+ p.y-=27*dt;p.x+=8*dt;
+ transform(p.node,p.x,p.y);p.node.setAttribute("opacity",Math.min(1,p.life*2));
+}
+for(let i=fragments.length-1;i>=0;i--){
+ const p=fragments[i];p.vy+=245*Number(gravity.value)/100*dt;
+ p.x+=p.vx*dt;p.y+=p.vy*dt;p.a+=p.spin*dt;
+ p.node.setAttribute("transform",`translate(${p.x} ${p.y}) rotate(${p.a}) matrix(${p.m.a} ${p.m.b} ${p.m.c} ${p.m.d} 0 0) translate(${-p.cx} ${-p.cy})`);
+ if(p.y>1400){p.node.remove();fragments.splice(i,1);}
+}
+}
+
+function tick(dt){
+state.t+=dt;
+updateEffects(dt);
+if(state.dead){
+ state.deathT+=dt;
+ if(state.deathT>.9)$("overlay").classList.add("visible");
+ return;
+}
+state.rage=keys.has("Space");
+const horizontal=(keys.has("KeyD")||keys.has("ArrowRight")?1:0)-(keys.has("KeyA")||keys.has("ArrowLeft")?1:0);
+const vertical=(keys.has("KeyS")||keys.has("ArrowDown")?1:0)-(keys.has("KeyW")||keys.has("ArrowUp")?1:0);
+const strength=Number(turb.value)/100;
+state.wind=strength*(Math.sin(state.t*.79)*1.6+Math.sin(state.t*2.13+.4)*.8+Math.sin(state.t*4.7)*.35);
+const oldBase=basePoint();
+const oldV={...state.baseV};
+const previousRail=state.rail;
+const railAcceleration=horizontal*195-state.railV*(horizontal?.65:1.8);
+state.railV=clamp(state.railV+railAcceleration*dt,-98,98);
+state.rail+=state.railV*dt;
+if(state.rail<-118){state.rail=-118;if(state.railV<0)state.railV=0;}
+if(state.rail>118){state.rail=118;if(state.railV>0)state.railV=0;}
+state.crank+=(state.rail-previousRail)/22;
+const targetV=vertical*108;
+state.vy+=(targetV-state.vy)*2.5*dt;
+state.y+=state.vy*dt;
+if(state.y<470){state.y=470;state.vy=Math.max(0,state.vy);}
+if(state.y>746){state.y=746;state.vy=Math.min(0,state.vy);}
+const targetPitch=vertical*.105+state.wind*.008;
+state.pitchV+=((targetPitch-state.pitch)*10-state.pitchV*5.4)*dt;
+state.pitch+=state.pitchV*dt;
+const newBase=basePoint();
+state.baseV={x:(newBase.x-oldBase.x)/dt,y:(newBase.y-oldBase.y)/dt};
+state.baseA={x:(state.baseV.x-oldV.x)/dt,y:(state.baseV.y-oldV.y)/dt};
+solveDynamics(dt);
+computeGeometry();
+if(Math.abs(state.angle)>65){endGame("整体重心越过 65° 安全极限。");return;}
+work(dt);
+state.spawn-=dt;
+if(state.spawn<=0){spawnCloud();state.spawn=5.8+Math.random()*2.7;}
+for(let i=clouds.length-1;i>=0;i--){
+ const c=clouds[i];c.x-=c.speed*dt;
+ if(collision(c)){endGame("飞机撞入雷云，天工号失去升力。");return;}
+ if(c.x<-160){c.node.remove();clouds.splice(i,1);}
+}
+}
+
+/* 直接从现场 SVG 世界矩阵提取零件：位置、朝向和最近帧速度全部继承。 */
+function endGame(reason){
+if(state.dead)return;
+drawActors();
+const inv=svg.getScreenCTM().inverse();
+document.querySelectorAll("[data-piece]").forEach((piece,index)=>{
+ const matrix=inv.multiply(piece.getScreenCTM()),box=piece.getBBox();
+ const cx=box.x+box.width/2,cy=box.y+box.height/2;
+ const center=new DOMPoint(cx,cy).matrixTransform(matrix);
+ const previous=pieceHistory.get(piece);
+ let vx=state.baseV.x,vy=state.baseV.y,spin=state.pitchV*DEG;
+ if(previous){
+  const delta=Math.max(.008,(performance.now()-previous.time)/1000);
+  vx=clamp((center.x-previous.x)/delta,-600,600);
+  vy=clamp((center.y-previous.y)/delta,-600,600);
+  let da=Math.atan2(matrix.b,matrix.a)-previous.a;
+  da=Math.atan2(Math.sin(da),Math.cos(da));
+  spin=clamp(da/delta*DEG,-240,240);
+ }
+ const wrapper=el("g",{},$("debris"));
+ const clone=piece.cloneNode(true);
+ clone.removeAttribute("transform");clone.removeAttribute("data-piece");
+ clone.querySelectorAll("[id]").forEach(n=>n.removeAttribute("id"));
+ wrapper.appendChild(clone);
+ const item={node:wrapper,x:center.x,y:center.y,cx,cy,m:matrix,a:0,
+ vx:vx+(index%5-2)*9,vy:vy-15-(index%3)*8,spin:spin+(index%2?1:-1)*(18+index%7*8)};
+ fragments.push(item);
+ wrapper.setAttribute("transform",`translate(${item.x} ${item.y}) matrix(${matrix.a} ${matrix.b} ${matrix.c} ${matrix.d} 0 0) translate(${-cx} ${-cy})`);
+});
+state.dead=true;state.deathT=0;
+$("vehicle").style.display="none";tierNodes.forEach(n=>n.style.display="none");
+$("balanceGuide").style.display="none";$("tierLabels").style.display="none";
+$("reason").textContent=reason;
+$("finalScore").textContent=state.score;
+$("finalDetail").textContent=`完成 ${state.screws} 颗螺丝 · ${state.chips} 枚芯片 · 坚持 ${state.t.toFixed(1)} 秒`;
+$("mode").textContent="承重链断裂 · 本局生产已停止";
+}
+
+function leg(phase,front){
+const hip={x:-8,y:-80};
+const foot={x:Math.cos(phase)*12,y:-24+Math.sin(phase)*12};
+const dx=foot.x-hip.x,dy=foot.y-hip.y,d=Math.hypot(dx,dy);
+const a=36,b=36;
+const along=(a*a-b*b+d*d)/(2*d);
+const high=Math.sqrt(Math.max(0,a*a-along*along));
+const knee={x:hip.x+dx/d*along+dy/d*high,y:hip.y+dy/d*along-dx/d*high};
+const suffix=front?"Front":"Back";
+$("leg"+suffix).setAttribute("d",`M${hip.x} ${hip.y}L${knee.x} ${knee.y}L${foot.x} ${foot.y}`);
+$("knee"+suffix).setAttribute("cx",knee.x);$("knee"+suffix).setAttribute("cy",knee.y);
+$("pedal"+suffix).setAttribute("d",`M${foot.x-6} ${foot.y+2}H${foot.x+6}`);
+$("foot"+suffix).setAttribute("d",`M${foot.x-4} ${foot.y}L${foot.x+7} ${foot.y}`);
+return foot;
+}
+
+function drawActors(){
+transform($("vehicle"),537,state.y,state.pitch*DEG);
+for(let i=0;i<4;i++){
+ const p=state.poses[i];transform(tierNodes[i],p.x,p.y,p.a*DEG);
+ const top=worldPoint(i,0,-lengths[i]*.64);
+ transform($("tierLabels").children[i],top.x+111,top.y);
+}
+const t=state.t;
+$("fan1").setAttribute("transform",`rotate(${t*1800})`);
+$("fan2").setAttribute("transform",`rotate(${t*1900})`);
+const flameScale=.92+Math.sin(t*47)*.075;
+$("flame1").setAttribute("transform",`translate(-138 60) scale(${flameScale} ${1+.08*Math.sin(t*31)}) translate(138 -60)`);
+$("flame2").setAttribute("transform",`translate(-160 22) scale(${1+.1*Math.sin(t*41)} 1) translate(160 -22)`);
+$("featherA").setAttribute("d",`M48-79Q-1 ${-148+Math.sin(t*5)*10} -64 ${-108+Math.sin(t*5-1)*13}Q-78-94-100 ${-112+Math.sin(t*5-2)*9}`);
+$("featherB").setAttribute("d",`M62-79Q33 ${-153+Math.sin(t*5+.5)*11} -31 ${-137+Math.sin(t*5-.5)*14}Q-69-123-82 ${-139+Math.sin(t*5-1.5)*11}`);
+const cycle=state.crank;
+$("wheelL").setAttribute("transform",`rotate(${cycle*DEG})`);
+$("wheelR").setAttribute("transform",`rotate(${cycle*DEG})`);
+const front=leg(cycle,true),back=leg(cycle+Math.PI,false);
+$("crank").setAttribute("d",`M${front.x} ${front.y}L${back.x} ${back.y}`);
+const wobble=clamp(state.baseA.x*.012,-3,3)+Math.sin(t*9)*Math.min(2,Math.abs(state.railV)*.035);
+$("pouch").setAttribute("d",`M30-105L74-108Q57 ${-77+wobble} 31-84Q24-93 30-105Z`);
+const lean=clamp((state.q[1]-state.q[0])*70,-4,4);
+$("bearFrontLegs").setAttribute("d",`M-37-42Q${-46+lean}-23-42-6M33-42Q${26+lean}-22 30-6`);
+$("bearRearLegs").setAttribute("d",`M-47-48Q${-54-lean}-20-53-3M30-46Q${37-lean}-21 40-3`);
+const p=state.screwPhase;
+let lift;
+if(p<.32)lift=11*(1-p/.32);
+else if(p<.74)lift=0;
+else lift=11*(p-.74)/.26;
+$("driver").setAttribute("transform",`translate(0 ${-lift})`);
+$("emperorArm").setAttribute("d",`M20-61Q29 ${-62-lift} 36 ${-66-lift}`);
+const sway=clamp(state.qd[2]*-13-state.baseA.x*.015,-18,18)+Math.sin(t*5)*1.3;
+Array.from($("beads").children).forEach((g,i)=>{
+ const x=-32+i*6.3;
+ g.setAttribute("transform",`rotate(${sway+Math.sin(t*7+i*.6)*1.2} ${x} -97)`);
+});
+$("gearA").setAttribute("transform",`rotate(${t*(state.rage?170:85)})`);
+$("gearB").setAttribute("transform",`rotate(${-t*(state.rage?170:85)})`);
+$("featherFan").setAttribute("transform",`rotate(${Math.sin(t*2.6)*10} -28 -36)`);
+$("hologram").setAttribute("transform",`rotate(${t*27})`);
+const scan=state.chipPhase;
+const lx=34+38*scan,ly=-29+Math.sin(scan*TAU*4)*4;
+$("laser").setAttribute("d",`M44-43L${lx} ${ly}`);
+$("laser").setAttribute("opacity",.65+.35*Math.sin(t*61)**2);
+$("laserSpot").setAttribute("cx",lx);$("laserSpot").setAttribute("cy",ly);
+const b=state.poses[0],com=state.com;
+$("comLine").setAttribute("d",`M${b.x} ${b.y}L${com.x} ${com.y}`);
+$("verticalLine").setAttribute("d",`M${b.x} ${b.y}V${b.y-220}`);
+$("comDot").setAttribute("cx",com.x);$("comDot").setAttribute("cy",com.y);
+}
+
+function drawBackground(){
+const t=state.t;
+Array.from($("streams").children).forEach((n,i)=>{
+ const x=((i*193-t*(70+i%5*17))%1640+1640)%1640-100;
+ const y=60+(i*137)%650;
+ transform(n,x,y);
+});
+Array.from($("mountains").children).forEach((n,i)=>{
+ const shift=(t*(8+i*7))%1440;
+ n.setAttribute("transform",`translate(${-shift} ${-i*14})`);
+});
+Array.from($("cloudSea").children).forEach((n,i)=>{
+ const x=((i*197-t*(20+i%3*15))%1840+1840)%1840-200;
+ const y=702+(i*47)%140,s=.6+(i%4)*.34;
+ n.setAttribute("transform",`translate(${x} ${y}) scale(${s} ${s*.5})`);
+});
+clouds.forEach(c=>{
+ transform(c.node,c.x,c.y);
+ c.node.querySelector(".lightning").setAttribute("opacity",.35+.65*Math.sin(t*9+c.y)**8);
+});
+}
+
+function draw(){
+drawBackground();
+if(!state.dead){
+ drawActors();
+ const now=performance.now(),inv=svg.getScreenCTM().inverse();
+ document.querySelectorAll("[data-piece]").forEach(piece=>{
+  const m=inv.multiply(piece.getScreenCTM()),box=piece.getBBox();
+  const center=new DOMPoint(box.x+box.width/2,box.y+box.height/2).matrixTransform(m);
+  pieceHistory.set(piece,{x:center.x,y:center.y,a:Math.atan2(m.b,m.a),time:now});
+ });
+ $("mode").classList.toggle("rage",state.rage);
+ $("mode").textContent=state.rage?"大秦狂暴加班 · 速率 ×2 / 单次得分 ×3":"正常生产 · 将支点移向倾倒方向";
+}
+$("altitude").textContent=Math.round(8600+(628-state.y)*10);
+$("production").textContent=state.score;
+$("counts").textContent=`${state.screws} / ${state.chips}`;
+const a=state.angle;
+$("angle").textContent=(a>=0?"+":"")+a.toFixed(1)+"°";
+$("angle").style.color=Math.abs(a)>45?"#ff8978":Math.abs(a)>20?"#f1cd78":"#a2e3c8";
+$("needle").setAttribute("transform",`rotate(${clamp(a,-90,90)})`);
+$("wind").textContent=`风速 ${(Math.abs(state.wind)*13).toFixed(1)} m/s`;
+const strength=Number(turb.value);
+$("warning").textContent=strength===0?"无乱流 · 仍需主动平衡":strength<40?"轻度乱流":strength<70?"中度乱流 · 注意修正":"强乱流 · 高危飞行";
+$("warning").style.color=strength>65?"#ff9b79":"#87d9c0";
+}
+
+function frame(now){
+if(document.hidden){lastTime=now;requestAnimationFrame(frame);return;}
+const elapsed=Math.min((now-lastTime)/1000,.1);lastTime=now;
+accumulator+=elapsed;
+let steps=0;
+while(accumulator>=H&&steps<12){tick(H);accumulator-=H;steps++;}
+draw();renderTime=now;
+requestAnimationFrame(frame);
+}
+const gameKeys=new Set(["KeyW","KeyS","KeyA","KeyD","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"]);
+window.addEventListener("keydown",e=>{
+ if(!gameKeys.has(e.code))return;
+ const tag=document.activeElement?.tagName;
+ if(tag==="INPUT")return;
+ if(tag==="BUTTON"&&e.code==="Space")return;
+ e.preventDefault();keys.add(e.code);
+});
+window.addEventListener("keyup",e=>{
+ if(gameKeys.has(e.code)){keys.delete(e.code);if(document.activeElement?.tagName!=="INPUT")e.preventDefault();}
+});
+window.addEventListener("blur",()=>keys.clear());
+document.addEventListener("visibilitychange",()=>{keys.clear();lastTime=performance.now();accumulator=0;});
+document.querySelectorAll("[data-key]").forEach(button=>{
+ const code=button.dataset.key;
+ button.addEventListener("pointerdown",e=>{
+  e.preventDefault();button.setPointerCapture(e.pointerId);keys.add(code);
+ });
+ ["pointerup","pointercancel","lostpointercapture"].forEach(name=>button.addEventListener(name,()=>keys.delete(code)));
+});
+turb.addEventListener("input",()=>{$("turbOut").textContent=turb.value+"%";});
+gravity.addEventListener("input",()=>{$("gravOut").textContent=(Number(gravity.value)/100).toFixed(2)+"×";});
+$("reset").addEventListener("click",()=>{reset();$("reset").blur();});
+$("restart").addEventListener("click",()=>{reset();$("restart").blur();});
+reset();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

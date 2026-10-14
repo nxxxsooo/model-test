@@ -1,6 +1,7 @@
 // 静态封面来自对应原始作品的 1200×800 浏览器截图；不是重新绘制的示意图。
 // 没有封面的新样例仍可直接运行。题库、样例与原始作品的数据契约不变。
 window.SAMPLE_PREVIEWS = {
+  "s-five-gpt-6-astra-fast-medium": "assets/previews/s-five-gpt-6-astra-fast-medium.webp",
   "s-five-gemini-4-argon-high": "assets/previews/s-five-gemini-4-argon-high.webp",
   "s-tri-longcat-2-5-preview": "assets/previews/s-tri-longcat-2-5-preview.webp",
   "s-tri-gemini-4-argon-high": "assets/previews/s-tri-gemini-4-argon-high.webp",
