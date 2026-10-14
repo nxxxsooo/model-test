@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <title>作品 · 降智测试题集</title>
+  <link rel="icon" href="favicon.svg">
+  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="work.css">
+</head>
+<body class="work-page">
+  <header class="work-header">
+    <a id="work-back" class="work-back" href="./#/" aria-label="返回题目，查看其他样例">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h15"/></svg>
+      <span>返回题目</span>
+    </a>
+    <div class="work-identity"><h1 id="work-model">作品查看</h1><p id="work-meta" class="meta">降智测试题集</p></div>
+    <button id="prompt-open" class="btn secondary" type="button" aria-haspopup="dialog" disabled>查看提示词</button>
+  </header>
+  <main id="work-stage" class="work-stage" aria-label="原始作品">
+    <div id="work-status" class="work-status" role="status">正在载入作品…</div>
+    <noscript><p class="work-status">请启用 JavaScript 查看作品，或<a href="./#/">返回题目集</a>。</p></noscript>
+  </main>
+  <dialog id="prompt-dialog" class="prompt-dialog" aria-labelledby="prompt-title" aria-describedby="prompt-context">
+    <div class="prompt-heading"><h2 id="prompt-title">原始提示词</h2><button id="prompt-close" class="text-button" type="button" autofocus>关闭<span class="escape-hint" aria-hidden="true"> Esc</span></button></div>
+    <p id="prompt-context" class="meta"></p>
+    <pre id="work-prompt" tabindex="0"></pre>
+    <div class="prompt-footer"><a id="prompt-related" class="text-link" href="./#/">查看同题其他样例</a><button id="prompt-copy" class="btn" type="button">复制提示词</button></div>
+    <p id="copy-status" class="copy-status meta" role="status" aria-live="polite"></p>
+  </dialog>
+  <script src="data/tests.js"></script>
+  <script src="data/samples.js"></script>
+  <script src="work.js"></script>
+</body>
+</html>

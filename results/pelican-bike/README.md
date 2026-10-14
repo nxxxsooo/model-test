@@ -4,6 +4,7 @@
 
 | 目录 | 模型 / 来源 | 文件 |
 |---|---|---|
+| `gemini-4-argon-high/` | Gemini 4 Argon High（Gemini Web） | `index.html` |
 | `gemini-3.8-flash/` | Gemini 3.8 Flash (High)（Antigravity 会话） | `index.html` |
 | `muse-spark/` | Muse Spark（本会话） | `pelican-bike.html` |
 | `mimo-2.5/` | mimo 2.5（原 `Tuning/pelican-bike.html`） | `pelican-bike.html` |

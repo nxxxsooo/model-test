@@ -185,7 +185,7 @@
   }
   function workActions(s) {
     return '<div class="sample-actions"><button type="button" class="btn secondary" data-run aria-pressed="false" aria-label="运行 ' +
-      esc(s.model) + ' 的作品">▷ 运行作品</button><a href="' + esc(s.src) +
+      esc(s.model) + ' 的作品">▷ 运行作品</button><a href="work.html?sample=' + encodeURIComponent(s.id) +
       '" target="_blank" rel="noopener">完整作品 ↗</a></div>';
   }
   function sampleHtml(s) {
@@ -286,7 +286,7 @@
       stopPreview(work, true);
       toast("预览未能载入，请重试或打开完整作品");
     });
-    frame.src = s.src;
+    frame.src = s.src + "?raw=1";
     box.appendChild(frame);
     scalePreview(box);
     button.textContent = "□ 停止预览";

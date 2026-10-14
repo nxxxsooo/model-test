@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/results/:test/:model/:file(.*\\.html)",
+      "destination": "/work.html?src=results/:test/:model/:file",
+      "permanent": false,
+      "missing": [{ "type": "query", "key": "raw" }]
+    },
+    {
+      "source": "/results/:test/:model/",
+      "destination": "/work.html?src=results/:test/:model/index.html",
+      "permanent": false,
+      "missing": [{ "type": "query", "key": "raw" }]
+    }
+  ]
+}

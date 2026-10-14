@@ -35,6 +35,8 @@
 index.html          单页入口（题目索引、详情、投稿和原生对比弹窗）
 app.css             Swiss Minimalist 样式与响应式布局
 app.js              hash 路由、渲染、复制、按需运行与对比
+work.html/css/js     单作品查看页：返回题目、模型来源、提示词浮层与复制
+vercel.json         旧作品直链跳转；raw=1 保留原始作品访问
 data/config.js      站点常量
 data/tests.js       题库：提示词、看什么、常见崩法、来源
 data/samples.js     样例索引：模型、渠道、日期、产出路径、提交者观察
@@ -50,6 +52,8 @@ results/<题目>/<模型>/   作品文件本体
 
 本地预览：在仓库内运行 `python3 -m http.server 8777`，打开 `http://localhost:8777`。主要入口为 `#/`、`#/t/<题目ID>`、`#submit`；保留 `#tests` 锚点。
 
+分享单作品使用 `work.html?sample=<样例ID>`。作品在独立沙盒中运行，顶部可返回所属题目查看其他样例，或打开原始提示词并复制；浮层支持 Escape 关闭。Vercel 上原有 `results/<题目>/<模型>/<文件>.html` 链接自动跳转到查看页，iframe 使用 `?raw=1` 访问原文件，避免重复导航。普通本地静态服务器不执行 Vercel 跳转规则，可直接打开 `work.html?sample=<样例ID>` 验证查看页。
+
 ## 加一道新题
 
 在 `data/tests.js` 追加一项，并把题目选项同步到 `.github/ISSUE_TEMPLATE/sample.yml` 的说明里。题目需要：
@@ -58,6 +62,10 @@ results/<题目>/<模型>/   作品文件本体
 - 「可以看什么」：具体到部位和行为，不写「效果好不好」
 - 「常见的崩法」：见过的具体崩坏形态
 - 来源链接
+
+## 视频交付文件
+
+- [《西游大秦高空重工：2D动态SVG奇观》MP4](deliverables/trilogy-token-saving/gemini-4-argon-high/xiyou-daqin-argon-high-20s.mp4)：2026-10-14 导出，约 20 秒，1920×1080、30fps、H.264、静音，约 11 MB。镜头为全景 → 鹈鹕蹬车 → 秦始皇 5x 打螺丝 → 全景；已生成，未代发社交平台。来源为 [Gemini 4 Argon High 原始作品](results/trilogy-token-saving/gemini-4-argon-high/index.html)。
 
 ## 限制
 

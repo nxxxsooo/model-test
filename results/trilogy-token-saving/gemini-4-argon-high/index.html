@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>齐天号×大秦重工 — 高空机翼打螺丝奇观 (2D SVG Animation)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --speed: 1;
+      --play-state: running;
+    }
+
+    body {
+      font-family: 'Noto Sans SC', sans-serif;
+      background: #070b19;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .font-comic {
+      font-family: 'ZCOOL KuaiLe', 'Noto Sans SC', cursive, sans-serif;
+    }
+
+    /* High altitude cloud & wind animations controlled by --speed */
+    @keyframes moveLeftFast {
+      0% { transform: translateX(1400px); }
+      100% { transform: translateX(-600px); }
+    }
+
+    @keyframes moveLeftSlow {
+      0% { transform: translateX(1400px); }
+      100% { transform: translateX(-800px); }
+    }
+
+    @keyframes windStreak {
+      0% { transform: translateX(1500px) scaleX(1); opacity: 0; }
+      15% { opacity: 0.75; }
+      85% { opacity: 0.75; }
+      100% { transform: translateX(-700px) scaleX(1.3); opacity: 0; }
+    }
+
+    @keyframes planeHover {
+      0%, 100% { transform: translateY(0px) rotate(-0.4deg); }
+      50% { transform: translateY(-9px) rotate(0.5deg); }
+    }
+
+    @keyframes jetFlamePulse {
+      0%, 100% { transform: scaleX(1) scaleY(1); opacity: 0.92; }
+      50% { transform: scaleX(1.28) scaleY(1.08); opacity: 1; }
+    }
+
+    @keyframes wukongBlink {
+      0%, 92%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.08); }
+    }
+
+    @keyframes bearBlink {
+      0%, 88%, 100% { transform: scaleY(1); }
+      92% { transform: scaleY(0.1); }
+    }
+
+    @keyframes crownBeadSway {
+      0%, 100% { transform: rotate(14deg); }
+      50% { transform: rotate(28deg); }
+    }
+
+    @keyframes capeFlutter {
+      0%, 100% { transform: skewY(-2deg) scaleX(1); }
+      50% { transform: skewY(4deg) scaleX(1.06); }
+    }
+
+    @keyframes sparkPop {
+      0% { transform: scale(0.2) rotate(0deg); opacity: 1; }
+      70% { transform: scale(1.35) rotate(35deg); opacity: 0.95; }
+      100% { transform: scale(1.7) rotate(60deg); opacity: 0; }
+    }
+
+    .anim-cloud-slow {
+      animation: moveLeftSlow calc(26s / var(--speed)) linear infinite;
+      animation-play-state: var(--play-state);
+    }
+    .anim-cloud-mid {
+      animation: moveLeftFast calc(14s / var(--speed)) linear infinite;
+      animation-play-state: var(--play-state);
+    }
+    .anim-cloud-fast {
+      animation: moveLeftFast calc(7.5s / var(--speed)) linear infinite;
+      animation-play-state: var(--play-state);
+    }
+    .anim-wind {
+      animation: windStreak calc(1.6s / var(--speed)) linear infinite;
+      animation-play-state: var(--play-state);
+    }
+    .anim-plane {
+      animation: planeHover calc(3.2s / var(--speed)) ease-in-out infinite;
+      animation-play-state: var(--play-state);
+      transform-origin: 650px 580px;
+    }
+    .anim-flame {
+      animation: jetFlamePulse calc(0.14s / var(--speed)) ease-in-out infinite;
+      animation-play-state: var(--play-state);
+    }
+    .anim-wukong-eye {
+      animation: wukongBlink 3.6s infinite;
+      animation-play-state: var(--play-state);
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    .anim-bear-eye {
+      animation: bearBlink 4.5s infinite;
+      animation-play-state: var(--play-state);
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    .anim-beads {
+      animation: crownBeadSway calc(0.28s / var(--speed)) ease-in-out infinite;
+      animation-play-state: var(--play-state);
+      transform-box: fill-box;
+      transform-origin: top center;
+    }
+    .anim-cape {
+      animation: capeFlutter calc(0.35s / var(--speed)) ease-in-out infinite;
+      animation-play-state: var(--play-state);
+      transform-box: fill-box;
+      transform-origin: left center;
+    }
+
+    /* Berserk 5x visual overdrive glow */
+    .berserk-glow {
+      filter: drop-shadow(0 0 14px rgba(251, 191, 36, 0.85));
+    }
+
+    /* Smooth camera viewport transition */
+    #cameraGroup {
+      transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+  </style>
+</head>
+
+<body class="w-screen h-screen flex flex-col justify-between relative overflow-hidden bg-slate-950 text-white">
+
+  <!-- Top Telemetry & Story Header HUD -->
+  <header class="z-20 w-full px-3 sm:px-6 pt-3 pb-2 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+    <div class="flex items-center gap-3 bg-slate-900/80 backdrop-blur-md border border-amber-500/40 rounded-2xl px-4 py-2 shadow-xl pointer-events-auto">
+      <div class="w-3 h-3 rounded-full bg-amber-400 animate-ping"></div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold tracking-widest uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30">筋斗云航空 × 大秦重工</span>
+          <span id="modeBadge" class="text-xs font-bold px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-400/30">1x 标准巡航</span>
+        </div>
+        <h1 class="text-sm sm:text-base font-black tracking-wide text-slate-100 mt-0.5">
+          悟空开飞机 · 鹈鹕踩单车 · 翅托北极熊 · 始皇打螺丝
+        </h1>
+      </div>
+    </div>
+
+    <!-- Real-time Telemetry Counters -->
+    <div class="flex items-center gap-2 sm:gap-3 bg-slate-900/80 backdrop-blur-md border border-slate-700/80 rounded-2xl px-3.5 py-2 shadow-xl pointer-events-auto text-xs">
+      <div class="px-2 border-r border-slate-700/80">
+        <div class="text-slate-400 text-[10px]">空速 / 高度</div>
+        <div class="font-mono font-bold text-sky-300"><span id="hudSpeed">880</span> km/h · 12,000m</div>
+      </div>
+      <div class="px-2 border-r border-slate-700/80">
+        <div class="text-slate-400 text-[10px]">鹈鹕踏频</div>
+        <div class="font-mono font-bold text-emerald-300"><span id="hudRpm">90</span> RPM</div>
+      </div>
+      <div class="px-2">
+        <div class="text-amber-300/90 text-[10px] font-semibold">始皇累计打螺丝</div>
+        <div class="font-mono font-black text-amber-400 text-sm"><span id="hudBolts">1,024</span> 颗</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main 2D Animated SVG Stage -->
+  <main class="absolute inset-0 w-full h-full flex items-center justify-center z-10">
+    <svg id="sceneSvg" viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" class="w-full h-full">
+      <defs>
+        <!-- Sky Background Gradient -->
+        <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#0c2461" />
+          <stop offset="32%" stop-color="#1e5799" />
+          <stop offset="68%" stop-color="#38ada9" />
+          <stop offset="100%" stop-color="#82ccdd" />
+        </linearGradient>
+
+        <!-- Berserk Sky Overlay -->
+        <linearGradient id="berserkSkyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#450a0a" stop-opacity="0.55" />
+          <stop offset="50%" stop-color="#78350f" stop-opacity="0.35" />
+          <stop offset="100%" stop-color="#b45309" stop-opacity="0.2" />
+        </linearGradient>
+
+        <!-- Aircraft Fuselage Metallic Gradient -->
+        <linearGradient id="fuselageGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" />
+          <stop offset="45%" stop-color="#f1f5f9" />
+          <stop offset="72%" stop-color="#cbd5e1" />
+          <stop offset="100%" stop-color="#64748b" />
+        </linearGradient>
+
+        <!-- Aircraft Wing Metallic Surface -->
+        <linearGradient id="wingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f8fafc" />
+          <stop offset="40%" stop-color="#e2e8f0" />
+          <stop offset="80%" stop-color="#94a3b8" />
+          <stop offset="100%" stop-color="#475569" />
+        </linearGradient>
+
+        <!-- Gold Trim Gradient -->
+        <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#fef08a" />
+          <stop offset="35%" stop-color="#facc15" />
+          <stop offset="70%" stop-color="#ca8a04" />
+          <stop offset="100%" stop-color="#854d0e" />
+        </linearGradient>
+
+        <!-- Cockpit Glass Canopy Gradient -->
+        <linearGradient id="canopyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.65" />
+          <stop offset="35%" stop-color="#38bdf8" stop-opacity="0.22" />
+          <stop offset="85%" stop-color="#0284c7" stop-opacity="0.35" />
+          <stop offset="100%" stop-color="#0369a1" stop-opacity="0.55" />
+        </linearGradient>
+
+        <!-- Jet Exhaust Afterburner Gradient -->
+        <linearGradient id="jetFlameGrad" x1="0%" y1="50%" x2="100%" y2="50%">
+          <stop offset="0%" stop-color="#ffffff" />
+          <stop offset="20%" stop-color="#38bdf8" />
+          <stop offset="50%" stop-color="#f59e0b" />
+          <stop offset="85%" stop-color="#ef4444" stop-opacity="0.7" />
+          <stop offset="100%" stop-color="#ef4444" stop-opacity="0" />
+        </linearGradient>
+
+        <!-- Pelican Throat Pouch Gradient -->
+        <linearGradient id="pouchGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#fde047" />
+          <stop offset="50%" stop-color="#fb923c" />
+          <stop offset="100%" stop-color="#ea580c" />
+        </linearGradient>
+
+        <!-- Polar Bear Fur Shading -->
+        <linearGradient id="bearFurGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" />
+          <stop offset="65%" stop-color="#f1f5f9" />
+          <stop offset="100%" stop-color="#cbd5e1" />
+        </linearGradient>
+
+        <!-- Qin Imperial Robe Black-Gold Gradient -->
+        <linearGradient id="qinRobeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#27272a" />
+          <stop offset="55%" stop-color="#18181b" />
+          <stop offset="100%" stop-color="#09090b" />
+        </linearGradient>
+
+        <!-- Glow Filter for Sparks & Thrusters -->
+        <filter id="glowFilter" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="4" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+
+        <!-- Soft Drop Shadow for Layered Depth -->
+        <filter id="dropShadow" x="-15%" y="-15%" width="130%" height="130%">
+          <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.38" />
+        </filter>
+
+        <!-- Reusable Cloud Symbol -->
+        <g id="fluffyCloud">
+          <path d="M 40 60 Q 10 60 10 40 Q 10 20 35 20 Q 45 -5 75 5 Q 105 -10 130 15 Q 160 10 170 35 Q 195 35 190 55 Q 190 65 165 65 Z" fill="#ffffff" opacity="0.88" />
+          <path d="M 45 60 Q 25 60 25 45 Q 50 30 95 40 Q 140 30 175 50 Q 180 62 160 64 Z" fill="#e2e8f0" opacity="0.65" />
+        </g>
+      </defs>
+
+      <g id="cameraGroup">
+        <!-- 1. SKY BACKGROUND & SUN GLOW -->
+        <rect x="0" y="0" width="1400" height="900" fill="url(#skyGrad)" />
+        <rect id="berserkSkyOverlay" x="0" y="0" width="1400" height="900" fill="url(#berserkSkyGrad)" opacity="0" class="transition-opacity duration-500" />
+
+        <!-- Distant Sun & Atmospheric Rings -->
+        <g transform="translate(210, 145)">
+          <circle cx="0" cy="0" r="140" fill="#fef9c3" opacity="0.12" />
+          <circle cx="0" cy="0" r="90" fill="#fef08a" opacity="0.22" />
+          <circle cx="0" cy="0" r="52" fill="#fffbeb" opacity="0.9" filter="url(#glowFilter)" />
+        </g>
+
+        <!-- Far Parallax Clouds -->
+        <g opacity="0.45">
+          <g class="anim-cloud-slow" style="animation-delay: -2s;">
+            <use href="#fluffyCloud" x="0" y="90" transform="scale(1.3)" />
+          </g>
+          <g class="anim-cloud-slow" style="animation-delay: -11s;">
+            <use href="#fluffyCloud" x="0" y="210" transform="scale(0.95)" />
+          </g>
+          <g class="anim-cloud-slow" style="animation-delay: -19s;">
+            <use href="#fluffyCloud" x="0" y="65" transform="scale(1.6)" />
+          </g>
+        </g>
+
+        <!-- Mid Parallax Clouds -->
+        <g opacity="0.72">
+          <g class="anim-cloud-mid" style="animation-delay: -1s;">
+            <use href="#fluffyCloud" x="0" y="340" transform="scale(1.4)" />
+          </g>
+          <g class="anim-cloud-mid" style="animation-delay: -6.5s;">
+            <use href="#fluffyCloud" x="0" y="130" transform="scale(1.15)" />
+          </g>
+          <g class="anim-cloud-mid" style="animation-delay: -10.5s;">
+            <use href="#fluffyCloud" x="0" y="450" transform="scale(1.5)" />
+          </g>
+        </g>
+
+        <!-- High-Altitude Wind Shear & Speed Lines (Behind Plane) -->
+        <g id="windLinesBack">
+          <rect x="0" y="120" width="240" height="3" rx="1.5" fill="#ffffff" class="anim-wind" style="animation-delay: -0.1s;" />
+          <rect x="0" y="230" width="380" height="2" rx="1" fill="#e0f2fe" class="anim-wind" style="animation-delay: -0.7s;" />
+          <rect x="0" y="310" width="290" height="4" rx="2" fill="#ffffff" class="anim-wind" style="animation-delay: -1.2s;" />
+          <rect x="0" y="490" width="420" height="2.5" rx="1.2" fill="#bae6fd" class="anim-wind" style="animation-delay: -0.4s;" />
+          <rect x="0" y="680" width="350" height="3" rx="1.5" fill="#ffffff" class="anim-wind" style="animation-delay: -0.9s;" />
+          <rect x="0" y="790" width="260" height="2" rx="1" fill="#e0f2fe" class="anim-wind" style="animation-delay: -1.4s;" />
+        </g>
+
+        <!-- ============================================================== -->
+        <!-- MASTER STACKED ASSEMBLY (All 4 Layers Flying Together)         -->
+        <!-- ============================================================== -->
+        <g id="masterStack" class="anim-plane">
+
+          <!-- ------------------------------------------------------------ -->
+          <!-- LAYER 1: SUN WUKONG PILOTING THE HEAVY JUMBO AIRCRAFT        -->
+          <!-- ------------------------------------------------------------ -->
+          <g id="aircraftLayer" filter="url(#dropShadow)">
+
+            <!-- Far Side Starboard Wingtip (Behind Fuselage) -->
+            <path d="M 480 650 L 790 540 L 845 540 L 620 660 Z" fill="#94a3b8" stroke="#475569" stroke-width="2.5" />
+            <!-- Far Side Winglet -->
+            <path d="M 790 540 L 825 495 L 850 495 L 845 540 Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="2" />
+
+            <!-- Rear Vertical Stabilizer (Tail Fin with Jindouyun Golden Cloud Emblem) -->
+            <path d="M 1030 615 L 1245 430 L 1315 430 L 1230 635 Z" fill="url(#goldGrad)" stroke="#78350f" stroke-width="3" />
+            <path d="M 1075 610 L 1250 455 L 1285 455 L 1210 625 Z" fill="#b91c1c" />
+            <!-- Golden Cloud Emblem on Tail -->
+            <path d="M 1190 535 Q 1175 535 1178 520 Q 1185 505 1202 512 Q 1218 498 1230 515 Q 1245 520 1235 535 Z" fill="url(#goldGrad)" stroke="#fef08a" stroke-width="1.5" />
+
+            <!-- Rear Horizontal Stabilizer -->
+            <path d="M 1130 645 L 1335 615 L 1355 630 L 1180 665 Z" fill="#cbd5e1" stroke="#334155" stroke-width="2.5" />
+
+            <!-- Main Heavy Aircraft Fuselage (Facing Left, Flying Left) -->
+            <path d="M 95 695
+                     C 95 640, 175 595, 290 582
+                     L 485 582
+                     C 560 582, 620 595, 700 598
+                     L 1150 598
+                     C 1235 598, 1295 620, 1320 642
+                     C 1295 685, 1200 725, 1080 732
+                     L 270 732
+                     C 160 732, 95 718, 95 695 Z"
+                  fill="url(#fuselageGrad)" stroke="#334155" stroke-width="3.5" />
+
+            <!-- Red & Gold Imperial Cheatline Stripes Along Fuselage -->
+            <path d="M 105 685 Q 190 675 320 675 L 1265 655 L 1250 672 L 320 692 Q 185 692 102 698 Z" fill="#dc2626" />
+            <path d="M 118 698 Q 195 690 320 690 L 1245 672 L 1235 682 L 320 700 Q 190 700 115 705 Z" fill="url(#goldGrad)" />
+
+            <!-- Nose Radome Cone -->
+            <path d="M 95 695 C 95 662, 130 632, 175 614 C 182 652, 182 695, 172 726 C 125 722, 95 710, 95 695 Z" fill="#1e293b" stroke="#0f172a" stroke-width="2.5" />
+            <path d="M 108 682 Q 130 655 162 638" stroke="#64748b" stroke-width="3" fill="none" stroke-linecap="round" />
+
+            <!-- Passenger Windows & Airline Livery Title -->
+            <g transform="translate(550, 628)">
+              <text x="0" y="0" fill="#0f172a" font-size="21" font-weight="900" letter-spacing="4">筋斗云航空 · 齐天号</text>
+              <text x="275" y="-2" fill="#b45309" font-size="13" font-weight="700" letter-spacing="1">JINDOUYUN HEAVY B-9999</text>
+              <!-- Row of Cabin Windows -->
+              <g transform="translate(0, 12)">
+                <rect x="0" y="0" width="16" height="22" rx="8" fill="#0ea5e9" stroke="#334155" stroke-width="2" />
+                <rect x="34" y="0" width="16" height="22" rx="8" fill="#0ea5e9" stroke="#334155" stroke-width="2" />
+                <rect x="68" y="0" width="16" height="22" rx="8" fill="#0ea5e9" stroke="#334155" stroke-width="2" />
+                <rect x="102" y="0" width="16" height="22" rx="8" fill="#0ea5e9" stroke="#334155" stroke-width="2" />
+                <rect x="136" y="0" width="16" height="22" rx="8" fill="#0ea5e9" stroke="#334155" stroke-width="2" />
+                <rect x="170" y="0" width="16" height="22" rx="8" fill="#0ea5e9" stroke="#334155" stroke-width="2" />
+                <rect x="204" y="0" width="16" height="22" rx="8" fill="#0ea5e9" stroke="#334155" stroke-width="2" />
+                <rect x="238" y="0" width="16" height="22" rx="8" fill="#0ea5e9" stroke="#334155" stroke-width="2" />
+                <rect x="272" y="0" width="16" height="22" rx="8" fill="#0ea5e9" stroke="#334155" stroke-width="2" />
+                <rect x="306" y="0" width="16" height="22" rx="8" fill="#0ea5e9" stroke="#334155" stroke-width="2" />
+                <rect x="340" y="0" width="16" height="22" rx="8" fill="#0ea5e9" stroke="#334155" stroke-width="2" />
+                <rect x="374" y="0" width="16" height="22" rx="8" fill="#0ea5e9" stroke="#334155" stroke-width="2" />
+              </g>
+            </g>
+
+            <!-- ========================================================== -->
+            <!-- PANORAMIC TRANSPARENT COCKPIT & PILOT SUN WUKONG           -->
+            <!-- ========================================================== -->
+            <g id="cockpitAndWukong">
+              <!-- Cockpit Interior Backwall & Instrument Glare Shield -->
+              <path d="M 210 605 C 235 510, 445 505, 495 595 Z" fill="#0f172a" stroke="#334155" stroke-width="3" />
+              <!-- Glowing Avionics Radar Screen -->
+              <rect x="225" y="568" width="42" height="28" rx="4" fill="#064e3b" stroke="#10b981" stroke-width="1.5" />
+              <circle cx="246" cy="582" r="9" fill="none" stroke="#34d399" stroke-width="1.2" />
+              <line x1="246" y1="582" x2="253" y2="576" stroke="#6ee7b7" stroke-width="1.5" />
+
+              <!-- Captain Seat -->
+              <path d="M 385 538 L 405 538 L 395 602 L 365 602 Z" fill="#b91c1c" stroke="#450a0a" stroke-width="2" />
+
+              <!-- RUYI JINGU BANG (如意金箍棒) Leaning Inside Cockpit -->
+              <g transform="translate(432, 558) rotate(22)">
+                <rect x="-7" y="-58" width="14" height="115" rx="5" fill="#dc2626" stroke="#450a0a" stroke-width="2" />
+                <!-- Top Golden Hoop with Cloud Pattern -->
+                <rect x="-8.5" y="-58" width="17" height="26" rx="3" fill="url(#goldGrad)" stroke="#78350f" stroke-width="1.5" />
+                <line x1="-8" y1="-44" x2="8" y2="-44" stroke="#78350f" stroke-width="1.5" />
+                <!-- Bottom Golden Hoop -->
+                <rect x="-8.5" y="30" width="17" height="26" rx="3" fill="url(#goldGrad)" stroke="#78350f" stroke-width="1.5" />
+                <!-- Inscription hint -->
+                <line x1="0" y1="-22" x2="0" y2="20" stroke="#fef08a" stroke-width="2" stroke-dasharray="3 3" />
+              </g>
+
+              <!-- SUN WUKONG (孙悟空 - 齐天大圣机长) -->
+              <g id="wukongPilot" transform="translate(335, 560)">
+                <!-- Flowing Red Scarf / Cloak -->
+                <path d="M 25 10 Q 75 2 95 16 Q 75 30 30 26 Z" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.8" class="anim-cape" />
+
+                <!-- Golden Chainmail & Tiger-Skin Flight Suit Torso -->
+                <path d="M -18 42 L -8 5 L 32 5 L 40 42 Z" fill="url(#goldGrad)" stroke="#78350f" stroke-width="2" />
+                <path d="M -6 12 L 28 12 L 32 38 L -10 38 Z" fill="#f59e0b" />
+                <!-- Tiger Stripe Accent Collar -->
+                <path d="M -8 5 Q 12 18 32 5" fill="none" stroke="#1e293b" stroke-width="3" />
+
+                <!-- Wukong's Long Pheasant Tail Feathers (雉鸡翎 - Dynamic JS/CSS Sway) -->
+                <g id="wukongFeathers" transform="translate(12, -32)">
+                  <path id="feather1" d="M 0 0 Q 65 -38 135 -18" fill="none" stroke="#facc15" stroke-width="4.5" stroke-linecap="round" />
+                  <path id="feather1Tip" d="M 60 -24 Q 100 -34 135 -18" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" />
+                  <path id="feather2" d="M 0 2 Q 72 -18 142 4" fill="none" stroke="#eab308" stroke-width="4" stroke-linecap="round" />
+                  <path id="feather2Tip" d="M 70 -8 Q 110 -5 142 4" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
+                </g>
+
+                <!-- Monkey Head & Fur -->
+                <circle cx="8" cy="-12" r="22" fill="#d97706" stroke="#78350f" stroke-width="2" />
+                <!-- Monkey Ear -->
+                <ellipse cx="26" cy="-10" rx="6" ry="9" fill="#f59e0b" stroke="#78350f" stroke-width="1.8" />
+                <!-- Iconic Peach-Shaped Face Patch -->
+                <path d="M -13 -14 C -13 -26, 2 -28, 6 -18 C 10 -28, 20 -22, 16 -10 C 19 -2, 8 7, -4 5 C -14 3, -15 -6, -13 -14 Z"
+                      fill="#fed7aa" stroke="#9a3412" stroke-width="1.5" />
+
+                <!-- Fiery Golden Eyes (火眼金睛 with Blinking Animation) -->
+                <g class="anim-wukong-eye">
+                  <!-- Red eye shadow contour -->
+                  <ellipse cx="-3" cy="-14" rx="7.5" ry="6" fill="#dc2626" />
+                  <!-- Golden glowing iris -->
+                  <ellipse cx="-4" cy="-14" rx="5.5" ry="4.5" fill="#fef08a" stroke="#ca8a04" stroke-width="1" />
+                  <!-- Fierce pupil looking forward -->
+                  <circle cx="-6" cy="-14" r="2.2" fill="#7f1d1d" />
+                  <circle cx="-7" cy="-15.5" r="1" fill="#ffffff" />
+                </g>
+
+                <!-- Confident Monkey Grin & Nose -->
+                <ellipse cx="-10" cy="-8" rx="2.5" ry="1.8" fill="#9a3412" />
+                <path d="M -9 -2 Q -1 3 8 -3" fill="none" stroke="#7c2d12" stroke-width="2.2" stroke-linecap="round" />
+                <!-- Aviation Headset Mic -->
+                <circle cx="24" cy="-10" r="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+                <path d="M 22 -8 Q 6 0 -6 -2" fill="none" stroke="#1e293b" stroke-width="2" />
+                <circle cx="-6" cy="-2" r="2.5" fill="#38bdf8" />
+
+                <!-- Phoenix-Wing Purple Gold Crown (凤翅紫金冠) & Golden Fillet (紧箍咒金箍) -->
+                <path d="M -14 -24 L 8 -46 L 26 -24 Z" fill="#9333ea" stroke="url(#goldGrad)" stroke-width="2.5" />
+                <!-- Phoenix Wings on Crown -->
+                <path d="M -10 -26 Q -25 -42 -18 -50 Q -4 -38 2 -32" fill="url(#goldGrad)" stroke="#78350f" stroke-width="1.5" />
+                <path d="M 18 -26 Q 36 -42 30 -50 Q 16 -38 10 -32" fill="url(#goldGrad)" stroke="#78350f" stroke-width="1.5" />
+                <!-- Iconic Golden Fillet (金箍) with Center Curl -->
+                <path d="M -15 -23 Q 6 -19 28 -23" fill="none" stroke="url(#goldGrad)" stroke-width="5.5" stroke-linecap="round" />
+                <path d="M -10 -23 C -14 -31, -2 -31, -5 -23" fill="none" stroke="#fef08a" stroke-width="2.5" />
+
+                <!-- Aircraft Control Yoke (操纵杆) & Wukong's Arm Steering -->
+                <g id="wukongYokeGroup">
+                  <!-- Yoke Column -->
+                  <line x1="-42" y1="42" x2="-34" y2="12" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+                  <!-- Yoke Handle -->
+                  <path d="M -42 6 C -42 0, -26 0, -26 6 L -26 16 L -42 16 Z" fill="#1e293b" stroke="#94a3b8" stroke-width="2" />
+                  <!-- Wukong's Arm & Furred Hand Gripping Yoke -->
+                  <path d="M 4 18 L -16 24 L -32 13" fill="none" stroke="#d97706" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M 4 18 L -16 24 L -24 18" fill="none" stroke="#dc2626" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" />
+                  <!-- Golden Bracer -->
+                  <rect x="-28" y="13" width="9" height="6" rx="2" transform="rotate(-30 -24 16)" fill="url(#goldGrad)" stroke="#78350f" stroke-width="1" />
+                  <circle cx="-33" cy="12" r="5.5" fill="#fed7aa" stroke="#9a3412" stroke-width="1.5" />
+                </g>
+              </g>
+
+              <!-- Transparent Panoramic Bubble Canopy Glass (Over Wukong) -->
+              <path d="M 192 606 C 222 492, 462 488, 512 596 C 420 604, 280 606, 192 606 Z"
+                    fill="url(#canopyGrad)" stroke="#e2e8f0" stroke-width="4" />
+              <!-- Canopy Structural Arch Frames -->
+              <path d="M 285 524 L 270 604" stroke="#cbd5e1" stroke-width="3.5" />
+              <path d="M 418 518 L 430 600" stroke="#cbd5e1" stroke-width="3.5" />
+              <!-- Specular Glass Highlight -->
+              <path d="M 225 580 C 255 512, 395 506, 465 545" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.65" />
+            </g>
+
+            <!-- ========================================================== -->
+            <!-- BROAD MAIN AIRCRAFT WING & TWIN TURBOFAN JET ENGINES       -->
+            <!-- ========================================================== -->
+            <g id="mainWingAndEngines">
+              <!-- Swept-Back Wide Main Wing (Acts as the Cycling Track for the Pelican!) -->
+              <path d="M 430 650
+                       L 940 650
+                       L 1110 732
+                       L 540 732 Z"
+                    fill="url(#wingGrad)" stroke="#334155" stroke-width="3.5" stroke-linejoin="round" />
+
+              <!-- Wing Leading Edge Silver Slat -->
+              <path d="M 430 650 L 540 732 L 570 732 L 458 650 Z" fill="#f8fafc" stroke="#475569" stroke-width="2" />
+
+              <!-- Wing Panel Lines, Rivets & "NO STEP (鹈鹕除外)" Cycling Lane -->
+              <line x1="465" y1="662" x2="965" y2="662" stroke="#f59e0b" stroke-width="3" stroke-dasharray="16 10" />
+              <line x1="505" y1="692" x2="1025" y2="692" stroke="#64748b" stroke-width="1.8" stroke-dasharray="25 8" />
+              <text x="815" y="682" fill="#475569" font-size="11" font-weight="900" transform="skewX(35)">自行车专用巡航道 · BICYCLE LANE</text>
+
+              <!-- Foreground Winglet (Port Side Tip) -->
+              <path d="M 1065 732 L 1110 732 L 1152 672 L 1118 672 Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="2.5" />
+              <!-- Wingtip Strobe Light -->
+              <circle cx="1135" cy="672" r="5" fill="#fef08a" filter="url(#glowFilter)" />
+
+              <!-- -------------------------------------------------------- -->
+              <!-- TURBOFAN ENGINE #1 (Inboard Main Engine + Jet Flame)     -->
+              <!-- -------------------------------------------------------- -->
+              <g id="engine1" transform="translate(600, 745)">
+                <!-- Engine Pylon Strut -->
+                <path d="M 20 -35 L 75 -35 L 60 0 L 5 0 Z" fill="#64748b" stroke="#1e293b" stroke-width="2.5" />
+
+                <!-- Roaring Afterburner Jet Exhaust Plume -->
+                <g transform="translate(95, 18)">
+                  <g class="anim-flame" style="transform-origin: left center;">
+                    <path d="M 0 -24 Q 140 -36 290 0 Q 140 36 0 24 Z" fill="url(#jetFlameGrad)" filter="url(#glowFilter)" />
+                    <path d="M 0 -12 Q 95 -18 190 0 Q 95 18 0 12 Z" fill="#e0f2fe" opacity="0.9" />
+                    <!-- Mach Shock Diamonds -->
+                    <polygon points="35,0 55,-9 75,0 55,9" fill="#ffffff" opacity="0.85" />
+                    <polygon points="90,0 110,-7 130,0 110,7" fill="#fef08a" opacity="0.75" />
+                    <polygon points="145,0 162,-5 180,0 162,5" fill="#fde047" opacity="0.65" />
+                  </g>
+                </g>
+
+                <!-- Rear Exhaust Nozzle Cone -->
+                <path d="M 75 -12 L 112 -4 L 112 40 L 75 48 Z" fill="#334155" stroke="#0f172a" stroke-width="2.5" />
+
+                <!-- Main Nacelle Cowling -->
+                <path d="M -25 -22 C 15 -26, 65 -24, 85 -16 L 85 52 C 65 60, 15 62, -25 58 Z"
+                      fill="url(#fuselageGrad)" stroke="#1e293b" stroke-width="3" />
+                <path d="M -10 10 L 82 10 L 82 22 L -10 22 Z" fill="#dc2626" />
+                <text x="8" y="42" fill="#334155" font-size="10" font-weight="900">三昧真火涡扇-IX</text>
+
+                <!-- Front Intake Cowling & High-Speed Spinning Turbine Fan -->
+                <ellipse cx="-25" cy="18" rx="18" ry="40" fill="#cbd5e1" stroke="#1e293b" stroke-width="3" />
+                <ellipse cx="-27" cy="18" rx="14" ry="34" fill="#0f172a" />
+
+                <!-- Spinning Fan Blades (Rotated via JS for exact 2D perspective) -->
+                <g transform="translate(-27, 18) scale(0.42, 1)">
+                  <g class="js-turbine-fan">
+                    <line x1="-32" y1="0" x2="32" y2="0" stroke="#94a3b8" stroke-width="5" />
+                    <line x1="0" y1="-32" x2="0" y2="32" stroke="#94a3b8" stroke-width="5" />
+                    <line x1="-23" y1="-23" x2="23" y2="23" stroke="#cbd5e1" stroke-width="5" />
+                    <line x1="-23" y1="23" x2="23" y2="-23" stroke="#cbd5e1" stroke-width="5" />
+                    <circle cx="0" cy="0" r="10" fill="#f59e0b" stroke="#fff" stroke-width="2" />
+                    <!-- Spiral spinner mark -->
+                    <path d="M 0 0 Q 6 -6 0 -9" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
+                  </g>
+                </g>
+              </g>
+
+              <!-- -------------------------------------------------------- -->
+              <!-- TURBOFAN ENGINE #2 (Outboard Engine + Jet Flame)         -->
+              <!-- -------------------------------------------------------- -->
+              <g id="engine2" transform="translate(835, 762) scale(0.86)">
+                <path d="M 20 -35 L 75 -35 L 60 0 L 5 0 Z" fill="#64748b" stroke="#1e293b" stroke-width="2.5" />
+                <g transform="translate(95, 18)">
+                  <g class="anim-flame" style="transform-origin: left center; animation-delay: -0.07s;">
+                    <path d="M 0 -24 Q 140 -36 280 0 Q 140 36 0 24 Z" fill="url(#jetFlameGrad)" filter="url(#glowFilter)" />
+                    <path d="M 0 -12 Q 90 -18 180 0 Q 90 18 0 12 Z" fill="#e0f2fe" opacity="0.9" />
+                    <polygon points="40,0 60,-8 80,0 60,8" fill="#ffffff" opacity="0.85" />
+                    <polygon points="95,0 115,-6 135,0 115,6" fill="#fef08a" opacity="0.75" />
+                  </g>
+                </g>
+                <path d="M 75 -12 L 112 -4 L 112 40 L 75 48 Z" fill="#334155" stroke="#0f172a" stroke-width="2.5" />
+                <path d="M -25 -22 C 15 -26, 65 -24, 85 -16 L 85 52 C 65 60, 15 62, -25 58 Z"
+                      fill="url(#fuselageGrad)" stroke="#1e293b" stroke-width="3" />
+                <path d="M -10 10 L 82 10 L 82 22 L -10 22 Z" fill="#dc2626" />
+                <ellipse cx="-25" cy="18" rx="18" ry="40" fill="#cbd5e1" stroke="#1e293b" stroke-width="3" />
+                <ellipse cx="-27" cy="18" rx="14" ry="34" fill="#0f172a" />
+                <g transform="translate(-27, 18) scale(0.42, 1)">
+                  <g class="js-turbine-fan">
+                    <line x1="-32" y1="0" x2="32" y2="0" stroke="#94a3b8" stroke-width="5" />
+                    <line x1="0" y1="-32" x2="0" y2="32" stroke="#94a3b8" stroke-width="5" />
+                    <line x1="-23" y1="-23" x2="23" y2="23" stroke="#cbd5e1" stroke-width="5" />
+                    <line x1="-23" y1="23" x2="23" y2="-23" stroke="#cbd5e1" stroke-width="5" />
+                    <circle cx="0" cy="0" r="10" fill="#f59e0b" stroke="#fff" stroke-width="2" />
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+
+          <!-- ============================================================ -->
+          <!-- LAYER 2: PELICAN RIDING A BICYCLE ON THE AIRCRAFT WING       -->
+          <!-- ============================================================ -->
+          <g id="bicycleAndPelicanLayer" filter="url(#dropShadow)">
+            <!-- Ground contact shadow on wing surface -->
+            <ellipse cx="695" cy="665" rx="135" ry="10" fill="#0f172a" opacity="0.32" />
+
+            <!-- ---------------------------------------------------------- -->
+            <!-- DETAILED BICYCLE (Wheels, Spokes, Chain, Diamond Frame)    -->
+            <!-- ---------------------------------------------------------- -->
+            <g id="bicycleGroup">
+              <!-- FRONT WHEEL (Center: 615, 622, Radius: 40) -->
+              <g transform="translate(615, 622)">
+                <g class="js-bike-wheel">
+                  <!-- Tire & Rim -->
+                  <circle cx="0" cy="0" r="40" fill="none" stroke="#1e293b" stroke-width="8" />
+                  <circle cx="0" cy="0" r="34" fill="none" stroke="#e2e8f0" stroke-width="3" />
+                  <!-- 12 Intersecting Metallic Spokes -->
+                  <line x1="-34" y1="0" x2="34" y2="0" stroke="#cbd5e1" stroke-width="1.6" />
+                  <line x1="0" y1="-34" x2="0" y2="34" stroke="#cbd5e1" stroke-width="1.6" />
+                  <line x1="-24" y1="-24" x2="24" y2="24" stroke="#cbd5e1" stroke-width="1.6" />
+                  <line x1="-24" y1="24" x2="24" y2="-24" stroke="#cbd5e1" stroke-width="1.6" />
+                  <line x1="-30" y1="-16" x2="30" y2="16" stroke="#94a3b8" stroke-width="1.4" />
+                  <line x1="-16" y1="30" x2="16" y2="-30" stroke="#94a3b8" stroke-width="1.4" />
+                  <!-- Valve & Reflector -->
+                  <rect x="18" y="-5" width="8" height="5" rx="2" fill="#f59e0b" />
+                  <circle cx="0" cy="0" r="7" fill="#475569" stroke="#f8fafc" stroke-width="2" />
+                </g>
+              </g>
+
+              <!-- REAR WHEEL (Center: 775, 622, Radius: 40) -->
+              <g transform="translate(775, 622)">
+                <g class="js-bike-wheel">
+                  <circle cx="0" cy="0" r="40" fill="none" stroke="#1e293b" stroke-width="8" />
+                  <circle cx="0" cy="0" r="34" fill="none" stroke="#e2e8f0" stroke-width="3" />
+                  <line x1="-34" y1="0" x2="34" y2="0" stroke="#cbd5e1" stroke-width="1.6" />
+                  <line x1="0" y1="-34" x2="0" y2="34" stroke="#cbd5e1" stroke-width="1.6" />
+                  <line x1="-24" y1="-24" x2="24" y2="24" stroke="#cbd5e1" stroke-width="1.6" />
+                  <line x1="-24" y1="24" x2="24" y2="-24" stroke="#cbd5e1" stroke-width="1.6" />
+                  <line x1="-30" y1="-16" x2="30" y2="16" stroke="#94a3b8" stroke-width="1.4" />
+                  <line x1="-16" y1="30" x2="16" y2="-30" stroke="#94a3b8" stroke-width="1.4" />
+                  <rect x="-26" y="2" width="8" height="5" rx="2" fill="#f59e0b" />
+                  <!-- Rear Cassette Sprocket -->
+                  <circle cx="0" cy="0" r="11" fill="#64748b" stroke="#1e293b" stroke-width="2" />
+                </g>
+              </g>
+
+              <!-- PELICAN FAR LEG (Right Leg - Behind Bicycle Frame, Driven by JS IK) -->
+              <g id="pelicanRightLeg">
+                <!-- Thigh & Shin -->
+                <polyline id="rightLegBones" points="722,522 680,575 695,622" fill="none" stroke="#ea580c" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+                <!-- Webbed Foot on Far Pedal -->
+                <path id="rightFootWeb" d="M 680 622 L 705 622 L 698 614 Z" fill="#ea580c" stroke="#9a3412" stroke-width="1.5" />
+                <!-- Far Crank Arm & Pedal -->
+                <line id="rightCrankArm" x1="695" y1="622" x2="695" y2="600" stroke="#64748b" stroke-width="5" stroke-linecap="round" />
+                <rect id="rightPedalRect" x="683" y="596" width="24" height="7" rx="3" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5" />
+              </g>
+
+              <!-- BICYCLE DRIVE CHAIN (Animated Dashoffset) -->
+              <path id="bikeChain" d="M 695 604 L 775 612 A 10 10 0 0 1 775 632 L 695 640 A 18 18 0 0 1 695 604 Z"
+                    fill="none" stroke="#334155" stroke-width="3.5" stroke-dasharray="6 4" />
+
+              <!-- BICYCLE DIAMOND FRAME (Glossy Crimson & Chrome) -->
+              <g stroke-linecap="round" stroke-linejoin="round">
+                <!-- Rear Chainstay & Seatstay -->
+                <line x1="695" y1="622" x2="775" y2="622" stroke="#dc2626" stroke-width="6" />
+                <line x1="726" y1="544" x2="775" y2="622" stroke="#dc2626" stroke-width="5.5" />
+                <!-- Seat Tube -->
+                <line x1="695" y1="622" x2="732" y2="528" stroke="#ef4444" stroke-width="7" />
+                <!-- Down Tube & Top Tube -->
+                <line x1="695" y1="622" x2="640" y2="555" stroke="#ef4444" stroke-width="7.5" />
+                <line x1="642" y1="548" x2="728" y2="544" stroke="#ef4444" stroke-width="6.5" />
+                <!-- Front Fork & Head Tube -->
+                <line x1="615" y1="622" x2="642" y2="542" stroke="#e2e8f0" stroke-width="6.5" />
+                <line x1="642" y1="542" x2="636" y2="518" stroke="#94a3b8" stroke-width="6" />
+                <!-- Classic Curved Handlebars & Bell -->
+                <path d="M 636 518 Q 630 502 652 504" fill="none" stroke="#e2e8f0" stroke-width="5.5" />
+                <rect x="646" y="499" width="16" height="9" rx="4.5" fill="#1e293b" />
+                <circle cx="634" cy="505" r="5" fill="#facc15" stroke="#78350f" stroke-width="1.5" />
+                <!-- Leather Bicycle Saddle -->
+                <path d="M 708 526 Q 730 522 748 528 Q 742 538 715 534 Z" fill="#451a03" stroke="#1e293b" stroke-width="2" />
+              </g>
+
+              <!-- Chainring & Crankset Gear -->
+              <g transform="translate(695, 622)">
+                <g class="js-bike-wheel">
+                  <circle cx="0" cy="0" r="18" fill="#cbd5e1" stroke="#334155" stroke-width="3" stroke-dasharray="5 3" />
+                  <circle cx="0" cy="0" r="12" fill="none" stroke="#475569" stroke-width="2.5" />
+                  <line x1="-15" y1="0" x2="15" y2="0" stroke="#475569" stroke-width="3" />
+                  <line x1="0" y1="-15" x2="0" y2="15" stroke="#475569" stroke-width="3" />
+                </g>
+              </g>
+            </g>
+
+            <!-- ---------------------------------------------------------- -->
+            <!-- PELICAN CHARACTER (Body, Giant Pouch, Outstretched Wings)  -->
+            <!-- ---------------------------------------------------------- -->
+            <g id="pelicanGroup">
+              <!-- Pelican Tail Feathers Resting Over Saddle -->
+              <path d="M 745 508 L 788 498 L 780 512 L 792 518 L 748 522 Z" fill="#f8fafc" stroke="#475569" stroke-width="2" />
+
+              <!-- Plump White Pelican Body -->
+              <ellipse cx="722" cy="492" rx="38" ry="44" transform="rotate(-12 722 492)" fill="#ffffff" stroke="#475569" stroke-width="2.5" />
+              <path d="M 695 505 Q 722 528 750 508" fill="none" stroke="#cbd5e1" stroke-width="3" />
+
+              <!-- PELICAN WIDE OUTSTRETCHED WINGS (Forming a Sturdy Tray for the Polar Bear!) -->
+              <g id="pelicanWingsPlatform">
+                <!-- Left Wing (Extending Forward/Left) -->
+                <path d="M 705 462
+                         C 645 452, 560 448, 495 454
+                         C 492 468, 505 478, 522 476
+                         C 528 486, 545 490, 560 484
+                         C 572 494, 592 495, 608 488
+                         C 640 498, 680 495, 710 486 Z"
+                      fill="#f8fafc" stroke="#334155" stroke-width="2.8" />
+                <!-- Black Primary Flight Feather Tips (Left Wing) -->
+                <path d="M 495 454 C 492 468, 505 478, 522 476 C 528 486, 545 490, 560 484 L 555 462 Z" fill="#1e293b" />
+
+                <!-- Right Wing (Extending Backward/Right) -->
+                <path d="M 725 462
+                         C 785 452, 870 448, 935 454
+                         C 938 468, 925 478, 908 476
+                         C 902 486, 885 490, 870 484
+                         C 858 494, 838 495, 822 488
+                         C 790 498, 750 495, 720 486 Z"
+                      fill="#f8fafc" stroke="#334155" stroke-width="2.8" />
+                <!-- Black Primary Flight Feather Tips (Right Wing) -->
+                <path d="M 935 454 C 938 468, 925 478, 908 476 C 902 486, 885 490, 870 484 L 875 462 Z" fill="#1e293b" />
+
+                <!-- Golden Reinforced Support Pad on Pelican's Shoulders/Wings -->
+                <rect x="555" y="450" width="320" height="12" rx="6" fill="url(#goldGrad)" stroke="#78350f" stroke-width="2" />
+                <line x1="575" y1="456" x2="855" y2="456" stroke="#78350f" stroke-width="1.5" stroke-dasharray="10 6" />
+              </g>
+
+              <!-- Pelican Curved Neck & Head (Looking Left into the Wind) -->
+              <path d="M 692 475 C 675 455, 672 422, 682 398 C 696 396, 706 410, 704 432 C 702 452, 708 465, 715 476 Z"
+                    fill="#ffffff" stroke="#475569" stroke-width="2.5" />
+
+              <!-- Pelican Head & Fluffy Crest -->
+              <circle cx="682" cy="396" r="19" fill="#ffffff" stroke="#475569" stroke-width="2.5" />
+              <path d="M 695 382 L 712 375 L 704 388 L 715 392 L 698 396" fill="#f1f5f9" stroke="#475569" stroke-width="1.8" />
+
+              <!-- Aviator Goggles on Pelican's Forehead -->
+              <path d="M 665 386 Q 682 380 700 388" fill="none" stroke="#451a03" stroke-width="4" />
+              <ellipse cx="674" cy="384" rx="7" ry="5" fill="#38bdf8" stroke="#ca8a04" stroke-width="2" />
+
+              <!-- Pelican Expressive Eye & Hardworking Sweat Drop -->
+              <circle cx="674" cy="396" r="5" fill="#fef08a" stroke="#1e293b" stroke-width="1.5" />
+              <circle cx="672" cy="396" r="2.2" fill="#0f172a" />
+              <!-- Effort Sweat Drop -->
+              <path d="M 692 402 Q 696 410 692 414 Q 688 410 692 402 Z" fill="#38bdf8" />
+
+              <!-- ICONIC GIANT YELLOW/ORANGE PELICAN BEAK & THROAT POUCH -->
+              <g id="pelicanBeakGroup">
+                <!-- Giant Elastic Throat Pouch (喉囊) -->
+                <path id="pelicanPouchPath"
+                      d="M 562 404
+                         C 572 456, 635 468, 676 426
+                         L 668 402 Z"
+                      fill="url(#pouchGrad)" stroke="#c2410c" stroke-width="2.5" />
+                <!-- Throat Pouch Texture Striations -->
+                <path d="M 585 415 Q 615 442 662 420" fill="none" stroke="#ea580c" stroke-width="1.5" opacity="0.6" />
+                <path d="M 605 428 Q 630 448 668 426" fill="none" stroke="#ea580c" stroke-width="1.5" opacity="0.6" />
+                <!-- Long Upper Beak Mandible with Red Hook Tip -->
+                <path d="M 668 392 L 558 398 C 550 399, 548 408, 556 410 L 562 405 L 672 405 Z"
+                      fill="#fde047" stroke="#b45309" stroke-width="2" />
+                <path d="M 558 398 C 550 399, 548 408, 556 410 L 565 404 Z" fill="#ef4444" />
+              </g>
+            </g>
+
+            <!-- PELICAN NEAR LEG (Left Leg - In Front of Bicycle Frame, Driven by JS IK) -->
+            <g id="pelicanLeftLeg">
+              <!-- Near Crank Arm -->
+              <line id="leftCrankArm" x1="695" y1="622" x2="695" y2="644" stroke="#e2e8f0" stroke-width="5.5" stroke-linecap="round" />
+              <!-- Thigh & Shin (Webbed Orange Pelican Leg) -->
+              <polyline id="leftLegBones" points="722,520 685,578 695,644" fill="none" stroke="#f97316" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" />
+              <!-- Fluffy White Feather Cuff at Pelican Hip -->
+              <ellipse cx="722" cy="520" rx="14" ry="12" fill="#ffffff" stroke="#64748b" stroke-width="2" />
+              <!-- Webbed Orange Foot on Near Pedal -->
+              <path id="leftFootWeb" d="M 678 644 L 706 644 L 698 635 Z" fill="#fb923c" stroke="#9a3412" stroke-width="1.8" />
+              <rect id="leftPedalRect" x="683" y="641" width="24" height="7" rx="3" fill="#0f172a" stroke="#facc15" stroke-width="1.5" />
+            </g>
+          </g>
+
+          <!-- ============================================================ -->
+          <!-- LAYER 3 & 4: ROYAL POLAR BEAR & QIN SHI HUANG SCREWING BOLTS -->
+          <!-- ============================================================ -->
+          <g id="bearAndEmperorLayer" filter="url(#dropShadow)">
+
+            <!-- ---------------------------------------------------------- -->
+            <!-- LAYER 3: QIN SHI HUANG'S ROYAL POLAR BEAR (北极熊)         -->
+            <!-- ---------------------------------------------------------- -->
+            <g id="polarBearGroup">
+              <!-- Back/Far Legs Standing Firmly on Pelican's Wings -->
+              <path d="M 628 402 C 618 425, 616 445, 622 454 L 652 454 C 655 438, 654 415, 650 402 Z"
+                    fill="#cbd5e1" stroke="#475569" stroke-width="2.5" />
+              <path d="M 772 398 C 768 422, 768 445, 774 454 L 806 454 C 810 435, 805 412, 798 398 Z"
+                    fill="#cbd5e1" stroke="#475569" stroke-width="2.5" />
+
+              <!-- Chubby, Muscular Polar Bear Torso & Rump -->
+              <path d="M 605 365
+                       C 605 315, 665 298, 745 302
+                       C 815 306, 855 335, 852 382
+                       C 850 422, 815 435, 765 432
+                       L 645 432
+                       C 612 430, 605 402, 605 365 Z"
+                    fill="url(#bearFurGrad)" stroke="#475569" stroke-width="3" />
+
+              <!-- Cute Round Polar Bear Tail -->
+              <circle cx="854" cy="362" r="14" fill="#ffffff" stroke="#475569" stroke-width="2.5" />
+
+              <!-- QIN DYNASTY ROYAL SADDLE & CARPET (黑金秦代回纹鞍具) -->
+              <g id="qinRoyalSaddle">
+                <!-- Imperial Black & Crimson Saddle Blanket -->
+                <path d="M 672 302
+                         Q 735 295 795 306
+                         L 808 396
+                         Q 738 412 662 394 Z"
+                      fill="#18181b" stroke="url(#goldGrad)" stroke-width="3.5" />
+                <path d="M 680 310 Q 735 304 788 314 L 798 386 Q 738 400 672 384 Z"
+                      fill="none" stroke="#dc2626" stroke-width="2.5" stroke-dasharray="8 4" />
+                <!-- Qin Fretwork Pattern (回纹) & Seal Character "秦" -->
+                <rect x="716" y="346" width="36" height="36" rx="4" fill="#7f1d1d" stroke="url(#goldGrad)" stroke-width="2" />
+                <text x="734" y="371" text-anchor="middle" fill="#fef08a" font-size="22" font-weight="900">秦</text>
+                <!-- Golden Tassels Hanging from Saddle -->
+                <line x1="668" y1="394" x2="674" y2="414" stroke="#ef4444" stroke-width="4" stroke-linecap="round" />
+                <line x1="700" y1="400" x2="706" y2="420" stroke="#facc15" stroke-width="4" stroke-linecap="round" />
+                <line x1="765" y1="400" x2="771" y2="420" stroke="#facc15" stroke-width="4" stroke-linecap="round" />
+                <line x1="802" y1="395" x2="808" y2="415" stroke="#ef4444" stroke-width="4" stroke-linecap="round" />
+              </g>
+
+              <!-- Foreground Muscular Bear Legs & Claws -->
+              <!-- Front Left Leg -->
+              <path d="M 642 385 C 632 412, 630 438, 635 454 L 672 454 C 676 435, 676 408, 672 385 Z"
+                    fill="#ffffff" stroke="#475569" stroke-width="2.8" />
+              <path d="M 632 454 Q 630 444 642 446 Q 652 444 662 446 L 672 454 Z" fill="#f1f5f9" stroke="#334155" stroke-width="2" />
+              <!-- Bear Claws -->
+              <line x1="636" y1="454" x2="633" y2="450" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round" />
+              <line x1="645" y1="454" x2="642" y2="450" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round" />
+              <line x1="654" y1="454" x2="651" y2="450" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round" />
+
+              <!-- Rear Left Leg -->
+              <path d="M 792 380 C 786 410, 785 438, 790 454 L 828 454 C 834 432, 830 402, 822 380 Z"
+                    fill="#ffffff" stroke="#475569" stroke-width="2.8" />
+              <line x1="792" y1="454" x2="789" y2="450" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round" />
+              <line x1="801" y1="454" x2="798" y2="450" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round" />
+
+              <!-- Polar Bear Head, Snout & Royal Bronze Chest Armor -->
+              <path d="M 605 345 Q 618 392 652 398" fill="none" stroke="url(#goldGrad)" stroke-width="8" stroke-linecap="round" />
+              <circle cx="624" cy="378" r="7" fill="#dc2626" stroke="url(#goldGrad)" stroke-width="2" />
+
+              <!-- Round Bear Ears -->
+              <circle cx="602" cy="306" r="12" fill="#e2e8f0" stroke="#475569" stroke-width="2.5" />
+              <circle cx="634" cy="304" r="13" fill="#ffffff" stroke="#475569" stroke-width="2.5" />
+              <circle cx="634" cy="304" r="6" fill="#fda4af" />
+
+              <!-- Polar Bear Head & Snout -->
+              <path d="M 556 346
+                       C 554 328, 575 312, 608 308
+                       C 638 304, 656 322, 654 350
+                       C 652 372, 628 380, 598 375
+                       C 572 372, 558 362, 556 346 Z"
+                    fill="#ffffff" stroke="#475569" stroke-width="2.8" />
+              <!-- Black Bear Nose & Calm Stoic Mouth -->
+              <ellipse cx="563" cy="340" rx="8" ry="6" fill="#0f172a" />
+              <ellipse cx="561" cy="338" rx="2.5" ry="1.5" fill="#ffffff" opacity="0.6" />
+              <path d="M 565 352 Q 578 358 590 352" fill="none" stroke="#334155" stroke-width="2.5" stroke-linecap="round" />
+              <!-- Bear Eye (Blinking) -->
+              <g class="anim-bear-eye">
+                <circle cx="598" cy="334" r="4.5" fill="#0f172a" />
+                <circle cx="596.5" cy="332.5" r="1.5" fill="#ffffff" />
+              </g>
+              <!-- Rosy Cheek -->
+              <ellipse cx="596" cy="346" rx="7" ry="4" fill="#fda4af" opacity="0.55" />
+            </g>
+
+            <!-- ---------------------------------------------------------- -->
+            <!-- LAYER 4: QIN SHI HUANG RIDING THE BEAR & SCREWING BOLTS    -->
+            <!-- ---------------------------------------------------------- -->
+            <g id="qinShiHuangGroup">
+
+              <!-- Mechanical Workbench Bracket Mounted on Bear's Harness -->
+              <path d="M 638 345 L 605 278 L 622 278 L 650 345 Z" fill="#475569" stroke="#1e293b" stroke-width="2.5" />
+              <circle cx="642" cy="340" r="5" fill="#facc15" stroke="#1e293b" stroke-width="1.5" />
+
+              <!-- Qin Shi Huang's Imperial Cloak Fluttering Behind -->
+              <path d="M 755 215 Q 845 205 885 245 Q 840 285 765 278 Z"
+                    fill="#991b1b" stroke="url(#goldGrad)" stroke-width="2.5" class="anim-cape" />
+
+              <!-- Qin Shi Huang's Leg & Imperial Boot in Stirrup -->
+              <path d="M 720 295 L 702 348 L 728 352 L 748 298 Z" fill="#18181b" stroke="url(#goldGrad)" stroke-width="2" />
+              <path d="M 688 352 C 685 344, 698 342, 725 345 L 725 358 L 690 358 Z" fill="#09090b" stroke="url(#goldGrad)" stroke-width="2" />
+              <!-- Golden Stirrup -->
+              <line x1="718" y1="305" x2="708" y2="355" stroke="url(#goldGrad)" stroke-width="2.5" />
+              <rect x="698" y="355" width="22" height="5" rx="2" fill="url(#goldGrad)" />
+
+              <!-- QIN IMPERIAL DRAGON ROBE TORSO (玄端黑金龙袍) -->
+              <path d="M 690 208
+                       L 762 208
+                       L 780 308
+                       L 682 308 Z"
+                    fill="url(#qinRobeGrad)" stroke="url(#goldGrad)" stroke-width="3" stroke-linejoin="round" />
+
+              <!-- Crimson & Gold Crossed Collar (交领右衽) -->
+              <path d="M 702 208 L 736 258 L 758 208" fill="none" stroke="#dc2626" stroke-width="9" stroke-linejoin="round" />
+              <path d="M 702 208 L 736 258 L 758 208" fill="none" stroke="url(#goldGrad)" stroke-width="3" stroke-linejoin="round" />
+
+              <!-- Golden Imperial Belt & Jade Pendant (玉佩) -->
+              <rect x="685" y="276" width="90" height="12" rx="4" fill="url(#goldGrad)" stroke="#78350f" stroke-width="1.5" />
+              <circle cx="725" cy="282" r="5" fill="#10b981" stroke="#fef08a" stroke-width="1.5" />
+              <!-- Embroidered Golden Dragon Crest on Chest -->
+              <path d="M 715 245 Q 728 232 742 246 Q 752 258 735 266" fill="none" stroke="url(#goldGrad)" stroke-width="2.5" stroke-linecap="round" />
+
+              <!-- QIN SHI HUANG HEAD, BEARD & MAJESTIC FOCUSED EXPRESSION -->
+              <g id="emperorHead" transform="translate(722, 178)">
+                <!-- Head Contour -->
+                <path d="M -22 -14 C -24 12, -14 28, 4 28 C 22 28, 26 12, 24 -14 Z"
+                      fill="#fde68a" stroke="#92400e" stroke-width="2" />
+                <!-- Ear -->
+                <ellipse cx="22" cy="2" rx="4.5" ry="8" fill="#fcd34d" stroke="#92400e" stroke-width="1.5" />
+
+                <!-- Fierce, Focused Sword Eyebrows (剑眉微蹙，专注打螺丝) -->
+                <path d="M -18 -5 L -2 -1" stroke="#09090b" stroke-width="3.5" stroke-linecap="round" />
+                <path d="M 4 -1 L 14 -6" stroke="#09090b" stroke-width="3" stroke-linecap="round" />
+
+                <!-- Narrow Sharp Imperial Eyes Staring Intently at the Bolts -->
+                <ellipse cx="-10" cy="3" rx="4.5" ry="2.5" fill="#ffffff" stroke="#09090b" stroke-width="1.5" />
+                <circle cx="-12" cy="3.5" r="2" fill="#09090b" />
+
+                <!-- Nose & Solemn Moustache + Long Imperial Beard -->
+                <path d="M -12 4 L -16 12 L -10 13" fill="none" stroke="#92400e" stroke-width="1.8" stroke-linecap="round" />
+                <!-- Moustache -->
+                <path d="M -16 17 Q -8 14 2 20" fill="none" stroke="#18181b" stroke-width="2.8" stroke-linecap="round" />
+                <!-- Flowing Three-Strand Beard (随风飘动的长髯) -->
+                <path d="M -14 24 Q -4 44 12 48 Q 4 34 -4 25 Z" fill="#18181b" />
+
+                <!-- ICONIC TWELVE-STRAND IMPERIAL MIAN CROWN (十二旒冕冠) -->
+                <!-- Crown Base Cap (冠武) -->
+                <path d="M -23 -12 L -19 -32 L 21 -32 L 25 -12 Z" fill="#18181b" stroke="url(#goldGrad)" stroke-width="2.5" />
+                <rect x="-24" y="-17" width="49" height="6" rx="2" fill="url(#goldGrad)" />
+                <!-- Jade Hairpin (玉笄) & Red Cord (朱紘) -->
+                <circle cx="27" cy="-22" r="3.5" fill="#fef08a" stroke="#78350f" stroke-width="1" />
+                <path d="M 18 -12 Q 16 18 -4 24" fill="none" stroke="#dc2626" stroke-width="2" />
+
+                <!-- Flat Imperial Mortarboard Top (延板 - Tilted slightly forward) -->
+                <polygon points="-44,-31 38,-37 46,-31 -36,-25" fill="#09090b" stroke="url(#goldGrad)" stroke-width="2.5" />
+
+                <!-- Front 6 Visible Jade Bead Tassels (前冕旒 - Swaying in the wind) -->
+                <g transform="translate(-38, -28)" class="anim-beads">
+                  <g transform="translate(0, 0)">
+                    <line x1="0" y1="0" x2="0" y2="24" stroke="#facc15" stroke-width="1.2" />
+                    <circle cx="0" cy="6" r="2" fill="#ef4444" />
+                    <circle cx="0" cy="12" r="2" fill="#f8fafc" />
+                    <circle cx="0" cy="18" r="2" fill="#10b981" />
+                    <circle cx="0" cy="24" r="2.2" fill="#facc15" />
+                  </g>
+                  <g transform="translate(5, 0.5)">
+                    <line x1="0" y1="0" x2="0" y2="24" stroke="#facc15" stroke-width="1.2" />
+                    <circle cx="0" cy="6" r="2" fill="#10b981" />
+                    <circle cx="0" cy="12" r="2" fill="#ef4444" />
+                    <circle cx="0" cy="18" r="2" fill="#f8fafc" />
+                    <circle cx="0" cy="24" r="2.2" fill="#facc15" />
+                  </g>
+                  <g transform="translate(10, 1)">
+                    <line x1="0" y1="0" x2="0" y2="24" stroke="#facc15" stroke-width="1.2" />
+                    <circle cx="0" cy="6" r="2" fill="#f8fafc" />
+                    <circle cx="0" cy="12" r="2" fill="#10b981" />
+                    <circle cx="0" cy="18" r="2" fill="#ef4444" />
+                    <circle cx="0" cy="24" r="2.2" fill="#facc15" />
+                  </g>
+                  <g transform="translate(15, 1.5)">
+                    <line x1="0" y1="0" x2="0" y2="24" stroke="#facc15" stroke-width="1.2" />
+                    <circle cx="0" cy="6" r="2" fill="#ef4444" />
+                    <circle cx="0" cy="12" r="2" fill="#facc15" />
+                    <circle cx="0" cy="18" r="2" fill="#10b981" />
+                    <circle cx="0" cy="24" r="2.2" fill="#f8fafc" />
+                  </g>
+                </g>
+
+                <!-- Rear Jade Bead Tassels (后冕旒 - Swaying at the back of the crown) -->
+                <g transform="translate(32, -33)" class="anim-beads">
+                  <g transform="translate(0, 0)">
+                    <line x1="0" y1="0" x2="0" y2="23" stroke="#facc15" stroke-width="1.2" />
+                    <circle cx="0" cy="6" r="2" fill="#ef4444" />
+                    <circle cx="0" cy="12" r="2" fill="#10b981" />
+                    <circle cx="0" cy="18" r="2" fill="#f8fafc" />
+                    <circle cx="0" cy="23" r="2.2" fill="#facc15" />
+                  </g>
+                  <g transform="translate(5, 0.5)">
+                    <line x1="0" y1="0" x2="0" y2="23" stroke="#facc15" stroke-width="1.2" />
+                    <circle cx="0" cy="6" r="2" fill="#f8fafc" />
+                    <circle cx="0" cy="12" r="2" fill="#ef4444" />
+                    <circle cx="0" cy="18" r="2" fill="#10b981" />
+                    <circle cx="0" cy="23" r="2.2" fill="#facc15" />
+                  </g>
+                  <g transform="translate(10, 1)">
+                    <line x1="0" y1="0" x2="0" y2="23" stroke="#facc15" stroke-width="1.2" />
+                    <circle cx="0" cy="6" r="2" fill="#10b981" />
+                    <circle cx="0" cy="12" r="2" fill="#facc15" />
+                    <circle cx="0" cy="18" r="2" fill="#ef4444" />
+                    <circle cx="0" cy="23" r="2.2" fill="#f8fafc" />
+                  </g>
+                </g>
+              </g>
+
+              <!-- ======================================================== -->
+              <!-- METAL WORKBENCH, HEX BOLTS & ELECTRIC SCREWDRIVER ACTION -->
+              <!-- ======================================================== -->
+              <g id="workstationAndArms">
+                <!-- Emperor's Left Arm Pressing Down Firmly on the Workpiece -->
+                <path d="M 702 222 L 655 256 L 622 258" fill="none" stroke="#18181b" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M 632 250 L 632 268" stroke="url(#goldGrad)" stroke-width="4" />
+                <!-- Left Hand Pressing Workpiece -->
+                <circle cx="614" cy="259" r="7" fill="#fde68a" stroke="#92400e" stroke-width="1.8" />
+
+                <!-- Heavy Metallic Assembly Line Plate (金属机械工件面板) -->
+                <g id="metalWorkpiece" transform="translate(540, 264)">
+                  <!-- Steel Chassis Body -->
+                  <rect x="0" y="0" width="128" height="22" rx="4" fill="#94a3b8" stroke="#1e293b" stroke-width="2.5" />
+                  <rect x="4" y="4" width="120" height="7" rx="2" fill="#e2e8f0" />
+                  <!-- Yellow/Black Industrial Hazard Stripe -->
+                  <line x1="8" y1="16" x2="120" y2="16" stroke="#facc15" stroke-width="4" stroke-dasharray="8 6" />
+
+                  <!-- Row of Hexagonal Bolts (六角螺丝) on the Panel -->
+                  <!-- Bolt #1 (Already Driven Tight - Left) -->
+                  <g transform="translate(22, -4)">
+                    <rect x="-5" y="0" width="10" height="4" fill="#475569" stroke="#0f172a" stroke-width="1.2" />
+                    <polygon points="-7,0 -3,-4 3,-4 7,0" fill="#cbd5e1" stroke="#0f172a" stroke-width="1.2" />
+                  </g>
+                  <!-- Bolt #2 (Already Driven Tight) -->
+                  <g transform="translate(46, -4)">
+                    <rect x="-5" y="0" width="10" height="4" fill="#475569" stroke="#0f172a" stroke-width="1.2" />
+                    <polygon points="-7,0 -3,-4 3,-4 7,0" fill="#cbd5e1" stroke="#0f172a" stroke-width="1.2" />
+                  </g>
+
+                  <!-- ACTIVE BOLT #3 (Currently Being Screwed Down by Qin Shi Huang!) -->
+                  <g id="activeBoltGroup" transform="translate(74, -14)">
+                    <!-- Threaded Screw Shaft with Spiral Grooves -->
+                    <rect id="activeBoltShaft" x="-3.5" y="4" width="7" height="12" fill="#64748b" stroke="#0f172a" stroke-width="1.2" />
+                    <line x1="-3.5" y1="7" x2="3.5" y2="9" stroke="#e2e8f0" stroke-width="1.2" />
+                    <line x1="-3.5" y1="11" x2="3.5" y2="13" stroke="#e2e8f0" stroke-width="1.2" />
+                    <!-- Hex Bolt Head -->
+                    <polygon points="-8,4 -4,-2 4,-2 8,4" fill="#f8fafc" stroke="#0f172a" stroke-width="1.5" />
+                    <line x1="-3" y1="-2" x2="-3" y2="4" stroke="#64748b" stroke-width="1.2" />
+                    <line x1="3" y1="-2" x2="3" y2="4" stroke="#64748b" stroke-width="1.2" />
+                  </g>
+
+                  <!-- Bolt #4 (Waiting to be Screwed - Raised High) -->
+                  <g transform="translate(102, -15)">
+                    <rect x="-3" y="4" width="6" height="12" fill="#64748b" stroke="#0f172a" stroke-width="1.2" />
+                    <line x1="-3" y1="7" x2="3" y2="9" stroke="#cbd5e1" stroke-width="1.2" />
+                    <line x1="-3" y1="11" x2="3" y2="13" stroke="#cbd5e1" stroke-width="1.2" />
+                    <polygon points="-7,4 -3,-1 3,-1 7,4" fill="#e2e8f0" stroke="#0f172a" stroke-width="1.2" />
+                  </g>
+                </g>
+
+                <!-- QIN SHI HUANG'S RIGHT ARM & HIGH-TORQUE ELECTRIC SCREWDRIVER -->
+                <g id="emperorRightArmAndTool">
+                  <!-- Wide Imperial Dragon Robe Sleeve (宽袖) -->
+                  <path id="emperorRightSleeve"
+                        d="M 738 224 Q 685 212 642 202 L 638 232 Q 685 245 735 248 Z"
+                        fill="#18181b" stroke="url(#goldGrad)" stroke-width="2.5" />
+                  <path d="M 642 202 L 638 232" stroke="#dc2626" stroke-width="5" stroke-linecap="round" />
+
+                  <!-- Electric Impact Screwdriver / Wrench (大秦重工电动螺丝刀) -->
+                  <g id="electricScrewdriver" transform="translate(614, 212)">
+                    <!-- Coiled Power Cord Connected to Saddle Battery -->
+                    <path d="M 22 -8 Q 45 -5 55 18 Q 65 35 78 28" fill="none" stroke="#1e293b" stroke-width="2.5" />
+                    <!-- Main Yellow/Black Industrial Power Tool Body -->
+                    <rect x="-16" y="-24" width="36" height="22" rx="6" fill="#facc15" stroke="#0f172a" stroke-width="2.2" />
+                    <rect x="-10" y="-20" width="18" height="14" rx="2" fill="#1e293b" />
+                    <line x1="-6" y1="-17" x2="-6" y2="-9" stroke="#facc15" stroke-width="2" />
+                    <line x1="-1" y1="-17" x2="-1" y2="-9" stroke="#facc15" stroke-width="2" />
+                    <line x1="4" y1="-17" x2="4" y2="-9" stroke="#facc15" stroke-width="2" />
+                    <!-- Ergonomic Grip Handle -->
+                    <path d="M 6 -2 L 16 -2 L 22 18 L 10 18 Z" fill="#ef4444" stroke="#0f172a" stroke-width="2" />
+                    <!-- Emperor's Hand Gripping the Trigger -->
+                    <circle cx="15" cy="6" r="7.5" fill="#fde68a" stroke="#92400e" stroke-width="1.8" />
+
+                    <!-- High-Speed Spinning Chuck & Hex Driver Shaft -->
+                    <rect x="-7" y="-2" width="14" height="10" rx="2" fill="#475569" stroke="#0f172a" stroke-width="1.8" />
+                    <rect x="-4" y="8" width="8" height="24" fill="#cbd5e1" stroke="#1e293b" stroke-width="1.8" />
+                    <!-- Spinning Helical Blur Lines on Bit -->
+                    <line id="toolBitBlur1" x1="-4" y1="13" x2="4" y2="17" stroke="#0ea5e9" stroke-width="2" />
+                    <line id="toolBitBlur2" x1="-4" y1="21" x2="4" y2="25" stroke="#0ea5e9" stroke-width="2" />
+                    <!-- Hex Socket Tip Engaging Bolt -->
+                    <rect x="-7" y="30" width="14" height="8" rx="1.5" fill="#334155" stroke="#0f172a" stroke-width="1.8" />
+                    <!-- High-Speed Rotational Aura Ring -->
+                    <ellipse id="toolSpinRing" cx="0" cy="24" rx="15" ry="4" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="8 6" />
+                  </g>
+                </g>
+
+                <!-- ====================================================== -->
+                <!-- BRIGHT YELLOW ELECTRIC SPARKS & "打螺丝!" COMIC FX     -->
+                <!-- ====================================================== -->
+                <g id="sparksAndComicFx" transform="translate(614, 252)" filter="url(#glowFilter)">
+                  <!-- Dynamic Electric Spark Rays (Animated by JS at high frequency) -->
+                  <g id="sparkBurstGroup">
+                    <polygon points="0,0 -28,-16 -12,-4 -34,6 -10,4 -22,22 -2,8" fill="#fef08a" stroke="#f59e0b" stroke-width="1" />
+                    <polygon points="0,0 26,-18 10,-5 35,4 12,5 24,20 4,7" fill="#fde047" stroke="#ea580c" stroke-width="1" />
+                    <line x1="-15" y1="-12" x2="-38" y2="-28" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
+                    <line x1="16" y1="-14" x2="36" y2="-30" stroke="#fef08a" stroke-width="2.5" stroke-linecap="round" />
+                    <line x1="-18" y1="10" x2="-42" y2="22" stroke="#fb923c" stroke-width="2.5" stroke-linecap="round" />
+                    <circle cx="-26" cy="-6" r="3" fill="#ffffff" />
+                    <circle cx="28" cy="-8" r="3.5" fill="#fef08a" />
+                    <circle cx="-18" cy="-22" r="2.5" fill="#f97316" />
+                  </g>
+
+                  <!-- Floating Dynamic Effect Texts ("打螺丝!", "滋滋滋!", "朕亲自拧!") -->
+                  <g id="floatingFxText1" transform="translate(-85, -45) rotate(-12)">
+                    <rect x="-42" y="-18" width="84" height="26" rx="8" fill="#dc2626" stroke="#fef08a" stroke-width="2" />
+                    <text x="0" y="0" text-anchor="middle" fill="#fef08a" font-size="16" font-weight="900" class="font-comic">疯狂打螺丝!</text>
+                  </g>
+
+                  <g id="floatingFxText2" transform="translate(-52, -82) rotate(6)">
+                    <text x="0" y="0" text-anchor="middle" fill="#ffffff" stroke="#d97706" stroke-width="3" paint-order="stroke" font-size="18" font-weight="900" class="font-comic">滋滋滋⚡+1</text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+
+        <!-- Foreground Fast Passing Cloud Wisps & Speed Lines (In Front of Everything for Depth) -->
+        <g id="foregroundCloudsAndWind" pointer-events="none">
+          <g class="anim-cloud-fast" style="animation-delay: -3.2s;" opacity="0.55">
+            <use href="#fluffyCloud" x="0" y="760" transform="scale(1.8)" />
+          </g>
+          <rect x="0" y="195" width="460" height="3.5" rx="1.75" fill="#ffffff" class="anim-wind" style="animation-delay: -0.25s;" />
+          <rect x="0" y="420" width="520" height="2.5" rx="1.25" fill="#fef08a" class="anim-wind" style="animation-delay: -0.85s;" />
+          <rect x="0" y="615" width="480" height="3.5" rx="1.75" fill="#ffffff" class="anim-wind" style="animation-delay: -1.15s;" />
+        </g>
+      </g>
+    </svg>
+  </main>
+
+  <!-- Bottom Interactive Control Panel -->
+  <footer class="z-20 w-full px-3 sm:px-6 pb-3 pt-2 flex flex-wrap items-center justify-center sm:justify-between gap-2 pointer-events-none">
+
+    <!-- Left: Speed & Play/Pause Controls -->
+    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 bg-slate-900/85 backdrop-blur-md border border-slate-700/80 rounded-2xl p-2 shadow-2xl pointer-events-auto">
+      <button id="btnPlayPause" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-black text-xs sm:text-sm transition-all shadow-md">
+        <span id="playPauseIcon">⏸</span>
+        <span id="playPauseLabel">暂停动画</span>
+      </button>
+
+      <div class="h-6 w-[1px] bg-slate-700 mx-1"></div>
+
+      <span class="text-xs text-slate-400 font-semibold px-1 hidden md:inline">打螺丝倍速:</span>
+
+      <button data-speed="1" class="speed-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all bg-amber-500 text-slate-950 shadow-md">
+        1x 巡航
+      </button>
+      <button data-speed="2" class="speed-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all bg-slate-800 hover:bg-slate-700 text-slate-200">
+        2x 加班冲刺
+      </button>
+      <button data-speed="5" class="speed-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-all bg-slate-800 hover:bg-red-900/70 text-amber-300 border border-amber-500/40">
+        🔥 5x 狂暴打螺丝
+      </button>
+
+      <div class="h-6 w-[1px] bg-slate-700 mx-1"></div>
+
+      <button id="btnSound" class="flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold text-xs transition-all" title="开启/关闭电批与涡扇音效">
+        <span id="soundIcon">🔇</span>
+        <span id="soundLabel" class="hidden sm:inline">音效: 关</span>
+      </button>
+    </div>
+
+    <!-- Right: Camera / Layer Inspection Presets -->
+    <div class="flex flex-wrap items-center gap-1.5 bg-slate-900/85 backdrop-blur-md border border-slate-700/80 rounded-2xl p-2 shadow-2xl pointer-events-auto">
+      <span class="text-xs text-slate-400 font-semibold px-1.5 hidden lg:inline">镜头机位:</span>
+      <button data-cam="full" class="cam-btn px-2.5 py-1.5 rounded-xl text-xs font-bold bg-sky-500 text-slate-950 transition-all">
+        全景四层奇观
+      </button>
+      <button data-cam="qin" class="cam-btn px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all">
+        👑 秦皇骑熊打螺丝
+      </button>
+      <button data-cam="pelican" class="cam-btn px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all">
+        🦩 鹈鹕机翼踩单车
+      </button>
+      <button data-cam="wukong" class="cam-btn px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all">
+        🐵 悟空驾驶舱
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      // State Management
+      let speedMultiplier = 1;
+      let isPlaying = true;
+      let lastTime = performance.now();
+      let phase = 0;
+      let boltCounter = 1024;
+      let boltProgress = 0;
+      let soundEnabled = false;
+      let audioCtx = null;
+      let lastSparkSoundTime = 0;
+
+      // DOM Elements
+      const rootStyle = document.documentElement.style;
+      const hudSpeed = document.getElementById('hudSpeed');
+      const hudRpm = document.getElementById('hudRpm');
+      const hudBolts = document.getElementById('hudBolts');
+      const modeBadge = document.getElementById('modeBadge');
+      const berserkSkyOverlay = document.getElementById('berserkSkyOverlay');
+      const cameraGroup = document.getElementById('cameraGroup');
+
+      // SVG Animated Node References
+      const turbineFans = document.querySelectorAll('.js-turbine-fan');
+      const bikeWheels = document.querySelectorAll('.js-bike-wheel');
+      const bikeChain = document.getElementById('bikeChain');
+
+      // Pelican & Bicycle IK Nodes
+      const pelicanGroup = document.getElementById('pelicanGroup');
+      const pelicanWingsPlatform = document.getElementById('pelicanWingsPlatform');
+      const pelicanPouchPath = document.getElementById('pelicanPouchPath');
+      const leftCrankArm = document.getElementById('leftCrankArm');
+      const rightCrankArm = document.getElementById('rightCrankArm');
+      const leftPedalRect = document.getElementById('leftPedalRect');
+      const rightPedalRect = document.getElementById('rightPedalRect');
+      const leftLegBones = document.getElementById('leftLegBones');
+      const rightLegBones = document.getElementById('rightLegBones');
+      const leftFootWeb = document.getElementById('leftFootWeb');
+      const rightFootWeb = document.getElementById('rightFootWeb');
+
+      // Polar Bear & Qin Shi Huang Nodes
+      const bearAndEmperorLayer = document.getElementById('bearAndEmperorLayer');
+      const qinShiHuangGroup = document.getElementById('qinShiHuangGroup');
+      const emperorRightArmAndTool = document.getElementById('emperorRightArmAndTool');
+      const activeBoltGroup = document.getElementById('activeBoltGroup');
+      const sparkBurstGroup = document.getElementById('sparkBurstGroup');
+      const floatingFxText1 = document.getElementById('floatingFxText1');
+      const floatingFxText2 = document.getElementById('floatingFxText2');
+      const toolSpinRing = document.getElementById('toolSpinRing');
+
+      // Sun Wukong Nodes
+      const feather1 = document.getElementById('feather1');
+      const feather1Tip = document.getElementById('feather1Tip');
+      const feather2 = document.getElementById('feather2');
+      const feather2Tip = document.getElementById('feather2Tip');
+      const wukongYokeGroup = document.getElementById('wukongYokeGroup');
+
+      /**
+       * Solves 2-segment Inverse Kinematics (Hip -> Knee -> Foot on Pedal)
+       * Ensures the Pelican's knees bend forward naturally toward the handlebars
+       */
+      function solveLegIK(hipX, hipY, footX, footY, L1, L2) {
+        const dx = footX - hipX;
+        const dy = footY - hipY;
+        let dist = Math.hypot(dx, dy);
+        const maxReach = L1 + L2 - 0.5;
+        if (dist > maxReach) dist = maxReach;
+        if (dist < Math.abs(L1 - L2) + 0.5) dist = Math.abs(L1 - L2) + 0.5;
+
+        const baseAngle = Math.atan2(dy, dx);
+        const cosAngle = (L1 * L1 + dist * dist - L2 * L2) / (2 * L1 * dist);
+        const clampedCos = Math.max(-1, Math.min(1, cosAngle));
+        const offsetAngle = Math.acos(clampedCos);
+
+        // Bend knee forward (to the left, which is +offsetAngle in screen coordinates)
+        const kneeAngle = baseAngle + offsetAngle;
+        const kneeX = hipX + L1 * Math.cos(kneeAngle);
+        const kneeY = hipY + L1 * Math.sin(kneeAngle);
+
+        return { kneeX, kneeY };
+      }
+
+      function triggerScrewSound() {
+        if (!soundEnabled) return;
+        try {
+          if (!audioCtx) {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContextClass();
+          }
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          const baseFreq = 190 + Math.random() * 80 * speedMultiplier;
+          osc.frequency.setValueAtTime(baseFreq, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.45, audioCtx.currentTime + 0.045);
+
+          gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.055);
+        } catch (err) {
+          // Ignore audio errors if blocked by browser autoplay policy
+        }
+      }
+
+      function animateLoop(now) {
+        const dt = Math.min((now - lastTime) / 1000, 0.1);
+        lastTime = now;
+
+        if (isPlaying) {
+          phase += dt * speedMultiplier;
+
+          // 1. Rotate Jet Engine Turbine Fans & Bicycle Wheels
+          const wheelAngle = -(phase * 340) % 360;
+          const fanAngle = -(phase * 920) % 360;
+
+          bikeWheels.forEach((wheel) => {
+            wheel.setAttribute('transform', `rotate(${wheelAngle.toFixed(1)})`);
+          });
+          turbineFans.forEach((fan) => {
+            fan.setAttribute('transform', `rotate(${fanAngle.toFixed(1)})`);
+          });
+
+          // Animate Bicycle Chain Dashoffset
+          bikeChain.setAttribute('stroke-dashoffset', ((phase * 85) % 20).toFixed(1));
+
+          // 2. Pelican Bicycle Crank & 2-Bone IK Pedaling Kinematics
+          const crankCenterX = 695;
+          const crankCenterY = 622;
+          const crankRadius = 22;
+          // Counter-clockwise rotation (since bike rides left)
+          const crankRad = -phase * 6.2;
+
+          // Near (Left) Pedal & Far (Right) Pedal 180 degrees apart
+          const leftPedalX = crankCenterX + crankRadius * Math.cos(crankRad);
+          const leftPedalY = crankCenterY + crankRadius * Math.sin(crankRad);
+          const rightPedalX = crankCenterX + crankRadius * Math.cos(crankRad + Math.PI);
+          const rightPedalY = crankCenterY + crankRadius * Math.sin(crankRad + Math.PI);
+
+          // Update Crank Arms & Pedals
+          leftCrankArm.setAttribute('x2', leftPedalX.toFixed(1));
+          leftCrankArm.setAttribute('y2', leftPedalY.toFixed(1));
+          leftPedalRect.setAttribute('x', (leftPedalX - 12).toFixed(1));
+          leftPedalRect.setAttribute('y', (leftPedalY - 3.5).toFixed(1));
+
+          rightCrankArm.setAttribute('x2', rightPedalX.toFixed(1));
+          rightCrankArm.setAttribute('y2', rightPedalY.toFixed(1));
+          rightPedalRect.setAttribute('x', (rightPedalX - 12).toFixed(1));
+          rightPedalRect.setAttribute('y', (rightPedalY - 3.5).toFixed(1));
+
+          // Pelican Body Bobbing in Rhythm with Pedaling
+          const pelicanBobY = Math.sin(phase * 12.4) * 3.2;
+          pelicanGroup.setAttribute('transform', `translate(0, ${pelicanBobY.toFixed(2)})`);
+
+          // Pelican Throat Pouch Elastic Jiggle
+          const pouchBounce = Math.sin(phase * 14) * 6;
+          pelicanPouchPath.setAttribute(
+            'd',
+            `M 562 404 C 572 ${(456 + pouchBounce).toFixed(1)}, 635 ${(468 + pouchBounce).toFixed(1)}, 676 426 L 668 402 Z`
+          );
+
+          // Compute IK for Pelican Legs (Hip attaches to bobbing Pelican torso)
+          const hipX = 722;
+          const hipY = 520 + pelicanBobY;
+          const leftIK = solveLegIK(hipX, hipY, leftPedalX, leftPedalY, 64, 64);
+          const rightIK = solveLegIK(hipX, hipY, rightPedalX, rightPedalY, 64, 64);
+
+          leftLegBones.setAttribute(
+            'points',
+            `${hipX.toFixed(1)},${hipY.toFixed(1)} ${leftIK.kneeX.toFixed(1)},${leftIK.kneeY.toFixed(1)} ${leftPedalX.toFixed(1)},${leftPedalY.toFixed(1)}`
+          );
+          rightLegBones.setAttribute(
+            'points',
+            `${hipX.toFixed(1)},${hipY.toFixed(1)} ${rightIK.kneeX.toFixed(1)},${rightIK.kneeY.toFixed(1)} ${rightPedalX.toFixed(1)},${rightPedalY.toFixed(1)}`
+          );
+
+          leftFootWeb.setAttribute(
+            'd',
+            `M ${(leftPedalX - 16).toFixed(1)} ${leftPedalY.toFixed(1)} L ${(leftPedalX + 10).toFixed(1)} ${leftPedalY.toFixed(1)} L ${(leftPedalX + 2).toFixed(1)} ${(leftPedalY - 9).toFixed(1)} Z`
+          );
+          rightFootWeb.setAttribute(
+            'd',
+            `M ${(rightPedalX - 16).toFixed(1)} ${rightPedalY.toFixed(1)} L ${(rightPedalX + 10).toFixed(1)} ${rightPedalY.toFixed(1)} L ${(rightPedalX + 2).toFixed(1)} ${(rightPedalY - 9).toFixed(1)} Z`
+          );
+
+          // 3. Pelican Load-Bearing Wings Flex & Polar Bear Balance Sway
+          const wingFlexDeg = Math.sin(phase * 12.4 + 0.6) * 1.1;
+          pelicanWingsPlatform.setAttribute('transform', `translate(715, 462) rotate(${wingFlexDeg.toFixed(2)}) translate(-715, -462)`);
+
+          const bearBobY = pelicanBobY * 0.85 + Math.cos(phase * 12.4) * 2.2;
+          const bearRockDeg = Math.sin(phase * 6.2) * 0.9;
+          bearAndEmperorLayer.setAttribute(
+            'transform',
+            `translate(0, ${bearBobY.toFixed(2)}) translate(720, 450) rotate(${bearRockDeg.toFixed(2)}) translate(-720, -450)`
+          );
+
+          // 4. Qin Shi Huang Furiously Screwing Bolts (High-Frequency Impact Wrench)
+          boltProgress = (boltProgress + dt * 2.2 * speedMultiplier) % 1;
+          // Bolt sinks down from -14 to -4 as it gets screwed in
+          const boltY = -14 + boltProgress * 10;
+          activeBoltGroup.setAttribute('transform', `translate(74, ${boltY.toFixed(2)})`);
+
+          // High-frequency impact vibration on Emperor's right arm & screwdriver
+          const drillJitterY = Math.sin(phase * 55) * 2.4 + boltProgress * 8;
+          const drillJitterX = Math.cos(phase * 70) * 1.1;
+          emperorRightArmAndTool.setAttribute('transform', `translate(${drillJitterX.toFixed(2)}, ${drillJitterY.toFixed(2)})`);
+
+          // Subtle torso recoil as Qin Shi Huang applies pressure
+          const emperorTorsoRock = Math.sin(phase * 28) * 0.8;
+          qinShiHuangGroup.setAttribute('transform', `translate(725, 290) rotate(${emperorTorsoRock.toFixed(2)}) translate(-725, -290)`);
+
+          // Spin & Pulse Electric Sparks + Floating Comic Text
+          const sparkScale = 0.75 + Math.abs(Math.sin(phase * 42)) * 0.75 * (speedMultiplier >= 5 ? 1.35 : 1);
+          const sparkAngle = (phase * 480) % 360;
+          sparkBurstGroup.setAttribute('transform', `scale(${sparkScale.toFixed(2)}) rotate(${sparkAngle.toFixed(1)})`);
+
+          toolSpinRing.setAttribute('stroke-dashoffset', ((phase * 120) % 28).toFixed(1));
+
+          const textBounce1 = Math.sin(phase * 14) * 5;
+          const textBounce2 = Math.cos(phase * 18) * 6;
+          floatingFxText1.setAttribute('transform', `translate(-85, ${(-45 + textBounce1).toFixed(1)}) rotate(-12)`);
+          floatingFxText2.setAttribute('transform', `translate(-52, ${(-82 + textBounce2).toFixed(1)}) rotate(6)`);
+
+          // Increment Bolt Counter & Trigger Optional Sound FX
+          if (now - lastSparkSoundTime > 260 / speedMultiplier) {
+            boltCounter += speedMultiplier >= 5 ? 3 : 1;
+            hudBolts.textContent = boltCounter.toLocaleString();
+            triggerScrewSound();
+            lastSparkSoundTime = now;
+          }
+
+          // 5. Sun Wukong's Pheasant Crown Feathers & Aircraft Yoke Steering
+          const fWave1 = Math.sin(phase * 10) * 10;
+          const fWave2 = Math.cos(phase * 11.5) * 11;
+          feather1.setAttribute('d', `M 0 0 Q 65 ${(-38 + fWave1 * 0.5).toFixed(1)} 135 ${(-18 + fWave1).toFixed(1)}`);
+          feather1Tip.setAttribute('d', `M 60 ${(-24 + fWave1 * 0.4).toFixed(1)} Q 100 ${(-34 + fWave1 * 0.7).toFixed(1)} 135 ${(-18 + fWave1).toFixed(1)}`);
+          feather2.setAttribute('d', `M 0 2 Q 72 ${(-18 + fWave2 * 0.5).toFixed(1)} 142 ${(4 + fWave2).toFixed(1)}`);
+          feather2Tip.setAttribute('d', `M 70 ${(-8 + fWave2 * 0.4).toFixed(1)} Q 110 ${(-5 + fWave2 * 0.7).toFixed(1)} 142 ${(4 + fWave2).toFixed(1)}`);
+
+          const yokeTilt = Math.sin(phase * 3.5) * 6;
+          wukongYokeGroup.setAttribute('transform', `translate(-38, 28) rotate(${yokeTilt.toFixed(2)}) translate(38, -28)`);
+        }
+
+        requestAnimationFrame(animateLoop);
+      }
+
+      // Speed Mode Buttons (1x, 2x, 5x Berserk)
+      const speedButtons = document.querySelectorAll('.speed-btn');
+      speedButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const newSpeed = parseFloat(btn.getAttribute('data-speed'));
+          speedMultiplier = newSpeed;
+          rootStyle.setProperty('--speed', String(newSpeed));
+
+          // Update Button Active Styling
+          speedButtons.forEach((b) => {
+            b.className = 'speed-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all bg-slate-800 hover:bg-slate-700 text-slate-200';
+          });
+
+          if (newSpeed === 5) {
+            btn.className = 'speed-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-all bg-gradient-to-r from-amber-500 to-red-500 text-slate-950 shadow-lg scale-105';
+            modeBadge.textContent = '🔥 5x 大秦狂暴打螺丝模式';
+            modeBadge.className = 'text-xs font-black px-2 py-0.5 rounded bg-red-500/30 text-amber-300 border border-amber-400';
+            berserkSkyOverlay.setAttribute('opacity', '1');
+            sparkBurstGroup.classList.add('berserk-glow');
+          } else if (newSpeed === 2) {
+            btn.className = 'speed-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all bg-amber-500 text-slate-950 shadow-md';
+            modeBadge.textContent = '⚡ 2x 加班冲刺模式';
+            modeBadge.className = 'text-xs font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30';
+            berserkSkyOverlay.setAttribute('opacity', '0');
+            sparkBurstGroup.classList.remove('berserk-glow');
+          } else {
+            btn.className = 'speed-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all bg-amber-500 text-slate-950 shadow-md';
+            modeBadge.textContent = '1x 标准巡航';
+            modeBadge.className = 'text-xs font-bold px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-400/30';
+            berserkSkyOverlay.setAttribute('opacity', '0');
+            sparkBurstGroup.classList.remove('berserk-glow');
+          }
+
+          // Update Telemetry Readouts
+          hudSpeed.textContent = Math.round(880 * (newSpeed === 5 ? 2.5 : newSpeed)).toLocaleString();
+          hudRpm.textContent = Math.round(90 * newSpeed);
+        });
+      });
+
+      // Play / Pause Button
+      const btnPlayPause = document.getElementById('btnPlayPause');
+      const playPauseIcon = document.getElementById('playPauseIcon');
+      const playPauseLabel = document.getElementById('playPauseLabel');
+
+      btnPlayPause.addEventListener('click', () => {
+        isPlaying = !isPlaying;
+        rootStyle.setProperty('--play-state', isPlaying ? 'running' : 'paused');
+        if (isPlaying) {
+          playPauseIcon.textContent = '⏸';
+          playPauseLabel.textContent = '暂停动画';
+          btnPlayPause.className = 'flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-black text-xs sm:text-sm transition-all shadow-md';
+        } else {
+          playPauseIcon.textContent = '▶️';
+          playPauseLabel.textContent = '继续播放';
+          btnPlayPause.className = 'flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black text-xs sm:text-sm transition-all shadow-md';
+        }
+      });
+
+      // Sound Toggle Button
+      const btnSound = document.getElementById('btnSound');
+      const soundIcon = document.getElementById('soundIcon');
+      const soundLabel = document.getElementById('soundLabel');
+
+      btnSound.addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        if (soundEnabled) {
+          soundIcon.textContent = '🔊';
+          soundLabel.textContent = '音效: 开';
+          btnSound.className = 'flex items-center gap-1 px-3 py-2 rounded-xl bg-amber-500/20 border border-amber-400/50 text-amber-300 font-bold text-xs transition-all';
+          triggerScrewSound();
+        } else {
+          soundIcon.textContent = '🔇';
+          soundLabel.textContent = '音效: 关';
+          btnSound.className = 'flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition-all';
+        }
+      });
+
+      // Camera Focus Preset Buttons
+      const camPresets = {
+        full: 'translate(0px, 0px) scale(1)',
+        qin: 'translate(-610px, -110px) scale(1.95)',
+        pelican: 'translate(-630px, -480px) scale(1.9)',
+        wukong: 'translate(-110px, -520px) scale(2.05)'
+      };
+
+      const camButtons = document.querySelectorAll('.cam-btn');
+      camButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const camKey = btn.getAttribute('data-cam');
+          cameraGroup.style.transform = camPresets[camKey] || camPresets.full;
+
+          camButtons.forEach((b) => {
+            b.className = 'cam-btn px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all';
+          });
+          btn.className = 'cam-btn px-2.5 py-1.5 rounded-xl text-xs font-bold bg-sky-500 text-slate-950 transition-all shadow-md';
+        });
+      });
+
+      // Start the animation loop on window load
+      window.onload = function () {
+        lastTime = performance.now();
+        requestAnimationFrame(animateLoop);
+      };
+    })();
+  </script>
+</body>
+</html>
