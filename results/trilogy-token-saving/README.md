@@ -9,6 +9,7 @@
 
 | 目录 | 模型 / 渠道 | 入口文件 | 特色与说明 |
 |---|---|---|---|
+| `longcat-2.5-preview/` | LongCat 2.5 Preview Free | `index.html` | 自包含 SVG 2D 动画：大圣航空客机、鹈鹕双腿 IK 蹬踏并展翼托熊、秦始皇冕旒骑熊用电钻拧螺栓；含火花、云层、涡扇及减弱动态支持。提交者报告六项元素与空间层级已核对 |
 | `gemini-4-argon-high/` | Gemini 4 Argon High / Gemini Web | `index.html` | 《西游大秦高空重工：2D动态SVG奇观》；四层角色联动、双腿 IK、1x/2x/5x 速度、暂停、镜头机位与可选音效。提交者评价「很厉害」；保留原文件的 Tailwind CDN 与 Google Fonts 依赖 |
 | `gemini-3.8-flash/` | Gemini 3.8 Flash (High) / Antigravity | `index.html` | 精细 2D SVG 矢量动画：孙悟空驾驶舱+火眼金睛凝视；机翼与巨型涡扇引擎；鹈鹕展翼托举北极熊；秦始皇头戴冕旒与劳保眼镜手持锂电钻打螺丝+火花飞溅；内置 3 款主题背景、Web Audio 引擎与电钻音效、SVG 导出 |
 | `codem/` | CodeM (codem-router/auto · 极高) | `index.html` | 鹈鹕航班机翼骑行与打螺丝现场（JS IK 两段腿蹬踏） |

@@ -1,6 +1,7 @@
 // 静态封面来自对应原始作品的 1200×800 浏览器截图；不是重新绘制的示意图。
 // 没有封面的新样例仍可直接运行。题库、样例与原始作品的数据契约不变。
 window.SAMPLE_PREVIEWS = {
+  "s-tri-longcat-2-5-preview": "assets/previews/s-tri-longcat-2-5-preview.webp",
   "s-tri-gemini-4-argon-high": "assets/previews/s-tri-gemini-4-argon-high.webp",
   "s-pb-gemini-4-argon-high": "assets/previews/s-pb-gemini-4-argon-high.webp",
   "s-pb-muse-spark": "assets/previews/muse-spark-pelican.webp",

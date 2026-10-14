@@ -6,6 +6,7 @@
 // 新增样例：追加一项，并把作品文件放进 results/<testId>/<slug>/。
 // ============================================================
 window.SAMPLES = [
+  {"id":"s-tri-longcat-2-5-preview","testId":"trilogy-token-saving","model":"LongCat 2.5 Preview Free","channel":"","date":"2026-10-14","src":"results/trilogy-token-saving/longcat-2.5-preview/index.html","observation":"ok","note":"提交者报告已在浏览器核对六项元素及空间层级：孙悟空驾驶大圣航空客机，鹈鹕在机翼骑行（双腿 IK 绑定踏板）并展翅托举北极熊，秦始皇戴冕旒骑熊用电钻拧螺栓；含旋转钻头、火花、云层、涡扇与减弱动态支持。观察来自提交者。","contributor":""},
   {"id":"s-tri-gemini-4-argon-high","testId":"trilogy-token-saving","model":"Gemini 4 Argon High","channel":"Gemini Web","date":"2026-10-14","src":"results/trilogy-token-saving/gemini-4-argon-high/index.html","observation":"ok","note":"《西游大秦高空重工：2D动态SVG奇观》。提交者评价：很厉害。悟空驾驶飞机、鹈鹕翼上骑行展翅托熊、秦始皇骑熊打螺丝；含双腿 IK、1x/2x/5x 速度、暂停、机位切换与可选音效。评价来自提交者，未逐项核对检查清单；原文件依赖 Tailwind CDN 与 Google Fonts。","contributor":""},
   {"id":"s-pb-gemini-4-argon-high","testId":"pelican-bike","model":"Gemini 4 Argon High","channel":"Gemini Web","date":"2026-10-14","src":"results/pelican-bike/gemini-4-argon-high/index.html","observation":"unrated","note":"用户提供的 Gemini Web 原始 HTML；SVG + JavaScript 动画，含双腿 IK、180° 对置踏板、车轮旋转和滚动背景；未逐项评定","contributor":""},
   {"id":"s-pb-muse-spark","testId":"pelican-bike","model":"Muse Spark","channel":"opencode 2","date":"2026-09-15","src":"results/pelican-bike/muse-spark/pelican-bike.html","observation":"issue","note":"Muse Spark 生成；腿为髋到踏板的单段直线，无两段腿和膝盖折点（A❌）；脚虽每帧跟随踏板，但腿结构不真","contributor":""},
